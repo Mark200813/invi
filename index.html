@@ -82,6 +82,10 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .nav.stuck{background:rgba(8,9,11,.76);backdrop-filter:blur(14px);border-bottom-color:var(--hair)}
 .mark{font-family:'Archivo',sans-serif;font-weight:900;font-variation-settings:'wdth' 118,'wght' 900;
   font-size:1rem;letter-spacing:.16em;text-transform:uppercase}
+/* header wordmark defers to the giant one, then takes over on scroll */
+.nav .mark{opacity:0;transform:translateY(-7px);pointer-events:none;
+  transition:opacity .55s var(--ease),transform .55s var(--ease)}
+.nav .mark.show{opacity:1;transform:none;pointer-events:auto}
 .mark i{color:var(--accent);font-style:normal;transition:color 1.2s var(--ease)}
 .nav-mid{display:flex;gap:1.8rem}
 .nav-mid button{font-family:'Archivo',sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.22em;
@@ -115,8 +119,38 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .btn:disabled{opacity:.35;pointer-events:none}
 
 /* ── hero ───────────────────────────────────────────────── */
-.hero{min-height:92svh;display:flex;flex-direction:column;justify-content:center;padding-top:7rem}
+.hero{min-height:92svh;display:flex;flex-direction:column;justify-content:center;
+  padding-top:7rem;position:relative;overflow:hidden}
+
+/* gradient panel: the surface the wordmark is pressed into */
+.hero-panel{position:absolute;inset:0 0 0 auto;width:46%;z-index:0;overflow:hidden;
+  display:grid;place-items:center;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,#000 30%,#000 100%);
+          mask-image:linear-gradient(90deg,transparent 0%,#000 30%,#000 100%)}
+.hero-panel::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(8,9,11,.5) 0%,transparent 26%,transparent 68%,rgba(8,9,11,.75) 100%)}
+.pg{position:absolute;inset:0;opacity:0;animation:cycle 27s ease-in-out infinite}
+.pg--origin{background:linear-gradient(205deg,#0F6F63 0%,#0A4A43 42%,#04211E 100%)}
+.pg--rise  {background:linear-gradient(205deg,#B8410E 0%,#7A2A08 42%,#2E1004 100%);animation-delay:-9s}
+.pg--dark  {background:linear-gradient(205deg,#3B1B7A 0%,#28125A 42%,#120826 100%);animation-delay:-18s}
+@keyframes cycle{0%,26%{opacity:.62}39%,87%{opacity:0}100%{opacity:.62}}
+/* once a moment is locked in, the panel settles on that world */
+[data-moment="origin"] .pg--rise,[data-moment="origin"] .pg--dark,
+[data-moment="rise"] .pg--origin,[data-moment="rise"] .pg--dark,
+[data-moment="after-dark"] .pg--origin,[data-moment="after-dark"] .pg--rise{animation:none;opacity:0}
+[data-moment="origin"] .pg--origin,[data-moment="rise"] .pg--rise,
+[data-moment="after-dark"] .pg--dark{animation:none;opacity:.62}
+
+/* wordmark pressed into the surface */
+.hero-mark{position:relative;z-index:1;font-family:'Archivo',sans-serif;font-weight:900;
+  font-variation-settings:'wdth' 125,'wght' 900;
+  font-size:clamp(4rem,11.5vw,10.5rem);line-height:.8;letter-spacing:-.035em;
+  color:rgba(0,0,0,.26);mix-blend-mode:soft-light;user-select:none;
+  text-shadow:0 2px 1px rgba(255,255,255,.22),0 -2px 3px rgba(0,0,0,.55),
+              0 1px 0 rgba(255,255,255,.09)}
+
 .hero .tag{margin-bottom:1.8rem}
+.hero .wrap{position:relative;z-index:2}
 .hero h1{margin-bottom:1.8rem;max-width:16ch}
 .hero .lede{margin-bottom:2.6rem}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center}
@@ -369,6 +403,9 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 @keyframes breathe{0%,100%{opacity:.3}50%{opacity:1}}
 
 @media (max-width:980px){
+  /* narrow screens have no empty space to solve — drop the panel, keep the header mark */
+  .hero-panel{display:none}
+  .nav .mark{opacity:1;transform:none;pointer-events:auto}
   .moments{grid-template-columns:1fr;gap:.9rem}
   .moment{flex-direction:row;align-items:center;text-align:left;gap:1.5rem;padding:1.4rem}
   .can{margin-bottom:0;width:60px;height:150px;flex:none}
@@ -411,6 +448,12 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 <div class="view" id="view-home">
 
   <section class="hero">
+    <div class="hero-panel" aria-hidden="true">
+      <span class="pg pg--origin"></span>
+      <span class="pg pg--rise"></span>
+      <span class="pg pg--dark"></span>
+      <span class="hero-mark" id="heroMark">INVI</span>
+    </div>
     <div class="wrap">
       <p class="tag rv">For the moments that matter</p>
       <h1 class="display d-xl rv" style="transition-delay:.08s">More than a moment.<br>A <span class="accent">mindset.</span></h1>
@@ -742,13 +785,28 @@ setTimeout(() => intro.remove(), 2300);
 const nav = $('#nav');
 addEventListener('scroll', () => nav.classList.toggle('stuck', scrollY > 40), { passive:true });
 
+/* wordmark handover: header mark stays out of the way while the giant one is on screen */
+const navMark = $('.nav .mark'), heroMark = $('#heroMark');
+let markIO = null;
+function watchMark(){
+  markIO && markIO.disconnect();
+  const onBrand = !$('#view-brand').hidden;
+  const wide = matchMedia('(min-width: 981px)').matches;
+  if (onBrand || !wide){ navMark.classList.add('show'); return; }   // no giant mark to defer to
+  markIO = new IntersectionObserver(
+    ([e]) => navMark.classList.toggle('show', !e.isIntersecting),
+    { threshold:.35 });
+  markIO.observe(heroMark);
+}
+addEventListener('resize', watchMark);
+
 /* views */
 function go(v){
   $$('.view').forEach(el => el.hidden = (el.id !== 'view-' + v));
   $$('.nav-mid button').forEach(b =>
     b.dataset.go === v ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current'));
   scrollTo({ top:0, behavior: reduce ? 'auto' : 'instant' });
-  observe();
+  observe(); watchMark();
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('[data-go]');
@@ -941,7 +999,7 @@ if (state.moment){
   $('#picked').textContent = LABEL[state.moment];
   if (state.confirmed) lockIn(false); else if (state.joined) confirmEl.classList.add('on');
 }
-observe();
+observe(); watchMark();
 })();
 </script>
 </body>
