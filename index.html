@@ -24,6 +24,10 @@
    Product present only as silhouette. Nothing named, nothing sold.
    ───────────────────────────────────────────────────────────── */
 
+/* registered so the light direction interpolates smoothly instead of jumping */
+@property --lx{syntax:'<number>';inherits:false;initial-value:0}
+@property --ly{syntax:'<number>';inherits:false;initial-value:1}
+
 :root{
   --ink:#08090B; --ink-2:#0D0F13; --bone:#F4EFE6; --tan:#C8B89A;
   --mute:rgba(244,239,230,.52); --hair:rgba(244,239,230,.12);
@@ -218,10 +222,13 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   transition:opacity .75s var(--ease)}
 @keyframes turn{from{background-position:250% 0}to{background-position:-150% 0}}
 .moment:hover .spec,.moment:focus-visible .spec{opacity:.62;animation-play-state:running}
-/* pointer-lit mode: the cursor is the lamp, so the highlight tracks it instead of looping */
-.lit .spec{animation:none;background-position:var(--sx,150%) 0;
-  transition:opacity .6s var(--ease),background-position .5s var(--ease)}
-
+/* touch has no hover and no pointer, so the light runs by itself while the card is on screen */
+.touch .moment.inview .spec{opacity:.5;animation-play-state:running}
+.touch .hero-mark{animation:raking 14s ease-in-out infinite}
+@keyframes raking{
+  0%,100%{--lx:-.7;--ly:.9}
+  50%    {--lx:.7; --ly:1.1}
+}
 /* magnetism rides on `translate`, leaving existing hover `transform` untouched */
 .btn,.moment{translate:var(--mx,0px) var(--my,0px)}
 .lit .btn,.lit .moment{transition:translate .4s var(--ease),
@@ -367,8 +374,24 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .rail h3{margin:0 0 .28rem;font-size:.94rem;font-weight:700;letter-spacing:-.01em}
 .rail p{margin:0;font-size:.85rem;color:var(--mute);line-height:1.55}
 
-/* ── brand view ─────────────────────────────────────────── */
+/* ── view transition ────────────────────────────────────── */
 .view[hidden]{display:none}
+.js .view{transition:opacity .34s var(--ease),transform .34s var(--ease)}
+.js .view.leaving{opacity:0;transform:translateY(-8px);transition-duration:.18s}   /* exit ≈75% of enter */
+.js .view.entering{opacity:0;transform:translateY(12px);transition:none}
+
+/* ── confirm sequence ───────────────────────────────────── */
+.moment.sealed::after{content:'';position:absolute;inset:0;border:1px solid var(--accent);
+  border-radius:4px;pointer-events:none;opacity:0;animation:seal .9s var(--ease) forwards}
+@keyframes seal{0%{opacity:0}22%{opacity:.9}100%{opacity:0}}
+
+/* member number: digits roll into place like a credential being issued */
+.odo{display:inline-flex}
+.odo-d{display:inline-block;height:1em;line-height:1;overflow:hidden;vertical-align:bottom}
+.odo-d i{display:block;font-style:normal;transform:translateY(0);
+  transition:transform .95s var(--ease)}
+
+/* ── brand view ─────────────────────────────────────────── */
 .creed .line{font-family:'Archivo',sans-serif;font-weight:900;font-variation-settings:'wdth' 108,'wght' 900;
   text-transform:uppercase;font-size:clamp(1.35rem,3.7vw,3rem);line-height:1.04;letter-spacing:-.02em;
   padding:clamp(1.1rem,2.6vh,2rem) 0;margin:0;border-bottom:1px solid var(--hair);
@@ -459,6 +482,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   .rail{order:-1;padding-top:0}
   .nav-mid{gap:1.1rem}
 }
+/* 44px tap targets on the small text links, without moving anything visually.
+   Applied for every input type — larger targets help mouse users too. */
+.nav .mark,.nav-mid button,.foot-links button,.foot-links a{position:relative}
+.nav .mark::before,.nav-mid button::before,
+.foot-links button::before,.foot-links a::before{
+  content:'';position:absolute;left:-8px;right:-8px;top:50%;translate:0 -50%;height:44px}
+.foot-links{gap:1.9rem}
+
 @media (max-width:560px){
   .count-pill .lbl{display:none}
   .statgrid,.pillars{grid-template-columns:1fr}
@@ -474,6 +505,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   /* pointer light is motion — off entirely */
   .field-inner{transform:none!important}
   .btn,.moment{translate:none!important}
+  .touch .hero-mark{animation:none!important}
+  .touch .moment.inview .spec{animation-play-state:paused!important}
   .hero-mark{text-shadow:0 2px 1px rgba(255,255,255,.22),0 -2px 3px rgba(0,0,0,.55),
     0 1px 0 rgba(255,255,255,.09)!important}
 }
@@ -876,11 +909,25 @@ addEventListener('resize', watchMark);
 
 /* views */
 function go(v){
-  $$('.view').forEach(el => el.hidden = (el.id !== 'view-' + v));
+  const next = $('#view-' + v), cur = $('.view:not([hidden])');
+  if (cur === next) return;
   $$('.nav-mid button').forEach(b =>
     b.dataset.go === v ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current'));
-  scrollTo({ top:0, behavior: reduce ? 'auto' : 'instant' });
-  observe(); watchMark();
+
+  const swap = () => {
+    $$('.view').forEach(el => el.hidden = (el.id !== 'view-' + v));
+    scrollTo({ top:0, behavior:'instant' });
+    observe(); watchMark();
+  };
+  if (reduce || !cur){ swap(); return; }
+
+  cur.classList.add('leaving');                     // 180ms out
+  setTimeout(() => {
+    cur.classList.remove('leaving');
+    swap();
+    next.classList.add('entering');                 // 340ms in, from just below
+    requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('entering')));
+  }, 180);
 }
 document.addEventListener('click', e => {
   const d = e.target.closest('[data-dialog]');
@@ -913,9 +960,13 @@ $('#bars').innerHTML = KEYS.map(k => `
 function paint(){
   const t = total();
   tick($('#totalCount'), t); tick($('#navCount'), t);
-  KEYS.forEach(k => {
+  // draw the others first so the visitor's own bar arrives last, as the punchline
+  const order = KEYS.slice().sort((a,b) => (a === state.moment) - (b === state.moment));
+  order.forEach((k, i) => {
     const row = $(`.bar-row[data-k="${k}"]`), pct = tally(k)/t*100;
-    row.querySelector('.fill').style.transform = `scaleX(${(pct/100).toFixed(4)})`;
+    const fill = row.querySelector('.fill');
+    fill.style.transitionDelay = reduce ? '0ms' : (i * 150) + 'ms';
+    fill.style.transform = `scaleX(${(pct/100).toFixed(4)})`;
     row.querySelector('.pct').textContent = pct.toFixed(1) + '%';
     row.classList.toggle('me', state.moment === k);
   });
@@ -950,26 +1001,49 @@ $('#confirmBtn').addEventListener('click', () => {
 });
 
 function lockIn(fresh){
-  momentsEl.classList.add('decided');
-  confirmEl.classList.remove('on');
-  $('#joinedNote').hidden = true;
-  $('#results').classList.add('on');
-  paint();
   const k = state.moment;
-  $('#nudge').innerHTML = fresh
-    ? `Locked in. <b>${LABEL[k]}</b> is now on <b>${(tally(k)/total()*100).toFixed(1)}%</b>, and that moved because of you.`
-    : `You're <b>${LABEL[k]}</b>. Locked in.`;
-  // pass
+  const step = (fn, ms) => fresh && !reduce ? setTimeout(fn, ms) : fn();
+
+  // the chosen can is sealed; the other two recede
+  if (fresh && !reduce){
+    const chosen = $(`.moment[data-key="${k}"]`);
+    chosen && chosen.classList.add('sealed');
+  }
+  momentsEl.classList.add('decided');
+  step(() => confirmEl.classList.remove('on'), 220);
+  $('#joinedNote').hidden = true;
+  step(() => { $('#results').classList.add('on'); paint(); }, 400);
+  step(() => {
+    $('#nudge').innerHTML = fresh
+      ? `Locked in. <b>${LABEL[k]}</b> is now on <b>${(tally(k)/total()*100).toFixed(1)}%</b>, and that moved because of you.`
+      : `You're <b>${LABEL[k]}</b>. Locked in.`;
+  }, 900);
+  // the pass, issued last
   $('#passTag').textContent = 'Your moment';
   $('#passMoment').textContent = LABEL[k];
-  $('#passNo').textContent = String(state.member).padStart(4,'0');
   $('#passMsg').textContent = `${state.name ? state.name + ', you' : 'You'}'re on the list before there's `
     + `anything to buy, and your pick is counted. We'll send the first piece soon.`;
-  $('#pass').classList.add('on');
+  step(() => {
+    $('#pass').classList.add('on');
+    odometer($('#passNo'), String(state.member).padStart(4,'0'));
+  }, 700);
   if (fresh){
     $('#results').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'center' });
     setTimeout(() => $('#results').focus({ preventScroll:true }), reduce ? 0 : 750);
   }
+}
+
+/* member number rolls into place, one digit at a time */
+function odometer(el, str){
+  if (reduce){ el.textContent = str; return; }
+  el.classList.add('odo');
+  el.innerHTML = [...str].map(() =>
+    `<span class="odo-d"><i>${[0,1,2,3,4,5,6,7,8,9].join('<br>')}</i></span>`).join('');
+  const digits = [...el.querySelectorAll('.odo-d i')];
+  requestAnimationFrame(() => digits.forEach((d, i) => {
+    d.style.transitionDelay = (i * 90) + 'ms';
+    d.style.transform = `translateY(-${Number(str[i]) * 100}%)`;
+  }));
 }
 
 /* ── sleek select ─────────────────────────────────────── */
@@ -1079,6 +1153,14 @@ $('#shareBtn').addEventListener('click', async () => {
 /* ── pointer light ────────────────────────────────────── */
 /* One idea: the cursor is a light source. Surfaces respond the way lit
    objects would — no custom cursor, nothing drawn on top of the page. */
+// touch devices: no pointer to follow, so the light runs on its own while on screen
+if (!reduce && !matchMedia('(pointer: fine)').matches){
+  document.documentElement.classList.add('touch');
+  const canIO = new IntersectionObserver(es => es.forEach(e =>
+    e.target.classList.toggle('inview', e.isIntersecting)), { threshold:.35 });
+  $$('.moment').forEach(m => canIO.observe(m));
+}
+
 (() => {
   if (reduce || !matchMedia('(pointer: fine)').matches) return;
   document.documentElement.classList.add('lit');
@@ -1117,18 +1199,12 @@ $('#shareBtn').addEventListener('click', async () => {
 
   /* per-element: only runs while the pointer is actually over the thing */
   $$('.moment').forEach(m => {
-    const can = m.querySelector('.can');
     m.addEventListener('pointermove', e => {
       const r = m.getBoundingClientRect();
       const mx = clamp((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2), -1, 1) * 5;
       const my = clamp((e.clientY - (r.top  + r.height / 2)) / (r.height / 2), -1, 1) * 4;
       m.style.setProperty('--mx', mx.toFixed(2) + 'px');
       m.style.setProperty('--my', my.toFixed(2) + 'px');
-      if (can){                       // light slides round the cylinder
-        const cr = can.getBoundingClientRect();
-        const t = clamp((e.clientX - cr.left) / (cr.width || 1), -.4, 1.4);
-        can.style.setProperty('--sx', (185 - t * 210).toFixed(1) + '%');
-      }
     }, { passive:true });
     m.addEventListener('pointerleave', () => {
       m.style.setProperty('--mx','0px'); m.style.setProperty('--my','0px');
@@ -1150,7 +1226,21 @@ $('#shareBtn').addEventListener('click', async () => {
 })();
 
 /* ── reveals ──────────────────────────────────────────── */
-let io, io2;
+let io, io2, io3;
+function countUp(el){
+  const raw = el.dataset.to || (el.dataset.to = el.textContent.trim());
+  const to = parseFloat(raw), suffix = raw.replace(/[\d.]/g,'');
+  if (!isFinite(to)) return;
+  if (reduce){ el.textContent = raw; return; }
+  const t0 = performance.now(), ms = 1100;
+  const step = now => {
+    const p = Math.min((now - t0)/ms, 1), e = 1 - Math.pow(1-p,3);
+    el.textContent = Math.round(to * e) + suffix;
+    if (p < 1) requestAnimationFrame(step); else el.textContent = raw;
+  };
+  el.textContent = '0' + suffix;
+  requestAnimationFrame(step);
+}
 function observe(){
   io && io.disconnect(); io2 && io2.disconnect();
   io = new IntersectionObserver(es => es.forEach(e => {
@@ -1160,6 +1250,14 @@ function observe(){
   io2 = new IntersectionObserver(es => es.forEach(e =>
     e.target.classList.toggle('lit', e.isIntersecting)), { threshold:.8 });
   $$('.view:not([hidden]) .creed .line').forEach(el => io2.observe(el));
+
+  // evidence should count up, not just fade in
+  io3 && io3.disconnect();
+  io3 = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    countUp(e.target); io3.unobserve(e.target);
+  }), { threshold:.6 });
+  $$('.view:not([hidden]) .stat b').forEach(el => io3.observe(el));
 }
 
 /* ── boot ─────────────────────────────────────────────── */
