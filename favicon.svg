@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="INVI">
+  <rect width="64" height="64" rx="13" fill="#F4EFE6"/>
+  <g stroke="#08090B" stroke-width="5.2" fill="none" stroke-linecap="butt" stroke-linejoin="miter">
+    <!-- I -->
+    <path d="M20.5 15V31"/>
+    <!-- N -->
+    <path d="M36 31V15l15 16V15"/>
+    <!-- V -->
+    <path d="M13 35l7.5 16L28 35"/>
+    <!-- I -->
+    <path d="M43.5 35v16"/>
+  </g>
+</svg>
