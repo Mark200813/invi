@@ -9,6 +9,11 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="description" content="Real moments. Real confidence. No explanation needed.">
 <meta name="robots" content="noindex,nofollow">
+<meta property="og:title" content="INVI· More than a moment.">
+<meta property="og:description" content="Real moments. Real confidence. No explanation needed.">
+<meta property="og:url" content="https://mark200813.github.io/invi/">
+<meta property="og:image" content="https://mark200813.github.io/invi/apple-touch-icon.png">
+<meta name="twitter:card" content="summary">
 <meta name="theme-color" content="#08090B">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -157,7 +162,7 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .hero h1{margin-bottom:1.8rem;max-width:16ch}
 .hero .lede{margin-bottom:2.6rem}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.9rem;align-items:center}
-.hint{display:inline-flex;align-items:center;gap:.6rem;font-size:.78rem;color:rgba(244,239,230,.38);
+.hint{display:inline-flex;align-items:center;gap:.6rem;font-size:.78rem;color:rgba(244,239,230,.55);
   font-style:italic}
 .hint::before{content:'';width:18px;height:1px;background:currentColor}
 
@@ -217,30 +222,31 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   font-size:clamp(1.25rem,2.1vw,1.7rem);letter-spacing:-.015em}
 .moment p{margin:0;font-size:.86rem;color:rgba(244,239,230,.6);max-width:24ch;line-height:1.5;min-height:2.6em}
 .moment .idx{position:absolute;top:1.2rem;left:1.3rem;font-family:'Archivo',sans-serif;font-size:.6rem;
-  font-weight:700;letter-spacing:.26em;color:rgba(244,239,230,.34)}
+  font-weight:700;letter-spacing:.26em;color:rgba(244,239,230,.45)}
 .moment .chk{position:absolute;top:1.05rem;right:1.15rem;width:24px;height:24px;border-radius:50%;
   border:1px solid var(--hair);display:grid;place-items:center;opacity:0;transform:scale(.6);
   transition:all .45s var(--ease)}
 .moment[aria-pressed="true"] .chk{opacity:1;transform:scale(1);background:var(--bone);border-color:var(--bone)}
 .moment .chk svg{width:11px;stroke:var(--ink);stroke-width:2.8;fill:none}
-.moments.gated 
 /* confirm bar */
 .confirm{display:grid;grid-template-rows:0fr;opacity:0;
   transition:grid-template-rows .7s var(--ease),opacity .5s var(--ease)}
 .confirm.on{grid-template-rows:1fr;opacity:1}
-.confirm-in{overflow:hidden;min-height:0}
+.confirm-in{overflow:hidden;min-height:0;visibility:hidden;transition:visibility .7s}
+.confirm.on .confirm-in{visibility:visible}
 .confirm-box{margin-top:1.5rem;padding:1.4rem 1.6rem;border:1px solid var(--hair);border-radius:4px;
   background:rgba(13,15,19,.6);backdrop-filter:blur(10px);
   display:flex;flex-wrap:wrap;gap:1rem;align-items:center;justify-content:space-between}
 .confirm-box p{margin:0;font-size:.9rem;color:var(--mute)}
 .confirm-box b{color:var(--bone)}
-.warn{font-size:.76rem;color:rgba(244,239,230,.36);margin:.45rem 0 0}
+.warn{font-size:.76rem;color:rgba(244,239,230,.5);margin:.45rem 0 0}
 
 /* ── results ────────────────────────────────────────────── */
 .results{display:grid;grid-template-rows:0fr;opacity:0;margin-top:2.4rem;
   transition:opacity .9s var(--ease) .1s,grid-template-rows 1.1s var(--ease)}
 .results.on{opacity:1;grid-template-rows:1fr}
-.results-inner{overflow:hidden;min-height:0}
+.results-inner{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 1.1s}
+.results.on .results-inner{visibility:visible}
 .results-head{display:flex;flex-wrap:wrap;gap:1rem;align-items:baseline;justify-content:space-between;
   padding-bottom:1.4rem;border-bottom:1px solid var(--hair);margin-bottom:1.7rem}
 .bar-row{display:grid;grid-template-columns:minmax(96px,128px) 1fr auto;gap:1.1rem;align-items:center;padding:.7rem 0}
@@ -266,7 +272,7 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .fr input{width:100%;padding:.85rem 0;background:transparent;border:0;border-bottom:1px solid var(--hair);
   font-size:1rem;transition:border-color .4s var(--ease)}
 .fr input:focus{outline:none;border-bottom-color:var(--accent)}
-.fr input::placeholder{color:rgba(244,239,230,.24)}
+.fr input::placeholder{color:rgba(244,239,230,.42)}
 .fr.bad input,.fr.bad .sel-btn{border-bottom-color:#E0603F}
 .err{font-size:.72rem;color:#E0603F;min-height:1.05em;margin:0}
 
@@ -274,7 +280,7 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .sel{position:relative}
 .sel-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:1rem;
   padding:.85rem 0;background:transparent;border:0;border-bottom:1px solid var(--hair);
-  text-align:left;font-size:1rem;color:rgba(244,239,230,.32);
+  text-align:left;font-size:1rem;color:rgba(244,239,230,.5);
   transition:border-color .4s var(--ease),color .4s var(--ease)}
 .sel-btn.has{color:var(--bone)}
 .sel-btn:hover,.sel.open .sel-btn{border-bottom-color:var(--accent);color:var(--bone)}
@@ -344,7 +350,7 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .rail{display:grid;gap:1.5rem;align-content:start;padding-top:2.2rem}
 .rail .row{display:grid;grid-template-columns:auto 1fr;gap:1.1rem;align-items:start}
 .rail .n{width:20px;height:1px;margin-top:.7rem;background:var(--accent);transition:background 1.2s var(--ease)}
-.rail h4{margin:0 0 .28rem;font-size:.94rem;font-weight:700;letter-spacing:-.01em}
+.rail h3{margin:0 0 .28rem;font-size:.94rem;font-weight:700;letter-spacing:-.01em}
 .rail p{margin:0;font-size:.85rem;color:var(--mute);line-height:1.55}
 
 /* ── brand view ─────────────────────────────────────────── */
@@ -360,7 +366,7 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .pillar{border-top:1px solid var(--hair);padding-top:1.4rem}
 .pillar .k{font-family:'Archivo',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.24em;
   text-transform:uppercase;color:var(--accent);transition:color 1.2s var(--ease)}
-.pillar h4{margin:.7rem 0 .55rem;font-family:'Archivo',sans-serif;font-weight:900;text-transform:uppercase;
+.pillar h3{margin:.7rem 0 .55rem;font-family:'Archivo',sans-serif;font-weight:900;text-transform:uppercase;
   font-size:1.15rem;letter-spacing:-.015em}
 .pillar p{margin:0;font-size:.87rem;color:var(--mute);line-height:1.6}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-top:2.4rem}
@@ -372,6 +378,23 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   text-transform:uppercase;font-size:clamp(1.4rem,3.4vw,2.6rem);line-height:1.06;letter-spacing:-.02em;
   margin:0;text-wrap:balance}
 
+/* ── privacy dialog ─────────────────────────────────────── */
+.privacy{background:var(--ink-2);color:var(--bone);border:1px solid var(--hair);border-radius:6px;
+  width:min(92vw,33rem);padding:clamp(1.7rem,4vw,2.5rem);margin:auto}
+.privacy::backdrop{background:rgba(4,5,6,.72);backdrop-filter:blur(8px)}
+.privacy h2{margin:0 0 1.4rem}
+.privacy ul{list-style:none;margin:0 0 1.8rem;padding:0;display:grid;gap:1rem}
+.privacy li{display:grid;grid-template-columns:auto 1fr;gap:.9rem;align-items:start;
+  font-size:.9rem;color:var(--mute);line-height:1.55}
+.privacy li::before{content:'';width:16px;height:1px;background:var(--accent);margin-top:.7rem}
+.privacy li b{color:var(--bone)}
+
+/* joined-but-not-voted state */
+.joined-note{margin-top:2.2rem;display:grid;gap:1.3rem;justify-items:start}
+.joined-note p{margin:0;font-size:1.02rem;color:var(--mute)}
+.joined-note b{color:var(--bone)}
+.note{font-size:.78rem;color:var(--mute);margin:.2rem 0 0}
+
 /* ── footer ─────────────────────────────────────────────── */
 footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2rem 0 2.4rem;margin-top:2rem}
 .foot-top{display:flex;flex-wrap:wrap;gap:1.4rem;justify-content:space-between;align-items:center;padding-bottom:2.4rem}
@@ -382,11 +405,12 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   text-transform:uppercase;font-size:clamp(3.4rem,16vw,12rem);line-height:.8;letter-spacing:-.03em;
   text-align:center;color:rgba(244,239,230,.028);
   text-shadow:0 1px 0 rgba(244,239,230,.055),0 -1px 1px rgba(0,0,0,.7);user-select:none;margin:0}
-.legal{text-align:center;font-size:.66rem;color:rgba(244,239,230,.3);margin-top:1.5rem}
+.legal{text-align:center;font-size:.66rem;color:rgba(244,239,230,.45);margin-top:1.5rem}
 
-.rv{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+/* reveals only arm when JS is running — content is never gated on a script */
+.js .rv{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
 .rv.in{opacity:1;transform:none}
-.toast{position:fixed;left:50%;bottom:1.9rem;translate:-50% 130%;z-index:80;
+.toast{position:fixed;left:50%;bottom:calc(1.9rem + env(safe-area-inset-bottom,0px));translate:-50% 130%;z-index:80;
   display:flex;align-items:center;gap:.8rem;max-width:min(92vw,430px);
   padding:.82rem 1.35rem .82rem .82rem;border-radius:999px;
   background:rgba(16,18,24,.92);backdrop-filter:blur(22px);border:1px solid var(--hair);
@@ -406,9 +430,11 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 @keyframes breathe{0%,100%{opacity:.3}50%{opacity:1}}
 
 @media (max-width:980px){
-  /* narrow screens have no empty space to solve — drop the panel, keep the header mark */
-  .hero-panel{display:none}
-  .nav .mark{opacity:1;transform:none;pointer-events:auto}
+  /* narrow screens: the panel becomes a horizon glow at the base of the hero */
+  .hero-panel{inset:auto 0 0 0;width:100%;height:36%;
+    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 55%);
+            mask-image:linear-gradient(180deg,transparent 0%,#000 55%)}
+  .hero-mark{font-size:clamp(3.2rem,16vw,5.5rem)}
   .moments{grid-template-columns:1fr;gap:.9rem}
   .moment{flex-direction:row;align-items:center;text-align:left;gap:1.5rem;padding:1.4rem}
   .can{margin-bottom:0;width:60px;height:150px;flex:none}
@@ -423,17 +449,20 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   .count-pill .lbl{display:none}
   .statgrid,.pillars{grid-template-columns:1fr}
   .btn{padding:.9rem 1.5rem;font-size:.68rem}
+  /* cheaper atmosphere on small GPUs */
+  .orb{filter:blur(60px)}
+  .orb--c{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important}
-  .rv{opacity:1;transform:none} html{scroll-behavior:auto}
+  .js .rv{opacity:1;transform:none} html{scroll-behavior:auto}
 }
 </style>
 </head>
 <body>
 
-<div class="intro" id="intro"><div class="mark">INVI<i>·</i></div></div>
+<div class="intro" id="intro" aria-hidden="true"><div class="mark">INVI<i>·</i></div></div>
 <div class="field" aria-hidden="true"><div class="orb orb--a"></div><div class="orb orb--b"></div><div class="orb orb--c"></div></div>
 <div class="veil" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 
@@ -443,7 +472,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
     <button data-go="home" aria-current="page">Home</button>
     <button data-go="brand">The Brand</button>
   </nav>
-  <div class="count-pill"><span class="dot"></span><span class="lbl">In so far</span><strong id="navCount">0</strong></div>
+  <div class="count-pill"><span class="dot"></span><strong id="navCount">0</strong><span class="lbl">in so far</span></div>
 </header>
 
 <main>
@@ -473,7 +502,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 
   <section id="choose" style="padding-top:0">
     <div class="wrap">
-      <p class="tag rv">Step 02 · Your vote</p>
+      <p class="tag rv">The vote · One each</p>
       <h2 class="display d-lg rv" style="transition-delay:.06s;margin:1rem 0 1.1rem">Which one are you right now?</h2>
       <p class="lede rv" style="transition-delay:.12s">
         Three scents. You get <b style="color:var(--bone)">one vote</b>, and it decides which one we
@@ -482,8 +511,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 
       <div class="moments gated" id="moments">
         <button class="moment locked" data-key="origin" aria-pressed="false" style="--cr:#57C9B5">
-          <span class="idx">01</span>
-          <span class="chk"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx" aria-hidden="true">01</span>
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
           <div class="can can-float">
             <div class="can-body"><div class="spec"></div><div class="can-gloss"></div></div>
             <div class="can-shoulder"></div>
@@ -494,8 +523,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
         </button>
 
         <button class="moment locked" data-key="rise" aria-pressed="false" style="--cr:#F5943D">
-          <span class="idx">02</span>
-          <span class="chk"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx" aria-hidden="true">02</span>
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
           <div class="can can-float">
             <div class="can-body"><div class="spec"></div><div class="can-gloss"></div></div>
             <div class="can-shoulder"></div>
@@ -506,8 +535,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
         </button>
 
         <button class="moment locked" data-key="after-dark" aria-pressed="false" style="--cr:#9B5CF6">
-          <span class="idx">03</span>
-          <span class="chk"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx" aria-hidden="true">03</span>
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
           <div class="can can-float">
             <div class="can-body"><div class="spec"></div><div class="can-gloss"></div></div>
             <div class="can-shoulder"></div>
@@ -530,13 +559,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       </div></div>
 
       <!-- results (only after confirm) -->
-      <div class="results" id="results" aria-live="polite"><div class="results-inner">
+      <div class="results" id="results" tabindex="-1"><div class="results-inner">
         <div class="results-head">
           <p class="tag">Live · everyone who's decided</p>
           <p style="margin:0;font-size:.86rem;color:var(--mute)"><strong id="totalCount">0</strong> have chosen</p>
         </div>
         <div id="bars"></div>
-        <p class="nudge" id="nudge"></p>
+        <p class="nudge" id="nudge" role="status"></p>
       </div></div>
     </div>
   </section>
@@ -547,7 +576,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
     <div class="wrap">
       <div class="join-grid">
         <div>
-          <p class="tag rv">Step 01 · Join</p>
+          <p class="tag rv">Get in</p>
           <h2 class="display d-md rv" style="transition-delay:.06s;margin:1rem 0 1.2rem">Join, then vote.</h2>
           <p class="lede rv" style="transition-delay:.12s">
             Your name and email unlock your vote. One thing at a time, nothing else in between.
@@ -573,13 +602,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
                 </button>
                 <ul class="sel-list" id="selList" role="listbox" aria-labelledby="ageLabel"></ul>
               </div>
+              <p class="note" id="ageNote" hidden>Under 13? Ask a parent or guardian to do this bit with you.</p>
             </div>
             <div class="fr" id="r-consent">
               <label class="consent">
                 <input type="checkbox" id="consent">
                 <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
                 <span>I'm happy for INVI to email me about the launch. You can leave any time.
-                  <a href="#" data-go="brand">Privacy</a>.</span>
+                  <a href="#" data-dialog>Privacy</a>.</span>
               </label>
               <p class="err" id="e-consent"></p>
             </div>
@@ -588,11 +618,16 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
             </div>
           </form>
 
+          <div class="joined-note" id="joinedNote" hidden>
+            <p>You're in<b id="jnName"></b>. Your vote's waiting.</p>
+            <a href="#choose" class="btn"><span>Pick your moment</span><span>→</span></a>
+          </div>
+
           <div class="pass" id="pass">
             <div class="card">
               <p class="tag" id="passTag">You're in</p>
               <p class="pass-moment" id="passMoment">—</p>
-              <p class="pass-no">No. <span id="passNo">0000</span> <span>· of the first thousand</span></p>
+              <p class="pass-no">Member <span id="passNo">0000</span> <span>· vote counted</span></p>
               <p class="msg" id="passMsg"></p>
               <div class="pass-actions">
                 <button class="btn" id="shareBtn"><span>Send to a friend</span></button>
@@ -604,13 +639,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 
         <aside class="rail rv" style="transition-delay:.12s">
           <p class="tag" style="margin-bottom:-.4rem">What happens next</p>
-          <div class="row"><span class="n"></span><div><h4>You shape it</h4>
-            <p>Your choice counts toward what gets built first. The numbers on this page are the real ones.</p></div></div>
-          <div class="row"><span class="n"></span><div><h4>One clue at a time</h4>
+          <div class="row"><span class="n"></span><div><h3>You shape it</h3>
+            <p>Your choice counts toward what gets built first. Watch the numbers move the moment you lock it in.</p></div></div>
+          <div class="row"><span class="n"></span><div><h3>One clue at a time</h3>
             <p>Small pieces, spaced out, until the whole thing makes sense.</p></div></div>
-          <div class="row"><span class="n"></span><div><h4>You're told first</h4>
+          <div class="row"><span class="n"></span><div><h3>You're told first</h3>
             <p>Before the ads, before the shelves, before anyone else knows it exists.</p></div></div>
-          <div class="row"><span class="n"></span><div><h4>Some of you build it with us</h4>
+          <div class="row"><span class="n"></span><div><h3>Some of you build it with us</h3>
             <p>A few people from this list get asked to help decide what comes next. Paid, credited.</p></div></div>
         </aside>
       </div>
@@ -679,19 +714,19 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       <div class="pillars">
         <div class="pillar rv">
           <span class="k">Beyond the noise</span>
-          <h4>We change the conversation</h4>
+          <h3>We change the conversation</h3>
           <p>In a world full of opinions about who boys should become, INVI makes space for them to
              be themselves. Every product and every campaign says the same thing: you're already great.</p>
         </div>
         <div class="pillar rv" style="transition-delay:.08s">
           <span class="k">Say it, do it</span>
-          <h4>We show up, every time</h4>
+          <h3>We show up, every time</h3>
           <p>Trust is earned. Honest ingredients, real results, fair prices. No gimmicks, no false
              promises, and products that do what they say they will.</p>
         </div>
         <div class="pillar rv" style="transition-delay:.16s">
           <span class="k">Tuned-in</span>
-          <h4>We stay culturally relevant</h4>
+          <h3>We stay culturally relevant</h3>
           <p>We don't guess what boys want. Everything is co-created with the people it's for, and
              peer-to-peer sits at the heart of how we build. Boys don't trust brands. They trust
              each other. That's our moat.</p>
@@ -727,11 +762,11 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       <p class="tag rv">How we talk</p>
       <h2 class="display d-lg rv" style="transition-delay:.06s;margin:1rem 0 2.4rem">Confident. Together. Grounded.</h2>
       <div class="pillars">
-        <div class="pillar rv"><span class="k">Confident</span><h4>Assured, never arrogant</h4>
+        <div class="pillar rv"><span class="k">Confident</span><h3>Assured, never arrogant</h3>
           <p>Short, punchy, self-assured. Conviction rather than bravado. No hedging, no corporate speak.</p></div>
-        <div class="pillar rv" style="transition-delay:.08s"><span class="k">Together</span><h4>Honest, never talking down</h4>
+        <div class="pillar rv" style="transition-delay:.08s"><span class="k">Together</span><h3>Honest, never talking down</h3>
           <p>In your corner. We're here to support the journey, not to define where it ends.</p></div>
-        <div class="pillar rv" style="transition-delay:.16s"><span class="k">Grounded</span><h4>Affirming, never hype</h4>
+        <div class="pillar rv" style="transition-delay:.16s"><span class="k">Grounded</span><h3>Affirming, never hype</h3>
           <p>We back boys, we don't gas them up. We talk to them as the young men they're becoming.</p></div>
       </div>
       <div class="rv" style="margin-top:3rem">
@@ -749,19 +784,33 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       <nav class="foot-links">
         <button data-go="home">Home</button>
         <button data-go="brand">The Brand</button>
+        <button data-dialog>Privacy</button>
         <a href="mailto:hello@invi.com">Contact</a>
       </nav>
     </div>
     <p class="emboss">INVI</p>
-    <p class="legal">© 2026 INVI · United Kingdom · Nothing for sale yet.</p>
+    <p class="legal">© 2026 INVI · United Kingdom · Nothing for sale yet. · Preview build — counts are illustrative.</p>
   </div>
 </footer>
+
+<dialog class="privacy" id="privacy" aria-labelledby="privTitle">
+  <h2 id="privTitle" class="display d-sm">Your data, straight.</h2>
+  <ul>
+    <li><span><b>What we take.</b> Your first name, your email, your age if you offer it, and your vote.</span></li>
+    <li><span><b>What it's for.</b> One email thread about the launch, and counting the vote. That's it.</span></li>
+    <li><span><b>Where it lives.</b> Held privately by INVI in the UK. Never sold, never passed around.</span></li>
+    <li><span><b>Your call.</b> Every email has an unsubscribe. Want wiping entirely? <a href="mailto:hello@invi.com" style="color:var(--bone);text-decoration:underline;text-underline-offset:3px">hello@invi.com</a>.</span></li>
+    <li><span><b>Under 13?</b> Ask a parent or guardian to join with you.</span></li>
+  </ul>
+  <form method="dialog"><button class="btn btn--ghost"><span>Close</span></button></form>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="ic"><svg viewBox="0 0 14 14"><path d="M7 3.4v4.2M7 10.4h.01"/></svg></span><span id="toastMsg">Link copied</span></div>
 
 <script>
 (() => {
 'use strict';
+document.documentElement.classList.add('js');
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -779,10 +828,15 @@ const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); }
 const tally = k => SEED[k] + (state.votes[k] || 0);
 const total = () => KEYS.reduce((n,k) => n + tally(k), 0);
 
-/* intro */
+/* intro — once per tab session; returning visitors go straight in */
 const intro = $('#intro');
-setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 1050);
-setTimeout(() => intro.remove(), 2300);
+const seen = (() => { try { return sessionStorage.getItem('invi.seen'); } catch { return null; } })();
+try { sessionStorage.setItem('invi.seen','1'); } catch {}
+if (seen) intro.remove();
+else {
+  setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 1050);
+  setTimeout(() => intro.remove(), 2300);
+}
 
 /* nav shadow */
 const nav = $('#nav');
@@ -793,9 +847,7 @@ const navMark = $('.nav .mark'), heroMark = $('#heroMark');
 let markIO = null;
 function watchMark(){
   markIO && markIO.disconnect();
-  const onBrand = !$('#view-brand').hidden;
-  const wide = matchMedia('(min-width: 981px)').matches;
-  if (onBrand || !wide){ navMark.classList.add('show'); return; }   // no giant mark to defer to
+  if (!$('#view-brand').hidden){ navMark.classList.add('show'); return; }  // no giant mark to defer to
   markIO = new IntersectionObserver(
     ([e]) => navMark.classList.toggle('show', !e.isIntersecting),
     { threshold:.35 });
@@ -812,6 +864,8 @@ function go(v){
   observe(); watchMark();
 }
 document.addEventListener('click', e => {
+  const d = e.target.closest('[data-dialog]');
+  if (d) { e.preventDefault(); $('#privacy').showModal(); return; }
   const t = e.target.closest('[data-go]');
   if (t) { e.preventDefault(); go(t.dataset.go); }
 });
@@ -879,6 +933,7 @@ $('#confirmBtn').addEventListener('click', () => {
 function lockIn(fresh){
   momentsEl.classList.add('decided');
   confirmEl.classList.remove('on');
+  $('#joinedNote').hidden = true;
   $('#results').classList.add('on');
   paint();
   const k = state.moment;
@@ -892,7 +947,10 @@ function lockIn(fresh){
   $('#passMsg').textContent = `${state.name ? state.name + ', you' : 'You'}'re on the list before there's `
     + `anything to buy, and your pick is counted. We'll send the first piece soon.`;
   $('#pass').classList.add('on');
-  if (fresh) $('#results').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'center' });
+  if (fresh){
+    $('#results').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'center' });
+    setTimeout(() => $('#results').focus({ preventScroll:true }), reduce ? 0 : 750);
+  }
 }
 
 /* ── sleek select ─────────────────────────────────────── */
@@ -900,7 +958,7 @@ const AGES = ['Under 13','14','15','16','17','18 or over',"I'm a parent"];
 const sel = $('#sel'), selBtn = $('#selBtn'), selList = $('#selList');
 let age = '';
 selList.innerHTML = AGES.map(a =>
-  `<li><button type="button" role="option" aria-selected="false" data-a="${a}">${a}</button></li>`).join('');
+  `<li role="presentation"><button type="button" role="option" aria-selected="false" data-a="${a}">${a}</button></li>`).join('');
 const closeSel = () => { sel.classList.remove('open'); selBtn.setAttribute('aria-expanded','false'); };
 selBtn.addEventListener('click', e => {
   e.stopPropagation();
@@ -913,7 +971,21 @@ selList.addEventListener('click', e => {
   $('#selVal').textContent = age; selBtn.classList.add('has');
   selList.querySelectorAll('[role="option"]').forEach(o =>
     o.setAttribute('aria-selected', String(o === b)));
-  closeSel();
+  $('#ageNote').hidden = (age !== 'Under 13');
+  closeSel(); selBtn.focus();
+});
+sel.addEventListener('keydown', e => {
+  const opts = [...selList.querySelectorAll('button')];
+  const i = opts.indexOf(document.activeElement);
+  if (e.key === 'ArrowDown'){
+    e.preventDefault();
+    if (!sel.classList.contains('open')){ selBtn.click(); opts[0].focus(); }
+    else opts[Math.min(i + 1, opts.length - 1)].focus();
+  } else if (e.key === 'ArrowUp'){
+    e.preventDefault();
+    if (i > 0) opts[i - 1].focus(); else selBtn.focus();
+  } else if (e.key === 'Home' && sel.classList.contains('open')){ e.preventDefault(); opts[0].focus(); }
+  else if (e.key === 'End'  && sel.classList.contains('open')){ e.preventDefault(); opts.at(-1).focus(); }
 });
 document.addEventListener('click', e => { if (!sel.contains(e.target)) closeSel(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSel(); });
@@ -952,13 +1024,22 @@ form.addEventListener('submit', e => {
 
   setTimeout(() => {
     state.joined = true; state.name = payload.first_name; save();
-    form.style.display = 'none';
-    momentsEl.classList.remove('gated');
-    $$('.moment').forEach(b => b.classList.remove('locked'));
+    showJoined();
     $('#choose').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'start' });
-    flash('You\'re in. Now choose.');
+    flash('<b>You\'re in.</b> Now pick your moment.');
+    setTimeout(() => $('.moment').focus({ preventScroll:true }), reduce ? 0 : 680);
   }, 650);
 });
+
+function showJoined(){
+  form.style.display = 'none';
+  momentsEl.classList.remove('gated');
+  $$('.moment').forEach(b => b.classList.remove('locked'));
+  if (!state.confirmed){
+    $('#jnName').textContent = state.name ? ', ' + state.name : '';
+    $('#joinedNote').hidden = false;
+  }
+}
 
 /* ── share ────────────────────────────────────────────── */
 const toast = $('#toast');
@@ -991,11 +1072,7 @@ function observe(){
 
 /* ── boot ─────────────────────────────────────────────── */
 tick($('#navCount'), total(), 1800); tick($('#totalCount'), total(), 1800);
-if (state.joined){
-  form.style.display = 'none';
-  momentsEl.classList.remove('gated');
-  $$('.moment').forEach(b => b.classList.remove('locked'));
-}
+if (state.joined) showJoined();
 if (state.moment){
   document.documentElement.setAttribute('data-moment', state.moment);
   $$('.moment').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.key === state.moment)));
