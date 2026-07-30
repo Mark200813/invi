@@ -467,11 +467,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 @keyframes breathe{0%,100%{opacity:.3}50%{opacity:1}}
 
 @media (max-width:980px){
-  /* narrow screens: the panel becomes a horizon glow at the base of the hero */
-  .hero-panel{inset:auto 0 0 0;width:100%;height:36%;
-    -webkit-mask-image:linear-gradient(180deg,transparent 0%,#000 55%);
-            mask-image:linear-gradient(180deg,transparent 0%,#000 55%)}
-  .hero-mark{font-size:clamp(3.2rem,16vw,5.5rem)}
+  /* mobile is the primary view: the wordmark leads the page as a masthead,
+     pressed into a glow at the top that the content then emerges from */
+  .hero{padding-top:9.5rem}
+  .hero-panel{inset:0 0 auto 0;width:100%;height:44%;place-items:start center;
+    -webkit-mask-image:linear-gradient(180deg,#000 0%,#000 34%,transparent 100%);
+            mask-image:linear-gradient(180deg,#000 0%,#000 34%,transparent 100%)}
+  .hero-panel::after{background:linear-gradient(180deg,
+    rgba(8,9,11,.26) 0%,transparent 32%,rgba(8,9,11,.6) 100%)}
+  .hero-mark{font-size:clamp(3rem,15vw,4.6rem);margin-top:4.7rem}
   .moments{grid-template-columns:1fr;gap:.9rem}
   .moment{flex-direction:row;align-items:center;text-align:left;gap:1.5rem;padding:1.4rem}
   .can{margin-bottom:0;width:60px;height:150px;flex:none}
@@ -1040,10 +1044,11 @@ function odometer(el, str){
   el.innerHTML = [...str].map(() =>
     `<span class="odo-d"><i>${[0,1,2,3,4,5,6,7,8,9].join('<br>')}</i></span>`).join('');
   const digits = [...el.querySelectorAll('.odo-d i')];
-  requestAnimationFrame(() => digits.forEach((d, i) => {
+  void el.offsetHeight;            // flush layout so the transition has a start value
+  digits.forEach((d, i) => {
     d.style.transitionDelay = (i * 90) + 'ms';
     d.style.transform = `translateY(-${Number(str[i]) * 100}%)`;
-  }));
+  });
 }
 
 /* ── sleek select ─────────────────────────────────────── */
