@@ -48,6 +48,9 @@ a{color:inherit;text-decoration:none}
 
 /* ── atmosphere ─────────────────────────────────────────── */
 .field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+/* parallax carrier — moves the cheap wrapper, never the blurred layers */
+.field-inner{position:absolute;inset:-6%;will-change:transform;
+  transition:transform 1.5s var(--ease)}
 .orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;
   transition:background 1.6s var(--ease);will-change:transform}
 .orb--a{width:60vmax;height:60vmax;top:-22vmax;left:-14vmax;background:var(--g1);animation:da 26s ease-in-out infinite alternate}
@@ -154,8 +157,11 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   font-variation-settings:'wdth' 125,'wght' 900;
   font-size:clamp(4rem,11.5vw,10.5rem);line-height:.8;letter-spacing:-.035em;
   color:rgba(0,0,0,.26);mix-blend-mode:soft-light;user-select:none;
-  text-shadow:0 2px 1px rgba(255,255,255,.22),0 -2px 3px rgba(0,0,0,.55),
-              0 1px 0 rgba(255,255,255,.09)}
+  /* emboss reads by light direction; --lx/--ly are driven by the pointer */
+  text-shadow:calc(var(--lx,0) * 2px) calc(var(--ly,1) * 2px) 1px rgba(255,255,255,.22),
+              calc(var(--lx,0) * -2px) calc(var(--ly,1) * -2px) 3px rgba(0,0,0,.55),
+              0 1px 0 rgba(255,255,255,.09);
+  transition:text-shadow .45s var(--ease)}
 
 .hero .tag{margin-bottom:1.8rem}
 .hero .wrap{position:relative;z-index:2}
@@ -212,6 +218,14 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   transition:opacity .75s var(--ease)}
 @keyframes turn{from{background-position:250% 0}to{background-position:-150% 0}}
 .moment:hover .spec,.moment:focus-visible .spec{opacity:.62;animation-play-state:running}
+/* pointer-lit mode: the cursor is the lamp, so the highlight tracks it instead of looping */
+.lit .spec{animation:none;background-position:var(--sx,150%) 0;
+  transition:opacity .6s var(--ease),background-position .5s var(--ease)}
+
+/* magnetism rides on `translate`, leaving existing hover `transform` untouched */
+.btn,.moment{translate:var(--mx,0px) var(--my,0px)}
+.lit .btn,.lit .moment{transition:translate .4s var(--ease),
+  color .5s var(--ease),border-color .5s var(--ease),transform .6s var(--ease),opacity .5s var(--ease)}
 .can-gloss{position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(180deg,rgba(255,255,255,.09),transparent 26%,transparent 76%,rgba(0,0,0,.4))}
 .can-float{animation:bob 7s ease-in-out infinite}
@@ -457,13 +471,18 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
     transition-duration:.01ms!important}
   .js .rv{opacity:1;transform:none} html{scroll-behavior:auto}
+  /* pointer light is motion — off entirely */
+  .field-inner{transform:none!important}
+  .btn,.moment{translate:none!important}
+  .hero-mark{text-shadow:0 2px 1px rgba(255,255,255,.22),0 -2px 3px rgba(0,0,0,.55),
+    0 1px 0 rgba(255,255,255,.09)!important}
 }
 </style>
 </head>
 <body>
 
 <div class="intro" id="intro" aria-hidden="true"><div class="mark">INVI<i>·</i></div></div>
-<div class="field" aria-hidden="true"><div class="orb orb--a"></div><div class="orb orb--b"></div><div class="orb orb--c"></div></div>
+<div class="field" aria-hidden="true"><div class="field-inner"><div class="orb orb--a"></div><div class="orb orb--b"></div><div class="orb orb--c"></div></div></div>
 <div class="veil" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
 
 <header class="nav" id="nav">
@@ -1056,6 +1075,79 @@ $('#shareBtn').addEventListener('click', async () => {
     await navigator.clipboard.writeText(`${text} ${location.href}`); flash('Link copied.');
   } catch { flash('Copy the link from the address bar.'); }
 });
+
+/* ── pointer light ────────────────────────────────────── */
+/* One idea: the cursor is a light source. Surfaces respond the way lit
+   objects would — no custom cursor, nothing drawn on top of the page. */
+(() => {
+  if (reduce || !matchMedia('(pointer: fine)').matches) return;
+  document.documentElement.classList.add('lit');
+
+  const clamp = (n, lo, hi) => n < lo ? lo : n > hi ? hi : n;
+  const fieldInner = $('.field-inner');
+
+  /* global: atmosphere parallax + the embossed wordmark catching raking light.
+     Both are cheap; one rAF-throttled listener covers them. */
+  let latest = null, ticking = false;
+  addEventListener('pointermove', e => {
+    latest = { x:e.clientX, y:e.clientY };
+    if (!ticking){ ticking = true; requestAnimationFrame(frame); }
+  }, { passive:true });
+
+  function frame(){
+    ticking = false;
+    const p = latest; if (!p) return;
+
+    if (fieldInner){
+      const dx = (p.x / innerWidth  - .5) * -30;
+      const dy = (p.y / innerHeight - .5) * -20;
+      fieldInner.style.transform = `translate3d(${dx.toFixed(1)}px,${dy.toFixed(1)}px,0)`;
+    }
+
+    if (heroMark && heroMark.isConnected){
+      const r = heroMark.getBoundingClientRect();
+      if (r.bottom > 0 && r.top < innerHeight && r.width){
+        const lx = clamp((p.x - (r.left + r.width  / 2)) / (r.width  / 2), -1.5, 1.5);
+        const ly = clamp((p.y - (r.top  + r.height / 2)) / (r.height / 2), -1.5, 1.5);
+        heroMark.style.setProperty('--lx', lx.toFixed(3));
+        heroMark.style.setProperty('--ly', ly.toFixed(3));
+      }
+    }
+  }
+
+  /* per-element: only runs while the pointer is actually over the thing */
+  $$('.moment').forEach(m => {
+    const can = m.querySelector('.can');
+    m.addEventListener('pointermove', e => {
+      const r = m.getBoundingClientRect();
+      const mx = clamp((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2), -1, 1) * 5;
+      const my = clamp((e.clientY - (r.top  + r.height / 2)) / (r.height / 2), -1, 1) * 4;
+      m.style.setProperty('--mx', mx.toFixed(2) + 'px');
+      m.style.setProperty('--my', my.toFixed(2) + 'px');
+      if (can){                       // light slides round the cylinder
+        const cr = can.getBoundingClientRect();
+        const t = clamp((e.clientX - cr.left) / (cr.width || 1), -.4, 1.4);
+        can.style.setProperty('--sx', (185 - t * 210).toFixed(1) + '%');
+      }
+    }, { passive:true });
+    m.addEventListener('pointerleave', () => {
+      m.style.setProperty('--mx','0px'); m.style.setProperty('--my','0px');
+    });
+  });
+
+  $$('.btn').forEach(el => {
+    el.addEventListener('pointermove', e => {
+      const r = el.getBoundingClientRect();
+      const mx = clamp((e.clientX - (r.left + r.width  / 2)) / (r.width  / 2), -1, 1) * 4;
+      const my = clamp((e.clientY - (r.top  + r.height / 2)) / (r.height / 2), -1, 1) * 3;
+      el.style.setProperty('--mx', mx.toFixed(2) + 'px');
+      el.style.setProperty('--my', my.toFixed(2) + 'px');
+    }, { passive:true });
+    el.addEventListener('pointerleave', () => {
+      el.style.setProperty('--mx','0px'); el.style.setProperty('--my','0px');
+    });
+  });
+})();
 
 /* ── reveals ──────────────────────────────────────────── */
 let io, io2;
