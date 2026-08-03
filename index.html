@@ -65,7 +65,8 @@ a{color:inherit;text-decoration:none}
 @keyframes dc{to{transform:translate3d(-7vw,10vh,0) scale(.86)}}
 .veil{position:fixed;inset:0;z-index:1;pointer-events:none;
   background:radial-gradient(120% 80% at 50% 0%,transparent 0%,rgba(8,9,11,.55) 55%,var(--ink) 100%)}
-.grain{position:fixed;inset:-200%;z-index:2;pointer-events:none;opacity:.15;
+/* inset only needs to exceed the 3% drift; -200% was compositing 25x the screen */
+.grain{position:fixed;inset:-12%;z-index:2;pointer-events:none;opacity:.15;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3'/></filter><rect width='220' height='220' filter='url(%23n)' opacity='.5'/></svg>");
   animation:grain 6s steps(5) infinite}
 @keyframes grain{0%,100%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
@@ -85,6 +86,8 @@ a{color:inherit;text-decoration:none}
 .accent{color:var(--accent);transition:color 1.2s var(--ease)}
 
 main{position:relative;z-index:3}
+/* the nav is fixed, so scroll targets need to clear it */
+#joinForm,#choose,#results,#join{scroll-margin-top:6rem}
 section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
 .wrap{width:var(--shell);margin-inline:auto}
 .rule{height:1px;background:var(--hair);border:0;margin:0}
@@ -235,7 +238,8 @@ section{padding:clamp(4.5rem,11vh,8.5rem) 0;position:relative}
   color .5s var(--ease),border-color .5s var(--ease),transform .6s var(--ease),opacity .5s var(--ease)}
 .can-gloss{position:absolute;inset:0;border-radius:inherit;
   background:linear-gradient(180deg,rgba(255,255,255,.09),transparent 26%,transparent 76%,rgba(0,0,0,.4))}
-.can-float{animation:bob 7s ease-in-out infinite}
+.can-float{animation:bob 7s ease-in-out infinite;animation-play-state:paused}
+.moment.inview .can-float{animation-play-state:running}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
 .moment h3{margin:0 0 .5rem;font-family:'Archivo',sans-serif;font-weight:900;
@@ -445,7 +449,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
 .legal{text-align:center;font-size:.66rem;color:rgba(244,239,230,.45);margin-top:1.5rem}
 
 /* reveals only arm when JS is running — content is never gated on a script */
-.js .rv{opacity:0;transform:translateY(24px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.js .rv{opacity:0;transform:translateY(20px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .rv.in{opacity:1;transform:none}
 .toast{position:fixed;left:50%;bottom:calc(1.9rem + env(safe-area-inset-bottom,0px));translate:-50% 130%;z-index:80;
   display:flex;align-items:center;gap:.8rem;max-width:min(92vw,430px);
@@ -483,7 +487,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   .moment .idx,.moment .chk{top:1rem}
   .join-grid,.two{grid-template-columns:1fr}
   .pillars,.statgrid{grid-template-columns:1fr 1fr}
-  .rail{order:-1;padding-top:0}
+  .rail{padding-top:.6rem}
   .nav-mid{gap:1.1rem}
 }
 /* 44px tap targets on the small text links, without moving anything visually.
@@ -494,13 +498,28 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   content:'';position:absolute;left:-8px;right:-8px;top:50%;translate:0 -50%;height:44px}
 .foot-links{gap:1.9rem}
 
+/* ── mobile performance ─────────────────────────────────────
+   Phones are ~90% of this audience. The atmosphere is the expensive
+   part, so it gets trimmed hard: smaller blurred surfaces, fewer of
+   them, and no backdrop-filter (the costliest effect on mobile GPUs). */
+@media (max-width:980px){
+  .orb{filter:blur(46px);will-change:auto}
+  .orb--a{width:88vw;height:88vw;top:-14vh;left:-24vw}
+  .orb--b{width:76vw;height:76vw;bottom:-12vh;right:-20vw}
+  .orb--c{display:none}
+  .grain{opacity:.11}
+  .nav.stuck   {backdrop-filter:none;background:rgba(8,9,11,.94)}
+  .confirm-box {backdrop-filter:none;background:rgba(13,15,19,.94)}
+  .card        {backdrop-filter:none;background:rgba(13,15,19,.95)}
+  .sel-list    {backdrop-filter:none;background:rgba(13,15,19,.985)}
+  .toast       {backdrop-filter:none;background:rgba(16,18,24,.97)}
+}
+
 @media (max-width:560px){
   .count-pill .lbl{display:none}
   .statgrid,.pillars{grid-template-columns:1fr}
   .btn{padding:.9rem 1.5rem;font-size:.68rem}
-  /* cheaper atmosphere on small GPUs */
-  .orb{filter:blur(60px)}
-  .orb--c{display:none}
+  .orb{filter:blur(38px)}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
@@ -631,7 +650,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
   <section id="join">
     <div class="wrap">
       <div class="join-grid">
-        <div>
+        <div id="joinForm">
           <p class="tag rv">Get in</p>
           <h2 class="display d-md rv" style="transition-delay:.06s;margin:1rem 0 1.2rem">Join, then vote.</h2>
           <p class="lede rv" style="transition-delay:.12s">
@@ -983,7 +1002,7 @@ function select(k){
   if (state.confirmed) return;
   if (!state.joined){                       // gate: must join first
     flash('<b>Join first, then vote.</b> Takes ten seconds.');
-    $('#join').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'start' });
+    $('#joinForm').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'start' });
     setTimeout(() => $('#fname').focus(), reduce ? 0 : 620);
     return;
   }
@@ -1158,11 +1177,11 @@ $('#shareBtn').addEventListener('click', async () => {
 /* ── pointer light ────────────────────────────────────── */
 /* One idea: the cursor is a light source. Surfaces respond the way lit
    objects would — no custom cursor, nothing drawn on top of the page. */
-// touch devices: no pointer to follow, so the light runs on its own while on screen
-if (!reduce && !matchMedia('(pointer: fine)').matches){
-  document.documentElement.classList.add('touch');
+// only animate cans that are actually on screen; touch also gets the light
+if (!reduce){
+  if (!matchMedia('(pointer: fine)').matches) document.documentElement.classList.add('touch');
   const canIO = new IntersectionObserver(es => es.forEach(e =>
-    e.target.classList.toggle('inview', e.isIntersecting)), { threshold:.35 });
+    e.target.classList.toggle('inview', e.isIntersecting)), { threshold:.2 });
   $$('.moment').forEach(m => canIO.observe(m));
 }
 
