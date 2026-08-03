@@ -565,7 +565,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       <p class="tag rv">For the moments that matter</p>
       <h1 class="display d-xl rv" style="transition-delay:.08s">More than a moment.<br>A <span class="accent">mindset.</span></h1>
       <p class="lede rv" style="transition-delay:.16s">
-        Real moments. Real confidence. No explanation needed. Three scents are coming.
+        Real moments. Real confidence. No explanation needed. Three are coming.
         Join, then tell us which one is yours.
       </p>
       <div class="hero-actions rv" style="transition-delay:.24s">
@@ -580,7 +580,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
       <p class="tag rv">The vote · One each</p>
       <h2 class="display d-lg rv" style="transition-delay:.06s;margin:1rem 0 1.1rem">Which one are you right now?</h2>
       <p class="lede rv" style="transition-delay:.12s">
-        Three scents. You get <b style="color:var(--bone)">one vote</b>, and it decides which one we
+        Three of them. You get <b style="color:var(--bone)">one vote</b>, and it decides which one we
         build first. Once it's in, it's locked. Join below to unlock yours.
       </p>
 
@@ -760,21 +760,21 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
     <div class="wrap two">
       <div><p class="tag rv">The problem</p></div>
       <div>
-        <p class="pull rv">For girls, a full category exists between children's ranges and designer fragrance. For boys, the market leaps from deodorant to £90+.</p>
+        <p class="pull rv">They are told who to be, how to look, how to act, what to feel and what not to feel.</p>
         <p class="lede rv" style="transition-delay:.1s;margin-top:1.6rem;max-width:none">
-          Teen boys are the fastest-growing group in fragrance, and no European brand has been built
-          for them. Girls get a whole category between children's ranges and designer. Boys get a
-          jump from deodorant to £90. INVI takes that gap.
+          Today's young men are growing up in a world full of pressure, performance and
+          contradiction, and somehow expected to have it all figured out before they've even had
+          the space to understand themselves.
         </p>
         <p class="lede rv" style="transition-delay:.16s;max-width:none">
-          Most brands in this space start from what's wrong with you. Cover it up, fix it, mask it.
-          We start from the opposite end. You're not a problem to be solved.
+          Most brands that talk to boys start from what's wrong with them. We start from the
+          opposite end. You're not a problem to be solved.
         </p>
         <div class="statgrid">
-          <div class="stat rv"><b>76%</b><span>make their own grooming decisions</span></div>
-          <div class="stat rv" style="transition-delay:.06s"><b>72%</b><span>already wear fragrance</span></div>
-          <div class="stat rv" style="transition-delay:.12s"><b>74%</b><span>say a mate's word decides it</span></div>
-          <div class="stat rv" style="transition-delay:.18s"><b>62</b><span>boys shaped this before launch</span></div>
+          <div class="stat rv"><b>74%</b><span>say a mate's word counts for more than anything else</span></div>
+          <div class="stat rv" style="transition-delay:.06s"><b>62</b><span>boys shaped this before launch</span></div>
+          <div class="stat rv" style="transition-delay:.12s"><b>8</b><span>paid, credited seats on the Next Gen Board</span></div>
+          <div class="stat rv" style="transition-delay:.18s"><b>1 in 7</b><span>young men with no real economic pathway</span></div>
         </div>
       </div>
     </div>
@@ -796,8 +796,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
         <div class="pillar rv" style="transition-delay:.08s">
           <span class="k">Say it, do it</span>
           <h3>We show up, every time</h3>
-          <p>Trust is earned. Honest ingredients, real results, fair prices. No gimmicks, no false
-             promises, and products that do what they say they will.</p>
+          <p>Trust is earned, not given. Real results, fair prices, no gimmicks and no false
+             promises. Products that do exactly what they say they will.</p>
         </div>
         <div class="pillar rv" style="transition-delay:.16s">
           <span class="k">Tuned-in</span>
@@ -816,15 +816,16 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3.2r
     <div class="wrap two">
       <div><p class="tag rv">Why 13</p></div>
       <div>
-        <p class="pull rv">Scent routes directly to the limbic system, the seat of emotion and long-term memory.</p>
+        <p class="pull rv">Brands that show up between 13 and 18 don't just get remembered. They get internalised.</p>
         <p class="lede rv" style="transition-delay:.1s;margin-top:1.6rem;max-width:none">
-          Identity forms fastest between 13 and 18. Psychologists have known this for decades, and
-          banks have used it for just as long. The first account at 13 tends to be the account for life.
+          Psychologists have known this for decades. Erikson and Marcia put the peak of identity
+          formation squarely in those years, when who you are is still being decided rather than
+          described.
         </p>
         <p class="lede rv" style="transition-delay:.16s;max-width:none">
-          Fragrance works the same way, only harder. The scent you pick at 13 doesn't just get
-          remembered, it gets attached to who you were becoming. That's why we're starting here,
-          and why we're being careful about what we say while we do it.
+          Banks have used it for just as long. Halifax, Monzo and Barclays all treat the first
+          current account at 13 to 15 as the start of a relationship meant to last a lifetime.
+          We're here for the same reason, during the years that matter most.
         </p>
       </div>
     </div>
@@ -1253,6 +1254,9 @@ if (!reduce){
 let io, io2, io3;
 function countUp(el){
   const raw = el.dataset.to || (el.dataset.to = el.textContent.trim());
+  // only animate a plain leading number plus a non-numeric tail ("74%", "62").
+  // Values like "1 in 7" would read as "1 in " mid-count, so leave them be.
+  if (!/^\d[\d.]*\D*$/.test(raw)) return;
   const to = parseFloat(raw), suffix = raw.replace(/[\d.]/g,'');
   if (!isFinite(to)) return;
   if (reduce){ el.textContent = raw; return; }
