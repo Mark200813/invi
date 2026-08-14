@@ -62,8 +62,10 @@ a{color:inherit;text-decoration:none}
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='.22'/></svg>")}
 
 /* ── type ───────────────────────────────────────────────── */
-.d-xl{font-size:clamp(2.6rem,7vw,5.4rem);font-weight:300;line-height:1.02;
-  letter-spacing:-.035em;margin:0;text-wrap:balance;color:var(--olive)}
+.d-xl{font-size:clamp(2.5rem,6.4vw,4.9rem);font-weight:700;line-height:1.02;
+  letter-spacing:-.038em;margin:0;text-wrap:balance;color:var(--ink)}
+/* the deck's quieter register: light olive, kept for statements not headings */
+.d-stmt{font-weight:300;color:var(--olive);letter-spacing:-.035em}
 .d-lg{font-size:clamp(1.9rem,4vw,3.1rem);font-weight:700;line-height:1.08;
   letter-spacing:-.03em;margin:0;text-wrap:balance}
 .d-md{font-size:clamp(1.45rem,2.6vw,2.1rem);font-weight:700;line-height:1.14;
@@ -135,12 +137,24 @@ section{padding:clamp(4rem,9vh,7rem) 0;position:relative}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
 .hint{font-size:.8rem;color:var(--sage)}
 
-/* the wordmark as an outline, the way the deck cover does it */
-.hero-mark{position:absolute;right:-1.5%;top:50%;translate:0 -50%;z-index:0;pointer-events:none;
-  font-weight:700;font-size:clamp(7rem,20vw,17rem);line-height:.8;letter-spacing:.02em;
-  color:transparent;-webkit-text-stroke:1.5px rgba(108,104,77,.34);user-select:none;
-  transform:translateX(calc(var(--lx,0) * 6px)) translateY(calc(var(--ly,0) * 5px));
-  transition:transform .8s var(--ease)}
+/* the wordmark: outlined like the deck cover, but with a gradient stroke,
+   a soft echo for depth, and the brand middot as a solid accent dot */
+.hero-mark{position:absolute;top:50%;z-index:0;pointer-events:none;user-select:none;
+  right:calc((100vw - var(--shell))/2);   /* sits on the content column, never clipped */
+  width:min(40vw,520px);height:auto;overflow:visible;   /* scales so it never meets the headline */
+  translate:0 -50%;
+  transform:translateX(calc(var(--lx,0) * 7px)) translateY(calc(var(--ly,0) * 6px));
+  transition:transform .9s var(--ease)}
+.hero-mark .echo{stroke:var(--stone);stroke-opacity:.2;stroke-width:1.1}
+.hero-mark .face{stroke:url(#markGrad);stroke-width:1.7;
+  stroke-dasharray:1400;stroke-dashoffset:1400;
+  animation:draw 2.4s var(--ease) .35s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.hero-mark .pip{fill:var(--accent);stroke:none;opacity:0;
+  animation:pip .8s var(--ease) 2.1s forwards;transition:fill .8s var(--ease)}
+@keyframes pip{to{opacity:.9}}
+/* once a moment is locked in, the mark takes its colour */
+[data-moment] .hero-mark .face{stroke:var(--accent);stroke-opacity:.5}
 
 /* ── the three ──────────────────────────────────────────── */
 .moments{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-top:clamp(2rem,5vh,3rem)}
@@ -382,8 +396,10 @@ footer{position:relative;z-index:2;border-top:1px solid var(--hair);padding:3rem
 
 @media (max-width:980px){
   .hero{padding-top:7.5rem}
-  .hero-mark{right:auto;left:50%;top:auto;bottom:2%;translate:-50% 0;
-    font-size:clamp(5rem,26vw,9rem);-webkit-text-stroke-width:1.2px}
+  .hero-mark{right:auto;left:50%;top:auto;bottom:3%;translate:-50% 0;
+    width:min(78vw,420px)}
+  .hero-mark .face{stroke-width:2.1}
+  .hero-mark .echo{stroke-width:1.4}
   .moments{grid-template-columns:1fr;gap:.9rem}
   .swatch{height:78px}
   .moment:hover:not(.locked) .swatch{height:90px}
@@ -427,7 +443,19 @@ footer{position:relative;z-index:2;border-top:1px solid var(--hair);padding:3rem
 <!-- ══════════════ HOME ══════════════ -->
 <div class="view" id="view-home">
   <section class="hero">
-    <span class="hero-mark" aria-hidden="true" id="heroMark">INVI</span>
+    <svg class="hero-mark" id="heroMark" aria-hidden="true" viewBox="0 0 620 200" fill="none">
+      <defs>
+        <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%"   stop-color="#6C684D" stop-opacity=".62"/>
+          <stop offset="55%"  stop-color="#B0987E" stop-opacity=".42"/>
+          <stop offset="100%" stop-color="#274E13" stop-opacity=".28"/>
+        </linearGradient>
+      </defs>
+      <text class="echo" x="14" y="154" font-size="176" font-weight="700"
+            font-family="Inter, sans-serif" letter-spacing="2">INVI<tspan>&#183;</tspan></text>
+      <text class="face" x="10" y="150" font-size="176" font-weight="700"
+            font-family="Inter, sans-serif" letter-spacing="2">INVI<tspan class="pip">&#183;</tspan></text>
+    </svg>
     <div class="wrap">
       <p class="tag rv">Built for the years that matter most</p>
       <h1 class="d-xl rv" style="transition-delay:.08s">Own your story.</h1>
@@ -601,7 +629,7 @@ footer{position:relative;z-index:2;border-top:1px solid var(--hair);padding:3rem
     <div class="wrap two">
       <div><p class="tag rv">What we heard</p></div>
       <div>
-        <p class="pull rv">A generation is redefining confidence and connection, but few brands have evolved with them.</p>
+        <p class="pull d-stmt rv">A generation is redefining confidence and connection, but few brands have evolved with them.</p>
         <blockquote class="quote rv" style="transition-delay:.1s">
           "People always say what masculinity shouldn't be, but don't say what it is."
           <cite>Male Allies UK</cite>
@@ -1156,6 +1184,21 @@ if (!reduce && matchMedia('(pointer: fine)').matches){
   $$('.moment').forEach(el => magnet(el,5,4));
   $$('.btn').forEach(el => magnet(el,4,3));
 }
+
+/* the SVG wordmark is framed from its real glyph box, not guessed coordinates */
+(() => {
+  const mk = $('#heroMark'); if (!mk || !mk.getBBox) return;
+  const fit = () => {
+    try {
+      const b = mk.getBBox();
+      if (b.width && b.height)
+        mk.setAttribute('viewBox', `${b.x-8} ${b.y-8} ${b.width+16} ${b.height+16}`);
+    } catch {}
+  };
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => requestAnimationFrame(fit));
+  setTimeout(fit, 1200);
+})();
 
 /* ── boot ─────────────────────────────────────────────── */
 tick($('#navCount'), total(), 1700); tick($('#totalCount'), total(), 1700);
