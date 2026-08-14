@@ -1054,7 +1054,7 @@ function onScroll(){
     paintSky(p);
     /* the mark only lives in the first screen, so its fill has to complete
        there — tying it to whole-page progress meant it was never seen filling */
-    const heroRun = Math.min(1, scrollY / Math.max(1, innerHeight * 0.85));
+    const heroRun = Math.min(1, scrollY / Math.max(1, innerHeight * 0.42));
     root.style.setProperty('--fill', ((1 - heroRun) * 100).toFixed(2) + '%');
     nav.classList.toggle('stuck', scrollY > 40);
     const ck = $('#clock');
