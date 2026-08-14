@@ -54,17 +54,11 @@ a{color:inherit;text-decoration:none}
 /* ── the sky ────────────────────────────────────────────── */
 .sky{position:fixed;inset:0;z-index:0;pointer-events:none;
   background:linear-gradient(175deg,var(--sky1) 0%,var(--sky2) 100%)}
-.sun,.moon-b{position:fixed;z-index:0;pointer-events:none;border-radius:50%;
-  left:var(--x,50%);top:var(--y,100%);translate:-50% -50%;
-  width:min(62vw,620px);aspect-ratio:1;filter:blur(2px)}
-.sun{background:
-    radial-gradient(circle at 42% 38%, #FFF3D0 0%, var(--sun-c,#FF9A3C) 34%, transparent 66%);
-  opacity:var(--sun-o,.55)}
-.sun::after{content:'';position:absolute;inset:-55%;border-radius:50%;
-  background:radial-gradient(circle,color-mix(in srgb,var(--sun-c,#FF9A3C) 30%,transparent) 0%,transparent 60%)}
-.moon-b{background:
-    radial-gradient(circle at 40% 36%, #FBFAFF 0%, #C9C4E4 30%, transparent 62%);
-  opacity:var(--moon-o,0)}
+/* a fixed ambient bloom — it shifts colour with the day but never moves */
+.bloom{position:fixed;left:50%;top:78%;translate:-50% -50%;z-index:0;pointer-events:none;
+  width:min(140vw,1500px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle,var(--bloom-c,#1E2A3A) 0%,transparent 62%);
+  opacity:var(--bloom-o,.5);filter:blur(40px)}
 .grain{position:fixed;inset:-12%;z-index:1;pointer-events:none;opacity:.42;mix-blend-mode:overlay;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='.5'/></svg>")}
 
@@ -142,18 +136,24 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* ── hero ───────────────────────────────────────────────── */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
   padding-top:7rem;position:relative}
-/* framed wordmark, the way the supplied mark is drawn: heavy wide grotesk
-   inside a plate. Colour is driven by scroll, not a timer. */
+/* the wordmark itself — no plate, no frame. Archivo at the logo's own width
+   and weight, sized to the fold, cycling seamlessly through the three worlds. */
 .hero-sig{position:absolute;top:50%;translate:0 -50%;z-index:0;pointer-events:none;user-select:none;
-  right:clamp(14px,3vw,52px);width:min(32vw,400px);aspect-ratio:1.62/1;
-  display:grid;place-items:center;
-  background:var(--sig,#5FBF95);
-  box-shadow:0 0 0 clamp(6px,.9vw,12px) var(--sky1), 0 0 90px 10px color-mix(in srgb,var(--sig,#5FBF95) 34%,transparent);
-  transition:background .25s linear, box-shadow .25s linear}
-.hero-sig span{font-family:'Archivo',Impact,sans-serif;
-  font-variation-settings:'wdth' 125,'wght' 900;
-  font-size:clamp(2.6rem,7.6vw,6.4rem);line-height:1;letter-spacing:-.045em;
-  color:var(--sky1);transition:color .25s linear}
+  right:clamp(16px,3.4vw,56px);
+  font-family:'Archivo',Impact,sans-serif;font-variation-settings:'wdth' 125,'wght' 900;
+  font-size:clamp(5rem,14vw,12rem);line-height:.82;letter-spacing:-.055em;
+  color:#5FBF95;animation:sigcycle 18s linear infinite;
+  text-shadow:0 0 70px color-mix(in srgb,currentColor 30%,transparent)}
+/* six evenly spaced keys so the loop never jumps at the seam */
+@keyframes sigcycle{
+  0%   {color:#5FBF95}
+  17%  {color:#8FCB72}
+  33%  {color:#F0913C}
+  50%  {color:#D97A6A}
+  67%  {color:#A98BF0}
+  83%  {color:#7FA6C4}
+  100% {color:#5FBF95}
+}
 .hero .wrap{position:relative;z-index:1}
 .hero .tag{margin-bottom:2.2rem}
 .hero h1{margin-bottom:2rem}
@@ -181,6 +181,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
    rim light and an atmospheric bloom */
 .act .dial{width:clamp(160px,21vw,280px);aspect-ratio:1;position:relative;flex:none;
   display:grid;place-items:center}
+.orb-gl{position:absolute;inset:0;width:100%;height:100%;opacity:0;
+  transition:opacity .8s var(--ease)}
+.dial.gl-ready .orb-gl{opacity:1}
+.dial.gl-ready .orb3d{opacity:0;transition:opacity .5s var(--ease)}
 .orb3d{position:relative;width:74%;aspect-ratio:1;border-radius:50%;
   background:
     radial-gradient(circle at 34% 28%, rgba(255,255,255,.92) 0%, rgba(255,255,255,0) 38%),
@@ -445,7 +449,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   .act .dial{width:clamp(120px,34vw,180px);order:-1}
   /* the empty right column only exists on desktop; on mobile the signature
      would sit on top of the copy and the buttons, so it stands down */
-  .hero-sig{display:none}
+  .hero-sig{display:none}   /* no empty right column on mobile */
   .moments{grid-template-columns:1fr}
   .moment{min-height:0;padding:1.3rem}
   .join-grid,.two{grid-template-columns:1fr}
@@ -473,8 +477,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
 
 <div class="intro" id="intro" aria-hidden="true"><div class="mark anton">INVI</div></div>
 <div class="sky" aria-hidden="true"></div>
-<div class="sun" id="sun" aria-hidden="true"></div>
-<div class="moon-b" id="moonB" aria-hidden="true"></div>
+<div class="bloom" id="bloom" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
 <div class="clock" id="clock" aria-hidden="true">
@@ -499,7 +502,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   <section class="hero">
     <div class="wrap">
       <p class="tag rv">One day · Three moments</p>
-      <div class="hero-sig" id="heroSig" aria-hidden="true"><span>INVI</span></div>
+      <div class="hero-sig" id="heroSig" aria-hidden="true">INVI</div>
       <h1 class="anton t-mega" id="heroMark">
         <span class="l"><span>Own</span></span>
         <span class="l"><span>your</span></span>
@@ -526,7 +529,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true"><span class="orb3d"></span></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="rising_sun"><span class="orb3d"></span><canvas class="orb-gl"></canvas></div>
     </div>
   </section>
 
@@ -538,7 +541,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true"><span class="orb3d"></span></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="midday_sun"><span class="orb3d"></span><canvas class="orb-gl"></canvas></div>
     </div>
   </section>
 
@@ -550,7 +553,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true"><span class="orb3d moon"></span></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="moon"><span class="orb3d moon"></span><canvas class="orb-gl"></canvas></div>
     </div>
   </section>
 
@@ -869,6 +872,93 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
 
 <div class="toast" id="toast" role="status" aria-live="polite"><span class="ic"><svg viewBox="0 0 14 14"><path d="M7 3.4v4.2M7 10.4h.01"/></svg></span><span id="toastMsg">Link copied</span></div>
 
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}
+</script>
+<script type="module">
+/* Real geometry from celestial-spheres.glb: rising_sun, midday_sun, moon.
+   Loaded once, lazily, and only when a dial is close to view. The CSS spheres
+   stay underneath as the fallback if WebGL or the network is unavailable. */
+(async () => {
+  const dials = [...document.querySelectorAll('.dial[data-node]')];
+  if (!dials.length) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let started = false;
+  const start = async () => {
+    if (started) return; started = true;
+    let THREE, GLTFLoader;
+    try {
+      THREE = await import('three');
+      ({ GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js'));
+    } catch { return; }                       // keep the CSS spheres
+    let gltf;
+    try { gltf = await new GLTFLoader().loadAsync('celestial-spheres.glb'); }
+    catch { return; }
+
+    dials.forEach(dial => {
+      const src = gltf.scene.getObjectByName(dial.dataset.node);
+      const cv  = dial.querySelector('canvas');
+      if (!src || !cv) return;
+      let renderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ canvas:cv, alpha:true, antialias:true });
+      } catch { return; }
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+      const scene = new THREE.Scene();
+      const obj = src.clone(true);
+      const holder = new THREE.Group();
+      holder.add(obj);
+      scene.add(holder);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 1.25));
+      const key = new THREE.DirectionalLight(0xffffff, 2.8);
+      key.position.set(-2.2, 2.6, 3.2); scene.add(key);
+      const rim = new THREE.DirectionalLight(0xc4d8ff, 1.3);
+      rim.position.set(2.6, -1.2, -2.2); scene.add(rim);
+      const lift = new THREE.DirectionalLight(0xffd9a8, .7);
+      lift.position.set(0, -2.5, 1.5); scene.add(lift);
+
+      // frame from the model's own bounding sphere so all three fill the same
+      // area regardless of how they were exported
+      const FOV = 32;
+      const cam = new THREE.PerspectiveCamera(FOV, 1, .01, 100);
+      const box = new THREE.Box3().setFromObject(obj);
+      const bs  = box.getBoundingSphere(new THREE.Sphere());
+      obj.position.sub(bs.center);
+      cam.position.set(0, 0, (bs.radius / Math.sin((FOV * Math.PI / 180) / 2)) * 1.04);
+      cam.lookAt(0, 0, 0);
+
+      const fit = () => {
+        const r = dial.getBoundingClientRect();
+        const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+        renderer.setSize(w, h, false);
+        cam.aspect = w / h; cam.updateProjectionMatrix();
+      };
+      fit(); addEventListener('resize', fit, { passive:true });
+
+      let vis = false;
+      new IntersectionObserver(([e]) => { vis = e.isIntersecting; }, { threshold:.05 }).observe(dial);
+      const tick = () => {
+        requestAnimationFrame(tick);
+        if (!vis) return;
+        if (!reduce) holder.rotation.y += 0.0032;
+        renderer.render(scene, cam);
+      };
+      renderer.render(scene, cam);
+      dial.classList.add('gl-ready');
+      tick();
+    });
+  };
+  const io = new IntersectionObserver(es => {
+    if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); }
+  }, { rootMargin:'900px' });
+  dials.forEach(d => io.observe(d));
+})();
+</script>
+
 <script>
 (() => {
 'use strict';
@@ -897,13 +987,13 @@ const SKY = [
      <= .17), so contrast never dips below AA. "Midday" is carried by the sun
      glow, not a white sky — which matches the deck, where every image is golden
      hour, blue hour or night, and none is bright daylight. */
-  { at:0.00, s1:'#06080E', s2:'#10141C', ink:[244,239,230] },
-  { at:0.18, s1:'#141020', s2:'#33201A', ink:[244,239,230] },
-  { at:0.36, s1:'#241410', s2:'#5A3018', ink:[244,239,230] },
-  { at:0.52, s1:'#2E2416', s2:'#6B5426', ink:[244,239,230] },
-  { at:0.68, s1:'#3A1E10', s2:'#7A3A18', ink:[244,239,230] },
-  { at:0.84, s1:'#1E1428', s2:'#2E1B3E', ink:[244,239,230] },
-  { at:1.00, s1:'#08060E', s2:'#12101C', ink:[244,239,230] }
+  { at:0.00, s1:'#06080E', s2:'#10141C', ink:[244,239,230], bc:'#16223A', bo:.35 },
+  { at:0.18, s1:'#141020', s2:'#33201A', ink:[244,239,230], bc:'#7A3E22', bo:.55 },
+  { at:0.36, s1:'#241410', s2:'#5A3018', ink:[244,239,230], bc:'#FFA24A', bo:.7  },
+  { at:0.52, s1:'#2E2416', s2:'#6B5426', ink:[244,239,230], bc:'#FFD98A', bo:.75 },
+  { at:0.68, s1:'#3A1E10', s2:'#7A3A18', ink:[244,239,230], bc:'#FF8A3A', bo:.7  },
+  { at:0.84, s1:'#1E1428', s2:'#2E1B3E', ink:[244,239,230], bc:'#7A4AA8', bo:.5  },
+  { at:1.00, s1:'#08060E', s2:'#12101C', ink:[244,239,230], bc:'#2A2140', bo:.35 }
 ];
 const mix = (a,b,t) => a.map((v,i) => Math.round(v + (b[i]-v)*t));
 const hex2 = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
@@ -920,6 +1010,9 @@ function paintSky(p){
   root.style.setProperty('--ink', rgb(ink));
   root.style.setProperty('--ink-2', `rgba(${ink[0]},${ink[1]},${ink[2]},.62)`);
   root.style.setProperty('--hair', `rgba(${ink[0]},${ink[1]},${ink[2]},.18)`);
+  const bl = $('#bloom');
+  bl.style.setProperty('--bloom-c', rgb(mix(hex2(a.bc), hex2(b.bc), t)));
+  bl.style.setProperty('--bloom-o', (a.bo + (b.bo - a.bo) * t).toFixed(3));
 }
 /* The day is anchored to the acts themselves, not to a raw scroll fraction.
    Sunrise lands on Origin, midday on Rise, moonrise on After Dark, so the
@@ -948,35 +1041,13 @@ function dayProgress(){
   }
   return 1;
 }
-/* sun arcs up and over; the moon takes over as it sets */
-const ARC = [
-  { at:0.00, sx:8,  sy:118, so:.30, mx:78, my:128, mo:0   },
-  { at:0.30, sx:24, sy:74,  so:.85, mx:82, my:126, mo:0   },
-  { at:0.56, sx:52, sy:16,  so:.95, mx:86, my:124, mo:0   },
-  { at:0.72, sx:78, sy:76,  so:.8,  mx:70, my:110, mo:.15 },
-  { at:0.84, sx:92, sy:120, so:.25, mx:62, my:52,  mo:.7  },
-  { at:1.00, sx:98, sy:132, so:.05, mx:56, my:24,  mo:.9  }
-];
-function paintArc(p){
-  let i = 0; while (i < ARC.length-2 && p > ARC[i+1].at) i++;
-  const a = ARC[i], b = ARC[i+1];
-  const t = Math.max(0, Math.min(1, (p - a.at) / (b.at - a.at || 1)));
-  const L = (k) => a[k] + (b[k] - a[k]) * t;
-  const sun = $('#sun'), moon = $('#moonB');
-  sun.style.setProperty('--x', L('sx').toFixed(2) + '%');
-  sun.style.setProperty('--y', L('sy').toFixed(2) + '%');
-  sun.style.setProperty('--sun-o', L('so').toFixed(3));
-  moon.style.setProperty('--x', L('mx').toFixed(2) + '%');
-  moon.style.setProperty('--y', L('my').toFixed(2) + '%');
-  moon.style.setProperty('--moon-o', L('mo').toFixed(3));
-}
 let skyTick = false;
 function onScroll(){
   if (skyTick) return; skyTick = true;
   requestAnimationFrame(() => {
     skyTick = false;
     const p = dayProgress();
-    paintSky(p); paintArc(p);
+    paintSky(p);
     nav.classList.toggle('stuck', scrollY > 40);
     const ck = $('#clock');
     if (ck){
@@ -1312,7 +1383,7 @@ if (state.moment){
   $('#picked').textContent = LABEL[state.moment];
   if (state.confirmed) lockIn(false); else if (state.joined) confirmEl.classList.add('on');
 }
-observe(); watchMark(); measureDay(); paintSky(0); paintArc(0); onScroll();
+observe(); watchMark(); measureDay(); paintSky(0); onScroll();
 addEventListener('load', () => { measureDay(); onScroll(); });
 })();
 </script>
