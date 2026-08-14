@@ -64,7 +64,8 @@ a{color:inherit;text-decoration:none}
 
 /* ── type ───────────────────────────────────────────────── */
 .anton{font-family:'Anton',Impact,sans-serif;font-weight:400;text-transform:uppercase;
-  letter-spacing:-.012em;line-height:.86;margin:0}
+  letter-spacing:-.008em;line-height:1.02;margin:0}
+.t-mega,.t-xl{line-height:.98}
 .t-mega{font-size:clamp(3.6rem,15vw,13rem)}
 .t-xl  {font-size:clamp(2.8rem,9vw,7.5rem)}
 .t-lg  {font-size:clamp(2rem,5.2vw,4rem)}
@@ -83,7 +84,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 #joinForm,#choose,#results,#join,#apply{scroll-margin-top:6rem}
 
 /* ── clock rail ─────────────────────────────────────────── */
-.clock{position:fixed;left:calc((100vw - var(--shell))/2);top:50%;translate:0 -50%;z-index:30;
+.clock{position:fixed;left:clamp(14px,2.2vw,30px);top:50%;translate:0 -50%;z-index:30;
   display:grid;gap:.9rem;pointer-events:none;opacity:0;transition:opacity .6s var(--ease)}
 .clock.on{opacity:1}
 .clock i{display:block;width:1px;height:26px;background:var(--hair);position:relative;overflow:hidden}
@@ -133,7 +134,23 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   border-color .4s var(--ease),transform .5s var(--ease),opacity .4s var(--ease)}
 
 /* ── hero ───────────────────────────────────────────────── */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;padding-top:7rem}
+.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
+  padding-top:7rem;position:relative}
+/* fills the empty right of the fold; cycles the three colourways */
+.hero-sig{position:absolute;top:50%;translate:0 -50%;z-index:0;pointer-events:none;user-select:none;
+  right:clamp(14px,3vw,48px);width:min(34vw,440px);height:auto;overflow:visible;
+  opacity:.9}
+.hero-sig text{fill:none;stroke:var(--sig,#5FBF95);stroke-width:1.6;
+  animation:sigcycle 15s var(--ease-io) infinite}
+.hero-sig .sig-pip{stroke:none;fill:var(--sig,#5FBF95);
+  animation:sigcycle 15s var(--ease-io) infinite}
+@keyframes sigcycle{
+  0%,26%   {stroke:#5FBF95;fill:#5FBF95}
+  33%,59%  {stroke:#F0913C;fill:#F0913C}
+  66%,92%  {stroke:#A98BF0;fill:#A98BF0}
+  100%     {stroke:#5FBF95;fill:#5FBF95}
+}
+.hero .wrap{position:relative;z-index:1}
 .hero .tag{margin-bottom:2.2rem}
 .hero h1{margin-bottom:2rem}
 .hero h1 .l{display:block;overflow:hidden}
@@ -156,8 +173,17 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .act{min-height:96svh;display:flex;align-items:center;position:relative;overflow:hidden}
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
   grid-template-columns:1fr auto;gap:2rem;align-items:end}
-.act .hour{font-family:'Anton',sans-serif;font-size:clamp(4rem,13vw,11rem);line-height:.8;
-  color:transparent;-webkit-text-stroke:1.4px var(--hair);white-space:nowrap}
+/* the sun's height in the frame reads the hour without needing a label */
+.act .dial{width:clamp(150px,20vw,260px);aspect-ratio:1;position:relative;flex:none}
+.act .dial .horizon{position:absolute;left:0;right:0;top:68%;height:1px;background:var(--hair)}
+.act .dial .orb{position:absolute;left:50%;translate:-50% -50%;border-radius:50%;
+  width:44%;aspect-ratio:1;background:var(--c1);
+  box-shadow:0 0 60px 18px color-mix(in srgb,var(--c1) 45%,transparent);
+  transition:top 1.2s var(--ease),background .6s var(--ease)}
+.act .dial .ring{position:absolute;inset:6%;border-radius:50%;border:1px solid var(--hair)}
+.act[data-act="origin"]     .dial .orb{top:62%}
+.act[data-act="rise"]       .dial .orb{top:22%}
+.act[data-act="after-dark"] .dial .orb{top:84%;opacity:.75}
 .act h2{margin:0 0 1rem}
 .act .note{font-size:.98rem;color:var(--ink-2);max-width:34ch;line-height:1.65}
 .act .kicker{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;
@@ -166,15 +192,21 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* ── vote ───────────────────────────────────────────────── */
 .moments{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:clamp(2rem,5vh,3rem);
   background:var(--hair);border:1px solid var(--hair)}
-.moment{position:relative;overflow:hidden;background:color-mix(in srgb,var(--sky1) 78%,transparent);
-  padding:1.6rem 1.4rem 1.5rem;text-align:left;display:flex;flex-direction:column;gap:.5rem;
-  min-height:190px;justify-content:flex-end;
-  transition:background .45s var(--ease),opacity .4s var(--ease)}
-.moment::before{content:'';position:absolute;inset:auto 0 0 0;height:3px;background:var(--c1);
-  transform:scaleX(0);transform-origin:left;transition:transform .55s var(--ease)}
-.moment:hover:not(.locked){background:color-mix(in srgb,var(--c1) 14%,transparent)}
-.moment:hover:not(.locked)::before,.moment[aria-pressed="true"]::before{transform:scaleX(1)}
-.moment[aria-pressed="true"]{background:color-mix(in srgb,var(--c1) 22%,transparent)}
+.moment{position:relative;overflow:hidden;isolation:isolate;
+  background:color-mix(in srgb,var(--sky1) 62%,transparent);
+  padding:1.7rem 1.5rem 1.6rem;text-align:left;display:flex;flex-direction:column;gap:.55rem;
+  min-height:230px;justify-content:flex-end;
+  transition:opacity .4s var(--ease),transform .5s var(--ease)}
+/* the colourway is the card, not a hairline on it */
+.moment::before{content:'';position:absolute;inset:0;z-index:-1;
+  background:radial-gradient(120% 90% at 15% 105%,var(--c1) 0%,transparent 68%);
+  opacity:.34;transition:opacity .55s var(--ease)}
+.moment::after{content:'';position:absolute;inset:auto 0 0 0;height:4px;background:var(--c1);
+  transform:scaleX(.22);transform-origin:left;transition:transform .55s var(--ease)}
+.moment:hover:not(.locked)::before{opacity:.62}
+.moment:hover:not(.locked)::after,.moment[aria-pressed="true"]::after{transform:scaleX(1)}
+.moment[aria-pressed="true"]::before{opacity:.78}
+.moment h3{color:var(--ink)}
 .moments.decided .moment:not([aria-pressed="true"]){opacity:.3}
 .moments.decided .moment{pointer-events:none}
 .moment.locked{cursor:pointer}
@@ -389,7 +421,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   .clock{display:none}
   .act{min-height:auto;padding:clamp(3.5rem,9vh,6rem) 0}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
-  .act .hour{font-size:clamp(3.4rem,20vw,6rem);order:-1}
+  .act .dial{width:clamp(120px,34vw,180px);order:-1}
+  /* the empty right column only exists on desktop; on mobile the signature
+     would sit on top of the copy and the buttons, so it stands down */
+  .hero-sig{display:none}
   .moments{grid-template-columns:1fr}
   .moment{min-height:0;padding:1.3rem}
   .join-grid,.two{grid-template-columns:1fr}
@@ -442,6 +477,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   <section class="hero">
     <div class="wrap">
       <p class="tag rv">One day · Three moments</p>
+      <svg class="hero-sig" id="heroSig" aria-hidden="true" viewBox="0 0 620 210" fill="none">
+        <text x="10" y="158" font-size="184" font-weight="400" font-family="Anton, sans-serif"
+              letter-spacing="4">INVI<tspan class="sig-pip">&#183;</tspan></text>
+      </svg>
       <h1 class="anton t-mega" id="heroMark">
         <span class="l"><span>Own</span></span>
         <span class="l"><span>your</span></span>
@@ -463,36 +502,36 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   <section class="act" data-act="origin">
     <div class="act-in">
       <div class="rv">
-        <p class="kicker">05:42 · First light</p>
+        <p class="kicker">First light</p>
         <h2 class="anton t-xl">Origin</h2>
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <div class="hour anton rv" style="transition-delay:.1s">05</div>
+      <div class="dial rv" style="transition-delay:.1s;--c1:#5FBF95" aria-hidden="true"><span class="ring"></span><span class="horizon"></span><span class="orb"></span></div>
     </div>
   </section>
 
   <section class="act" data-act="rise">
     <div class="act-in">
       <div class="rv">
-        <p class="kicker">13:20 · Full sun</p>
+        <p class="kicker">Full sun</p>
         <h2 class="anton t-xl">Rise</h2>
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <div class="hour anton rv" style="transition-delay:.1s">13</div>
+      <div class="dial rv" style="transition-delay:.1s;--c1:#F0913C" aria-hidden="true"><span class="ring"></span><span class="horizon"></span><span class="orb"></span></div>
     </div>
   </section>
 
   <section class="act" data-act="after-dark">
     <div class="act-in">
       <div class="rv">
-        <p class="kicker">21:07 · After dark</p>
+        <p class="kicker">After dark</p>
         <h2 class="anton t-xl">After Dark</h2>
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <div class="hour anton rv" style="transition-delay:.1s">21</div>
+      <div class="dial rv" style="transition-delay:.1s;--c1:#A98BF0" aria-hidden="true"><span class="ring"></span><span class="horizon"></span><span class="orb"></span></div>
     </div>
   </section>
 
@@ -508,15 +547,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
       <div class="moments gated" id="moments">
         <button class="moment locked" data-key="origin" aria-pressed="false" style="--c1:#5FBF95">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">01 · 05:42</span><h3>Origin</h3><p>The moments that start it all.</p>
+          <span class="idx">01</span><h3>Origin</h3><p>The moments that start it all.</p>
         </button>
         <button class="moment locked" data-key="rise" aria-pressed="false" style="--c1:#F0913C">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">02 · 13:20</span><h3>Rise</h3><p>The moments in motion.</p>
+          <span class="idx">02</span><h3>Rise</h3><p>The moments in motion.</p>
         </button>
         <button class="moment locked" data-key="after-dark" aria-pressed="false" style="--c1:#A98BF0">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">03 · 21:07</span><h3>After Dark</h3><p>Moments that need no explanation.</p>
+          <span class="idx">03</span><h3>After Dark</h3><p>Moments that need no explanation.</p>
         </button>
       </div>
 
@@ -1201,6 +1240,17 @@ if (!reduce && matchMedia('(pointer: fine)').matches){
   $$('.moment').forEach(el => magnet(el,5,4));
   $$('.btn').forEach(el => magnet(el,4,3));
 }
+
+/* frame the signature from its real glyph box once Anton has loaded */
+(() => {
+  const sig = $('#heroSig'); if (!sig || !sig.getBBox) return;
+  const fit = () => { try { const b = sig.getBBox();
+    if (b.width && b.height) sig.setAttribute('viewBox',
+      `${b.x-10} ${b.y-10} ${b.width+20} ${b.height+20}`); } catch {} };
+  (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve())
+    .then(() => requestAnimationFrame(fit));
+  setTimeout(fit, 1400);
+})();
 
 tick($('#navCount'), total(), 1700); tick($('#totalCount'), total(), 1700);
 if (state.joined) showJoined();
