@@ -95,8 +95,13 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   writing-mode:vertical-rl;opacity:.7}
 
 /* ── nav ────────────────────────────────────────────────── */
+/* viewport-fit=cover lets the page under the notch and the rounded corners, so
+   anything pinned to an edge has to keep clear of them itself */
 .nav{position:fixed;inset:0 0 auto 0;z-index:40;display:flex;align-items:center;
-  justify-content:space-between;gap:1rem;padding:1.1rem calc((100vw - var(--shell))/2);
+  justify-content:space-between;gap:1rem;
+  padding:calc(1.1rem + env(safe-area-inset-top)) 0 1.1rem;
+  padding-left:max(calc((100vw - var(--shell))/2), env(safe-area-inset-left));
+  padding-right:max(calc((100vw - var(--shell))/2), env(safe-area-inset-right));
   transition:background .4s var(--ease)}
 .nav.stuck{background:color-mix(in srgb,var(--sky1) 84%,transparent);backdrop-filter:blur(14px)}
 .mark{font-family:'Archivo',Helvetica,sans-serif;font-variation-settings:'wdth' 112,'wght' 800;
@@ -330,6 +335,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .consent{display:flex;gap:.8rem;align-items:flex-start;font-size:.85rem;color:var(--ink-2);
   line-height:1.55;cursor:pointer;user-select:none}
 .consent input{position:absolute;opacity:0;width:0;height:0}
+/* the privacy link sits mid-sentence at 13px. The padding grows what a thumb
+   can hit and the matching negative margin keeps it out of the line flow, so
+   the tap area never creeps over the consent tick beside it. */
+.consent a{display:inline-block;padding:.45rem .35rem;margin:-.45rem -.35rem}
 .box{flex:none;width:20px;height:20px;margin-top:.12rem;border:1px solid var(--hair);
   display:grid;place-items:center;position:relative;overflow:hidden;transition:border-color .3s var(--ease)}
 .box::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scale(0);
@@ -421,7 +430,8 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .privacy li b{color:#F4EFE6}
 .privacy a{color:#F4EFE6;text-decoration:underline}
 
-footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem 0 2.2rem;margin-top:2rem}
+footer{position:relative;z-index:3;border-top:1px solid var(--hair);
+  padding:3rem 0 calc(2.2rem + env(safe-area-inset-bottom));margin-top:2rem}
 .foot-top{display:flex;flex-wrap:wrap;gap:1.3rem;justify-content:space-between;align-items:center;padding-bottom:2rem}
 .foot-links{display:flex;flex-wrap:wrap;gap:1.9rem;font-size:.74rem;color:var(--ink-2)}
 .foot-links button:hover,.foot-links a:hover{color:var(--ink)}
@@ -470,12 +480,27 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
   .rail{padding-top:.5rem}
   .nav-mid{gap:1rem}
   .scroll-cue{display:none}
+  /* the smallest labels hold up at desk distance but not at arm's length */
+  .act .kicker{font-size:.76rem}
+  .moment .idx{font-size:.7rem}
+  /* every age is a full tap target, not a 41px sliver */
+  .sel-list button{min-height:44px;display:flex;align-items:center}
 }
 @media (max-width:560px){
   .statgrid,.pillars,.steps{grid-template-columns:1fr}
   .seats{gap:1.5rem}
   .count-pill .lbl{display:none}
   .btn{padding:.9rem 1.5rem;font-size:.7rem}
+}
+/* A phone on its side is wide but very short. Display type set in vw keeps
+   scaling off the long edge, so the headline hits 120px in a 375px-tall
+   window and the hero runs past two screens. Here it scales off the short
+   axis instead, which is the one actually running out. */
+@media (orientation:landscape) and (max-height:560px) and (max-width:1024px){
+  .t-mega{font-size:clamp(1.9rem,8.5vh,5rem)}
+  .hero{padding-top:4.5rem;min-height:0}
+  .hero h1{margin-bottom:.9rem}
+  .hero .tag{margin-bottom:.5rem}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
