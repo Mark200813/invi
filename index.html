@@ -189,7 +189,9 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .orb-gl{position:absolute;inset:0;width:100%;height:100%;opacity:0;
   transition:opacity .8s var(--ease)}
 /* supplied artwork wins when it is present; the 3D model is the fallback */
-.orb-img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;
+/* oversized on purpose: the artwork carries its own halo, so the disc lands at
+   the same weight as the sphere it replaces and the glow spills past the dial */
+.orb-img{position:absolute;inset:-7.5%;width:115%;height:115%;object-fit:contain;opacity:0;
   transition:opacity .9s var(--ease);pointer-events:none}
 .dial.img-ready .orb-img{opacity:1}
 .dial.img-ready .orb3d,.dial.img-ready .orb-gl{opacity:0}
@@ -540,7 +542,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="rising_sun" data-img="icon-origin.png"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="rising_sun" data-img="icon-origin.webp"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
     </div>
   </section>
 
@@ -552,7 +554,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="midday_sun" data-img="icon-rise.png"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="midday_sun" data-img="icon-rise.webp"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
     </div>
   </section>
 
@@ -564,7 +566,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);padding:3rem
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="moon" data-img="icon-moon.png"><span class="orb3d moon"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="moon" data-img="icon-moon.webp"><span class="orb3d moon"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
     </div>
   </section>
 
