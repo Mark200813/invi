@@ -304,10 +304,23 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   color:var(--ink-2);display:flex;gap:.5rem;align-items:baseline}
 .fr label .req{color:var(--accent)}
 .fr label .opt{opacity:.6;font-weight:500}
+/* The accent underline is painted as a background so it can be drawn in from
+   the left on focus without wrapping every input in another element. */
 .fr input,.fr textarea{width:100%;padding:.85rem 0;background:transparent;border:0;
-  border-bottom:1px solid var(--hair);font-size:1rem;transition:border-color .3s var(--ease)}
-.fr textarea{min-height:6rem;resize:vertical;line-height:1.55;border:1px solid var(--hair);padding:.8rem}
-.fr input:focus,.fr textarea:focus{outline:none;border-color:var(--accent)}
+  border-bottom:1px solid var(--hair);font-size:1rem;
+  background-image:linear-gradient(var(--accent),var(--accent));
+  background-repeat:no-repeat;background-position:0 100%;background-size:0% 1px;
+  transition:border-color .3s var(--ease),background-size .5s var(--ease)}
+.fr textarea{min-height:6rem;resize:vertical;line-height:1.55;border:1px solid var(--hair);padding:.8rem;
+  background-position:0 calc(100% - 1px)}
+.fr input:focus,.fr textarea:focus{outline:none;border-color:var(--accent);background-size:100% 1px}
+/* a field that is done says so, rather than leaving you to guess */
+.fr label{transition:color .3s var(--ease)}
+.fr.ok label{color:var(--ink)}
+.fr.ok label:not(.consent)::after{content:'';width:9px;height:5px;border-left:1.5px solid var(--accent);
+  border-bottom:1.5px solid var(--accent);rotate:-45deg;margin-left:.1rem;
+  animation:tickIn .32s var(--ease) both}
+@keyframes tickIn{from{clip-path:inset(0 100% 0 0);opacity:0}to{clip-path:inset(0);opacity:1}}
 .fr input::placeholder,.fr textarea::placeholder{color:var(--ink-2);opacity:.55}
 .fr.bad input,.fr.bad textarea,.fr.bad .sel-btn{border-color:#E0603F}
 .err{font-size:.74rem;color:#E0603F;min-height:1.05em;margin:0}
@@ -319,7 +332,14 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
    where the tick is rather than a screen away. */
 .dossier{display:flex;align-items:center;gap:1rem;margin-top:2.4rem;max-width:44rem;
   font-size:.7rem;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2)}
-.dossier i{flex:1;height:1px;background:var(--hair)}
+/* the rail fills as the application does, so progress is visible without
+   counting fields or reading a percentage */
+.dossier i{flex:1;height:1px;background:var(--hair);position:relative;overflow:hidden}
+.dossier i b{position:absolute;inset:0 auto 0 0;width:0;background:var(--accent);
+  transition:width .7s cubic-bezier(.22,1,.36,1)}
+.dossier i b::after{content:'';position:absolute;right:0;top:-2px;width:5px;height:5px;
+  border-radius:50%;background:var(--accent);opacity:0;transition:opacity .4s var(--ease)}
+.dossier.moving i b::after{opacity:1}
 .dossier-form{max-width:44rem;gap:0;margin-top:.4rem}
 .fsec{border:0;margin:0;padding:2.1rem 0 0;border-top:1px solid var(--hair);min-width:0}
 .fsec:first-of-type{border-top:0;padding-top:1.3rem}
@@ -327,7 +347,13 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
   font-size:1.18rem;letter-spacing:.005em;color:var(--ink)}
 .fsec legend::before{content:attr(data-n);font-family:'Archivo',Helvetica,sans-serif;
-  font-variation-settings:'wght' 700;font-size:.68rem;letter-spacing:.2em;color:var(--accent)}
+  font-variation-settings:'wght' 700;font-size:.68rem;letter-spacing:.2em;color:var(--accent);
+  transition:opacity .35s var(--ease),scale .35s var(--ease);opacity:.55;transform-origin:left center}
+/* the part you are actually in steps forward */
+.fsec.here legend::before{opacity:1;scale:1.25}
+.fsec.done legend::after{content:'';width:9px;height:5px;border-left:1.5px solid var(--accent);
+  border-bottom:1.5px solid var(--accent);rotate:-45deg;margin-left:.15rem;align-self:center;
+  animation:tickIn .32s var(--ease) both}
 .fsec-body{display:grid;gap:1.2rem;margin-top:1.05rem}
 /* the one question worth answering properly, sized like it */
 .fr label.ask{font-size:1.02rem;font-weight:500;letter-spacing:0;text-transform:none;
@@ -860,10 +886,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
       <p class="lede rv" style="transition-delay:.12s">Applications are read by the team. We'll come back to everyone either way.</p>
       <div class="dossier rv" style="transition-delay:.15s">
-        <span>Application</span><i></i><span>Twelve places</span>
+        <span>Application</span><i><b id="progBar"></b></i><span>Twelve places</span>
       </div>
-      <form class="form dossier-form rv" id="progForm" novalidate style="transition-delay:.18s">
-       <fieldset class="fsec">
+      <form class="form dossier-form" id="progForm" novalidate>
+       <fieldset class="fsec rv" style="transition-delay:.06s">
         <legend data-n="01">Who you are</legend>
         <div class="fsec-body">
         <div class="fr-pair">
@@ -897,7 +923,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </div>
        </fieldset>
 
-       <fieldset class="fsec fsec--why">
+       <fieldset class="fsec fsec--why rv" style="transition-delay:.13s">
         <legend data-n="02">Why you</legend>
         <div class="fsec-body">
         <div class="fr" id="p-why">
@@ -911,7 +937,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </div>
        </fieldset>
 
-       <fieldset class="fsec">
+       <fieldset class="fsec rv" style="transition-delay:.2s">
         <legend data-n="03">Before you send</legend>
         <div class="fsec-body">
         <ul class="terms">
@@ -930,7 +956,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </div>
         </div>
        </fieldset>
-        <div class="form-foot">
+        <div class="form-foot rv" style="transition-delay:.26s">
           <button type="submit" class="btn btn--solid" id="psubmit"><span>Send application</span><span>→</span></button>
           <p class="foot-note">Read by the team. We come back to everyone either way.</p>
         </div>
@@ -939,7 +965,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <div class="card">
           <p class="tag">Application received</p>
           <p class="pass-moment" id="progName">—</p>
-          <p class="pass-ref">Ref <span id="progRef">—</span></p>
+          <p class="pass-ref">Ref <span id="progRefPre">INVI</span>-<span id="progRef">0000</span></p>
           <p class="msg" id="progMsg"></p>
           <div class="pass-actions">
             <button class="btn" data-go="home"><span>Back to the vote</span></button>
@@ -1442,7 +1468,65 @@ pwhy.addEventListener('input', () => {
   const n = pwhy.value.trim().length;
   whyCount.textContent = n === 0 ? '' : n < 10 ? 'A little more and it\'s ready to send.' : 'That\'s enough to send.';
   if (n >= 10){ $('#p-why').classList.remove('bad'); $('#pe-why').textContent = ''; }
+  /* the box grows into what you wrote instead of making you scroll a slot */
+  pwhy.style.minHeight = '0px';
+  pwhy.style.minHeight = Math.max(152, pwhy.scrollHeight + 2) + 'px';
 });
+
+/* ── live feedback ───────────────────────────────────────
+   Teenagers scan forms, they don't read them. So a finished field says it is
+   finished, the part you're standing in steps forward, and the rail at the top
+   fills as you go: progress you can feel without counting anything. */
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const CHECKS = {
+  prog: { '#p-name'    : () => $('#pname').value.trim().length > 0,
+          '#p-email'   : () => EMAIL_RE.test($('#pemail').value.trim()),
+          '#p-age'     : () => $('#pselBtn').classList.contains('has'),
+          '#p-guardian': () => EMAIL_RE.test($('#pguardian').value.trim()),
+          '#p-why'     : () => $('#pwhy').value.trim().length >= 10,
+          '#p-consent' : () => $('#pconsent').checked },
+  join: { '#r-name'    : () => $('#fname').value.trim().length > 0,
+          '#r-email'   : () => EMAIL_RE.test($('#email').value.trim()),
+          '#r-consent' : () => $('#consent').checked }
+};
+let barT;
+function paint(which){
+  const map = CHECKS[which];
+  let done = 0, total = 0;
+  for (const sel in map){
+    const row = $(sel);
+    if (!row || row.hidden) continue;          // the guardian row only counts once it's asked for
+    total++;
+    const ok = map[sel]();
+    if (ok) done++;
+    row.classList.toggle('ok', ok);
+  }
+  if (which !== 'prog') return;
+  $$('#progForm .fsec').forEach(sec => {
+    const rows = [...sec.querySelectorAll('.fr')].filter(r => !r.hidden);
+    sec.classList.toggle('done', rows.length > 0 && rows.every(r => r.classList.contains('ok')));
+  });
+  const bar = $('#progBar'), dossier = $('.dossier');
+  const pct = total ? Math.round(done / total * 100) : 0;
+  if (bar.dataset.p === String(pct)) return;
+  bar.dataset.p = pct; bar.style.width = pct + '%';
+  dossier.classList.add('moving');
+  clearTimeout(barT); barT = setTimeout(() => dossier.classList.remove('moving'), 900);
+}
+['input','change'].forEach(ev => {
+  progForm.addEventListener(ev, () => paint('prog'));
+  form.addEventListener(ev, () => paint('join'));
+});
+/* the age list is a custom listbox, so it reports itself */
+$('#pselList').addEventListener('click', () => setTimeout(() => paint('prog'), 0));
+$$('#progForm .fsec').forEach(sec => {
+  sec.addEventListener('focusin',  () => { $$('#progForm .fsec').forEach(s => s.classList.remove('here'));
+                                           sec.classList.add('here'); });
+});
+progForm.addEventListener('focusout', () => setTimeout(() => {
+  if (!progForm.contains(document.activeElement)) $$('#progForm .fsec').forEach(s => s.classList.remove('here'));
+}, 0));
+paint('prog'); paint('join');
 progForm.addEventListener('submit', e => {
   e.preventDefault();
   if (!validateProg()) return;
@@ -1454,9 +1538,10 @@ progForm.addEventListener('submit', e => {
     state.applied = true; save();
     progForm.style.display = 'none';
     $('#progName').textContent = $('#pname').value.trim().split(' ')[0] || 'Thanks';
-    /* something to quote back at us, so the reply has a thread to hang on */
-    $('#progRef').textContent = 'INVI-' + new Date().getFullYear() + '-' +
-      String(Math.floor(Math.random()*9000) + 1000);
+    /* something to quote back at us, so the reply has a thread to hang on. The
+       digits roll in on the same odometer the member number uses. */
+    $('#progRefPre').textContent = 'INVI-' + new Date().getFullYear();
+    odometer($('#progRef'), String(Math.floor(Math.random()*9000) + 1000));
     $('#progMsg').textContent = 'Your application is in. We read every one and come back to '
       + 'everybody either way, so keep an eye on your inbox.';
     $('#progPass').classList.add('on');
