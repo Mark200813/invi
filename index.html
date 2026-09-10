@@ -17,7 +17,7 @@
 <meta name="twitter:card" content="summary">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wdth,wght@100..125,600..900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ─────────────────────────────────────────────────────────────
    INVI · pre-launch
@@ -27,43 +27,49 @@
 @property --lx{syntax:'<number>';inherits:false;initial-value:0}
 @property --ly{syntax:'<number>';inherits:false;initial-value:0}
 
+.root-marker{}
 :root{
-  /* driven by scroll — see the sky engine in JS */
-  --sky1:#080A10; --sky2:#12161F;
-  --ink:#F7F2EC; --ink-2:rgba(244,239,230,.6); --hair:rgba(244,239,230,.16);
-  --bone:#F7F2EC; --olive:#6C684D; --forest:#274E13; --stone:#B0987E;
-  --accent:#C89B5A;
+  /* V12 master brand system. Foundation carries the page; colour interrupts it. */
+  --bone:#F7F3ED; --stone:#EFE9DF; --concrete:#B8ADA0; --dusk:#303347;
+  --mineral-blue:#3F7FA3; --fresh-green:#6F9B4B; --tangerine:#F28A32;
+  --sun-yellow:#F2C84B; --mood-pink:#D66BA0;
+  --terracotta:#B85F3D; --aubergine:#49304A; --olive:#73785C;
+  /* ink is the text colour now, not the page colour */
+  --ink:#151513; --ink-2:rgba(21,21,19,.68); --hair:rgba(21,21,19,.16);
+  --accent:#3F7FA3; --accent-ink:#3A7596;
   --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
-  --shell:min(1240px,90vw);
+  --shell:min(1280px,90vw);
 }
-[data-moment="origin"]     {--accent:#5FBF95}
-[data-moment="rise"]       {--accent:#F0913C}
-[data-moment="after-dark"] {--accent:#A98BF0}
+/* accents are measured for 3:1 non-text contrast on bone: tangerine (2.25:1)
+   fails, so RISE takes terracotta from the same gradient family instead. */
+[data-moment="origin"]     {--accent:#3F7FA3;--accent-ink:#3A7596}
+[data-moment="rise"]       {--accent:#B85F3D;--accent-ink:#AB5839}
+[data-moment="after-dark"] {--accent:#49304A;--accent-ink:#49304A}
 
 *,*::before,*::after{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{margin:0;background:var(--sky1);color:var(--ink);
+body{margin:0;background:var(--bone);color:var(--ink);
   font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   font-size:clamp(15px,.5vw + 13.5px,17px);line-height:1.6;letter-spacing:-.011em;
   -webkit-font-smoothing:antialiased;overflow-x:hidden}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input,textarea{font:inherit;color:inherit}
 a{color:inherit;text-decoration:none}
-::selection{background:var(--accent);color:#0A0A0A}
+::selection{background:var(--accent);color:var(--bone)}
 
 /* ── the sky ────────────────────────────────────────────── */
-.sky{position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:linear-gradient(175deg,var(--sky1) 0%,var(--sky2) 100%)}
-/* a fixed ambient bloom — it shifts colour with the day but never moves */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;background:var(--bone)}
+/* One colour interruption on the neutral base. Static: V12 rules out
+   permanently animated gradients, so this sits still and simply tints. */
 .bloom{position:fixed;left:50%;top:78%;translate:-50% -50%;z-index:0;pointer-events:none;
   width:min(140vw,1500px);aspect-ratio:1;border-radius:50%;
-  background:radial-gradient(circle,var(--bloom-c,#1E2A3A) 0%,transparent 62%);
-  opacity:var(--bloom-o,.5);filter:blur(40px)}
-.grain{position:fixed;inset:-12%;z-index:1;pointer-events:none;opacity:.42;mix-blend-mode:overlay;
+  background:radial-gradient(circle,var(--accent) 0%,transparent 62%);
+  opacity:.07;filter:blur(60px)}
+.grain{position:fixed;inset:-12%;z-index:1;pointer-events:none;opacity:.18;mix-blend-mode:multiply;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/></filter><rect width='200' height='200' filter='url(%23n)' opacity='.5'/></svg>")}
 
 /* ── type ───────────────────────────────────────────────── */
-.anton{font-family:'Anton',Impact,sans-serif;font-weight:400;text-transform:uppercase;
+.anton{font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   letter-spacing:-.008em;line-height:1.02;margin:0}
 .t-mega,.t-xl{line-height:.98}
 .t-mega{font-size:clamp(3.6rem,15vw,13rem)}
@@ -75,24 +81,13 @@ a{color:inherit;text-decoration:none}
 .tag::before{content:'';width:24px;height:1px;background:var(--accent);flex:none;
   transition:background .6s var(--ease)}
 .lede{font-size:clamp(1rem,1.2vw,1.14rem);color:var(--ink-2);max-width:56ch;line-height:1.7}
-.accent{color:var(--accent);transition:color .6s var(--ease)}
+.accent{color:var(--accent-ink);transition:color .6s var(--ease)}
 
 main{position:relative;z-index:3}
 section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .wrap{width:var(--shell);margin-inline:auto}
 .rule{height:1px;background:var(--hair);border:0;margin:0}
 #joinForm,#choose,#results,#join,#apply{scroll-margin-top:6rem}
-
-/* ── clock rail ─────────────────────────────────────────── */
-.clock{position:fixed;left:clamp(14px,2.2vw,30px);top:50%;translate:0 -50%;z-index:30;
-  display:grid;gap:.9rem;pointer-events:none;opacity:0;transition:opacity .6s var(--ease)}
-.clock.on{opacity:1}
-.clock i{display:block;width:1px;height:26px;background:var(--hair);position:relative;overflow:hidden}
-.clock i::after{content:'';position:absolute;inset:0;background:var(--accent);
-  transform:scaleY(0);transform-origin:top;transition:transform .5s var(--ease)}
-.clock i.past::after{transform:scaleY(1)}
-.clock span{font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-2);
-  writing-mode:vertical-rl;opacity:.7}
 
 /* ── nav ────────────────────────────────────────────────── */
 /* viewport-fit=cover lets the page under the notch and the rounded corners, so
@@ -103,19 +98,19 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   padding-left:max(calc((100vw - var(--shell))/2), env(safe-area-inset-left));
   padding-right:max(calc((100vw - var(--shell))/2), env(safe-area-inset-right));
   transition:background .4s var(--ease)}
-.nav.stuck{background:color-mix(in srgb,var(--sky1) 84%,transparent);backdrop-filter:blur(14px)}
-.mark{font-family:'Archivo',Helvetica,sans-serif;font-variation-settings:'wdth' 112,'wght' 800;
-  font-size:1.05rem;letter-spacing:-.01em;color:var(--ink)}
+.nav.stuck{background:color-mix(in srgb,var(--bone) 84%,transparent);backdrop-filter:blur(14px)}
+.mark{display:block;width:auto;height:1.05rem}
+.mark img{display:block;height:100%;width:auto}
 .nav .mark{opacity:0;transform:translateY(-6px);pointer-events:none;
   transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .nav .mark.show{opacity:1;transform:none;pointer-events:auto}
 .nav-mid{display:flex;gap:1.4rem}
-.nav-mid button{font-size:.72rem;font-weight:500;letter-spacing:.08em;color:var(--ink-2);
+.nav-mid a{font-size:.72rem;font-weight:500;letter-spacing:.08em;color:var(--ink-2);
   position:relative;padding:.25rem 0;transition:color .3s var(--ease)}
-.nav-mid button::after{content:'';position:absolute;left:0;bottom:0;height:1px;width:100%;
+.nav-mid a::after{content:'';position:absolute;left:0;bottom:0;height:1px;width:100%;
   background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
-.nav-mid button:hover,.nav-mid button[aria-current="page"]{color:var(--ink)}
-.nav-mid button[aria-current="page"]::after,.nav-mid button:hover::after{transform:scaleX(1);transform-origin:left}
+.nav-mid a:hover,.nav-mid a[aria-current="page"]{color:var(--ink)}
+.nav-mid a[aria-current="page"]::after,.nav-mid a:hover::after{transform:scaleX(1);transform-origin:left}
 .count-pill{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--ink-2)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 2.8s infinite}
 @keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
@@ -128,12 +123,12 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .btn::after{content:'';position:absolute;inset:0;z-index:0;background:var(--ink);
   transform:translateY(101%);transition:transform .45s var(--ease)}
 .btn>*{position:relative;z-index:1}
-.btn:hover{color:var(--sky1)}
+.btn:hover{color:var(--bone)}
 .btn:hover::after{transform:translateY(0)}
 .btn:active{transform:scale(.98)}
-.btn--solid{background:var(--accent);border-color:var(--accent);color:#0A0A0A}
+.btn--solid{background:var(--ink);border-color:var(--ink);color:var(--bone)}
 .btn--solid::after{background:var(--ink)}
-.btn--solid:hover{color:var(--sky1)}
+.btn--solid:hover{color:var(--bone)}
 .btn:disabled{opacity:.4;pointer-events:none}
 .btn,.moment{translate:var(--mx,0px) var(--my,0px)}
 .lit .btn,.lit .moment{transition:translate .35s var(--ease),color .4s var(--ease),
@@ -142,30 +137,6 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* ── hero ───────────────────────────────────────────────── */
 .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
   padding-top:7rem;position:relative}
-/* The footer's outlined mark, brought into the fold and given a reason to be
-   there: it fills from the bottom as the day passes, so it doubles as a read
-   of how far through you are, with a specular sweep across the filled part. */
-.hero-sig{position:absolute;top:50%;translate:0 -50%;z-index:0;pointer-events:none;user-select:none;
-  right:clamp(16px,3vw,54px);display:grid;
-  /* the real wordmark: wide, bold, flat terminals — not the condensed display face */
-  font-family:'Archivo',Helvetica,Arial,sans-serif;font-variation-settings:'wdth' 112,'wght' 800;
-  font-size:clamp(4.6rem,12.5vw,11rem);line-height:.86;letter-spacing:-.035em}
-.hero-sig span{grid-area:1/1;display:block;margin:0}
-.hero-sig .sig-out{color:transparent;-webkit-text-stroke:2px var(--hair)}
-.hero-sig .sig-fill{color:var(--sig-c,#C89B5A);
-  clip-path:inset(var(--fill,100%) 0 0 0);
-  filter:drop-shadow(0 0 46px color-mix(in srgb,var(--sig-c,#C89B5A) 32%,transparent))}
-.hero-sig .sig-sheen{color:transparent;clip-path:inset(var(--fill,100%) 0 0 0);
-  background-image:linear-gradient(104deg,
-    transparent 0%,transparent 40%,
-    rgba(255,255,255,.55) 47%,rgba(255,255,255,.9) 50%,rgba(255,255,255,.55) 53%,
-    transparent 60%,transparent 100%);
-  background-size:280% 100%;background-repeat:no-repeat;
-  -webkit-background-clip:text;background-clip:text;
-  animation:sheen 8s linear infinite}
-@keyframes sheen{from{background-position:230% 0}to{background-position:-130% 0}}
-.hero .wrap{position:relative;z-index:1}
-.hero .tag{margin-bottom:2.2rem}
 .hero h1{margin-bottom:2rem}
 .hero h1 .l{display:block;overflow:hidden}
 .hero h1 .l>span{display:block;transform:translateY(105%);
@@ -180,88 +151,73 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   text-transform:uppercase;color:var(--ink-2)}
 .scroll-cue .ln{width:44px;height:1px;background:var(--hair);position:relative;overflow:hidden}
 .scroll-cue .ln::after{content:'';position:absolute;inset:0;background:var(--accent);
-  transform:translateX(-100%);animation:sweep 2.4s var(--ease-io) infinite}
+  transform:translateX(-100%);animation:sweep 2.4s var(--ease-io) 3}
 @keyframes sweep{0%{transform:translateX(-100%)}55%,100%{transform:translateX(100%)}}
+
+.two-up{display:grid;grid-template-columns:1fr minmax(300px,44%);
+  gap:clamp(2rem,5vw,4.5rem);align-items:center}
+@media (max-width:980px){.two-up{grid-template-columns:1fr}}
+
+/* ── full-bleed bands ───────────────────────────────────── */
+.band{position:relative;margin:0;width:100%;overflow:hidden;background:var(--dusk);
+  aspect-ratio:21/9;max-height:70svh}
+.band-media{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
+.band--wide{aspect-ratio:970/476}
+@media (max-width:768px){.band{aspect-ratio:4/5;max-height:none}
+  .band-media{object-position:center}
+  .band--wide{aspect-ratio:3/2}}
+.proof{margin:0 0 1.1rem;font-size:.78rem;font-weight:600;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink-2)}
+.btn--quiet{border-color:transparent;padding-inline:0;margin-inline-start:1.2rem}
+.btn--quiet:hover{color:var(--ink);border-color:transparent}
 
 /* ── the three acts ─────────────────────────────────────── */
 .act{min-height:96svh;display:flex;align-items:center;position:relative;overflow:hidden}
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
-  grid-template-columns:1fr auto;gap:2rem;align-items:end}
-/* proper spheres, not flat discs: offset specular, terminator shading,
-   rim light and an atmospheric bloom */
-.act .dial{width:clamp(160px,21vw,280px);aspect-ratio:1;position:relative;flex:none;
-  display:grid;place-items:center}
-.orb-gl{position:absolute;inset:0;width:100%;height:100%;opacity:0;
-  transition:opacity .8s var(--ease)}
-/* supplied artwork wins when it is present; the 3D model is the fallback */
-/* oversized on purpose: the artwork carries its own halo, so the disc lands at
-   the same weight as the sphere it replaces and the glow spills past the dial */
-.orb-img{position:absolute;inset:-7.5%;width:115%;height:115%;object-fit:contain;opacity:0;
-  transition:opacity .9s var(--ease);pointer-events:none}
-.dial.img-ready .orb-img{opacity:1}
-.dial.img-ready .orb3d,.dial.img-ready .orb-gl{opacity:0}
-.dial.img-ready .orb-img{animation:float 9s ease-in-out infinite}
-.dial.gl-ready .orb-gl{opacity:1}
-.dial.gl-ready .orb3d{opacity:0;transition:opacity .5s var(--ease)}
-.orb3d{position:relative;width:74%;aspect-ratio:1;border-radius:50%;
-  background:
-    radial-gradient(circle at 34% 28%, rgba(255,255,255,.92) 0%, rgba(255,255,255,0) 38%),
-    radial-gradient(circle at 50% 46%, var(--hi) 0%, var(--mid) 46%, var(--lo) 100%);
-  box-shadow:
-    inset -16px -20px 44px rgba(0,0,0,.5),
-    inset 10px 10px 26px rgba(255,255,255,.16),
-    0 0 var(--bloom,70px) var(--bleed,14px) color-mix(in srgb,var(--mid) 42%,transparent);
-  animation:float 9s ease-in-out infinite}
-@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-/* corona: a soft second light, only on the suns */
-.orb3d::after{content:'';position:absolute;inset:-38%;border-radius:50%;pointer-events:none;
-  background:radial-gradient(circle,color-mix(in srgb,var(--mid) 34%,transparent) 0%,transparent 62%);
-  opacity:var(--corona,.9)}
-/* craters, only on the moon */
-.orb3d.moon{background:
-    radial-gradient(circle at 62% 66%, rgba(0,0,0,.16) 0%, transparent 15%),
-    radial-gradient(circle at 38% 60%, rgba(0,0,0,.13) 0%, transparent 11%),
-    radial-gradient(circle at 55% 34%, rgba(0,0,0,.11) 0%, transparent 9%),
-    radial-gradient(circle at 34% 28%, rgba(255,255,255,.75) 0%, rgba(255,255,255,0) 40%),
-    radial-gradient(circle at 50% 46%, var(--hi) 0%, var(--mid) 48%, var(--lo) 100%)}
-.act[data-act="origin"]     .orb3d{--hi:#FFE0A8;--mid:#F0913C;--lo:#7A3410;--bloom:60px;--corona:.75}
-.act[data-act="rise"]       .orb3d{--hi:#FFFBE8;--mid:#FFC94A;--lo:#C97A18;--bloom:110px;--bleed:22px;--corona:1}
-.act[data-act="after-dark"] .orb3d{--hi:#F4F2FF;--mid:#B9B4D6;--lo:#5B5680;--bloom:52px;--corona:.45}
+  grid-template-columns:1fr minmax(300px,44%);gap:clamp(2rem,5vw,4.5rem);align-items:center}
+/* photography carries the acts now. Sized as a real column rather than an
+   icon, per "large format, full-bleed where useful". */
+.act-media{position:relative;margin:0;overflow:hidden;background:var(--stone)}
+.act-media img{display:block;width:100%;height:100%;object-fit:cover}
+.act-media figcaption{position:absolute;left:0;bottom:0;padding:.5rem .7rem;
+  font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--bone);background:var(--ink)}
 .act h2{margin:0 0 1rem}
 .act .note{font-size:.98rem;color:var(--ink-2);max-width:34ch;line-height:1.65}
 .act .kicker{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;
-  color:var(--accent);margin:0 0 1.4rem;transition:color .6s var(--ease)}
+  color:var(--accent-ink);margin:0 0 1.4rem;transition:color .6s var(--ease)}
 
 /* ── vote ───────────────────────────────────────────────── */
 .moments{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:clamp(2rem,5vh,3rem);
   background:var(--hair);border:1px solid var(--hair)}
 .moment{position:relative;overflow:hidden;isolation:isolate;
-  background:color-mix(in srgb,var(--sky1) 62%,transparent);
+  background:color-mix(in srgb,var(--bone) 62%,transparent);
   padding:1.7rem 1.5rem 1.6rem;text-align:left;display:flex;flex-direction:column;gap:.55rem;
   min-height:230px;justify-content:flex-end;
   transition:opacity .4s var(--ease),transform .5s var(--ease)}
 /* the colourway is the card, not a hairline on it */
 .moment::before{content:'';position:absolute;inset:0;z-index:-1;
-  background:radial-gradient(120% 90% at 15% 105%,var(--c1) 0%,transparent 68%);
-  opacity:.34;transition:opacity .55s var(--ease)}
-.moment::after{content:'';position:absolute;inset:auto 0 0 0;height:4px;background:var(--c1);
+  background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 52%,var(--c3) 100%);
+  opacity:.16;transition:opacity .55s var(--ease)}
+.moment::after{content:'';position:absolute;inset:auto 0 0 0;height:4px;
+  background:linear-gradient(90deg,var(--c1),var(--c2),var(--c3));
   transform:scaleX(.22);transform-origin:left;transition:transform .55s var(--ease)}
-.moment:hover:not(.locked)::before{opacity:.62}
+.moment:hover:not(.locked)::before{opacity:.3}
 .moment:hover:not(.locked)::after,.moment[aria-pressed="true"]::after{transform:scaleX(1)}
-.moment[aria-pressed="true"]::before{opacity:.78}
+.moment[aria-pressed="true"]::before{opacity:.42}
 .moment h3{color:var(--ink)}
 .moments.decided .moment:not([aria-pressed="true"]){opacity:.3}
 .moments.decided .moment{pointer-events:none}
 .moment.locked{cursor:pointer}
 .moment .idx{font-size:.62rem;letter-spacing:.2em;color:var(--ink-2)}
-.moment h3{margin:0;font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+.moment h3{margin:0;font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:clamp(1.4rem,2.4vw,2rem);line-height:.95;letter-spacing:-.01em}
 .moment p{margin:0;font-size:.85rem;color:var(--ink-2);line-height:1.5}
 .moment .chk{position:absolute;top:1rem;right:1rem;width:22px;height:22px;border-radius:50%;
   background:var(--accent);display:grid;place-items:center;opacity:0;transform:scale(.5);
   transition:all .4s var(--ease)}
 .moment[aria-pressed="true"] .chk{opacity:1;transform:scale(1)}
-.moment .chk svg{width:10px;stroke:#0A0A0A;stroke-width:3;fill:none}
+.moment .chk svg{width:10px;stroke:var(--bone);stroke-width:3;fill:none}
 
 .confirm{display:grid;grid-template-rows:0fr;opacity:0;
   transition:grid-template-rows .6s var(--ease),opacity .45s var(--ease)}
@@ -289,7 +245,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   transition:transform 1.5s var(--ease)}
 .bar-row .pct{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums;
   color:var(--ink-2);min-width:52px;text-align:right}
-.bar-row.me .pct{color:var(--accent)}
+.bar-row.me .pct{color:var(--accent-ink)}
 .nudge{margin-top:1.4rem;font-size:.94rem;color:var(--ink-2)}
 .nudge b{color:var(--ink)}
 
@@ -302,7 +258,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .fr{display:grid;gap:.4rem;position:relative}
 .fr label{font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;
   color:var(--ink-2);display:flex;gap:.5rem;align-items:baseline}
-.fr label .req{color:var(--accent)}
+.fr label .req{color:var(--accent-ink)}
 .fr label .opt{opacity:.6;font-weight:500}
 /* The accent underline is painted as a background so it can be drawn in from
    the left on focus without wrapping every input in another element. */
@@ -344,10 +300,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .fsec{border:0;margin:0;padding:2.1rem 0 0;border-top:1px solid var(--hair);min-width:0}
 .fsec:first-of-type{border-top:0;padding-top:1.3rem}
 .fsec legend{padding:0;display:flex;align-items:baseline;gap:.85rem;
-  font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+  font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:1.18rem;letter-spacing:.005em;color:var(--ink)}
-.fsec legend::before{content:attr(data-n);font-family:'Archivo',Helvetica,sans-serif;
-  font-variation-settings:'wght' 700;font-size:.68rem;letter-spacing:.2em;color:var(--accent);
+.fsec legend::before{content:attr(data-n);font-family:'Inter',system-ui,sans-serif;
+  font-variation-settings:'wght' 700;font-size:.68rem;letter-spacing:.2em;color:var(--accent-ink);
   transition:opacity .35s var(--ease),scale .35s var(--ease);opacity:.55;transform-origin:left center}
 /* the part you are actually in steps forward */
 .fsec.here legend::before{opacity:1;scale:1.25}
@@ -378,7 +334,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .sel-btn .car path{stroke:currentColor;stroke-width:1.6;fill:none}
 .sel.open .sel-btn .car{transform:rotate(180deg)}
 .sel-list{position:absolute;top:calc(100% + .4rem);left:0;right:0;z-index:20;
-  background:#12161F;border:1px solid var(--hair);padding:.3rem;list-style:none;margin:0;
+  background:var(--bone);border:1px solid var(--hair);padding:.3rem;list-style:none;margin:0;
   box-shadow:0 18px 44px rgba(0,0,0,.5);
   opacity:0;visibility:hidden;transform:translateY(-6px);transform-origin:top;
   transition:opacity .3s var(--ease),transform .3s var(--ease),visibility .3s}
@@ -391,7 +347,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .sel-list li:nth-child(7){transition-delay:.2s}  .sel-list li:nth-child(8){transition-delay:.23s}
 .sel-list button{width:100%;text-align:left;padding:.55rem .7rem;font-size:.92rem;color:rgba(244,239,230,.7);
   transition:background .25s var(--ease),color .25s var(--ease)}
-.sel-list button:hover{background:rgba(244,239,230,.08);color:#F4EFE6}
+.sel-list button:hover{background:rgba(21,21,19,.06);color:var(--ink)}
 .sel-list button[aria-selected="true"]{color:var(--accent)}
 .consent{display:flex;gap:.8rem;align-items:flex-start;font-size:.85rem;color:var(--ink-2);
   line-height:1.55;cursor:pointer;user-select:none}
@@ -405,7 +361,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .box::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scale(0);
   transition:transform .32s var(--ease)}
 .box svg{width:11px;position:relative;z-index:1}
-.box svg path{stroke:#0A0A0A;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;
+.box svg path{stroke:var(--bone);stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;
   stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .35s var(--ease) .1s}
 .consent:hover .box{border-color:var(--accent)}
 .consent input:focus-visible + .box{outline:2px solid var(--accent);outline-offset:2px}
@@ -420,10 +376,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .pass.on{display:block;animation:rise .8s var(--ease) both}
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .card{position:relative;overflow:hidden;border:1px solid var(--hair);padding:clamp(1.6rem,3.5vw,2.5rem);
-  background:color-mix(in srgb,var(--sky1) 70%,transparent);max-width:32rem}
+  background:color-mix(in srgb,var(--bone) 70%,transparent);max-width:32rem}
 .card::before{content:'';position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent);
   transition:background .6s var(--ease)}
-.pass-moment{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+.pass-moment{font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:clamp(2rem,5.5vw,3.4rem);line-height:.9;margin:1rem 0 .5rem;color:var(--accent);
   transition:color .6s var(--ease)}
 .pass-no{font-size:1rem;font-weight:600;font-variant-numeric:tabular-nums;margin:0 0 1.2rem}
@@ -446,20 +402,20 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .two{display:grid;grid-template-columns:.8fr 1.4fr;gap:clamp(1.8rem,5vw,4rem);align-items:start}
 .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;margin-top:2.4rem}
 .pillar{border-top:1px solid var(--hair);padding-top:1.2rem}
-.pillar .k{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
-.pillar h3{margin:.6rem 0 .5rem;font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+.pillar .k{font-size:.68rem;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+.pillar h3{margin:.6rem 0 .5rem;font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:1.2rem;letter-spacing:-.005em}
 .pillar p{margin:0;font-size:.89rem;color:var(--ink-2);line-height:1.6}
 .statgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-top:2.2rem}
 .stat{border-top:1px solid var(--hair);padding-top:1.1rem}
-.stat b{display:block;font-family:'Anton',sans-serif;font-weight:400;
+.stat b{display:block;font-family:'Inter',system-ui,sans-serif;font-weight:600;
   font-size:clamp(2rem,3.6vw,3rem);line-height:.9;margin-bottom:.5rem;color:var(--accent);
   transition:color .6s var(--ease)}
 .stat span{font-size:.8rem;color:var(--ink-2);line-height:1.45;display:block}
 .quote{border-left:2px solid var(--accent);padding-left:1.4rem;margin:2.2rem 0 0;
   font-size:clamp(1.05rem,1.7vw,1.3rem);line-height:1.5;transition:border-color .6s var(--ease)}
 .quote cite{display:block;margin-top:.7rem;font-size:.78rem;font-style:normal;color:var(--ink-2)}
-.creed .line{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;
+.creed .line{font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:clamp(1.6rem,4.4vw,3.4rem);line-height:1;padding:clamp(.9rem,2.2vh,1.5rem) 0;margin:0;
   border-bottom:1px solid var(--hair);color:rgba(244,239,230,.22);transition:color .7s var(--ease)}
 .creed .line.lit{color:var(--ink)}
@@ -468,19 +424,19 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* programme */
 .seats{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:2rem;padding:1.6rem 0;
   border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
-.seat b{display:block;font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(2.2rem,4.4vw,3.4rem);
+.seat b{display:block;font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:clamp(2.2rem,4.4vw,3.4rem);
   line-height:.9;color:var(--accent);margin-bottom:.3rem;transition:color .6s var(--ease)}
 .seat span{font-size:.8rem;color:var(--ink-2)}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.4rem;margin-top:2.4rem}
 .step{border-top:1px solid var(--hair);padding-top:1.1rem}
-.step .k{font-family:'Anton',sans-serif;font-size:1.1rem;color:var(--accent);transition:color .6s var(--ease)}
+.step .k{font-family:'Inter',system-ui,sans-serif;font-weight:600;font-size:1.1rem;color:var(--accent-ink);transition:color .6s var(--ease)}
 .step h3{margin:.5rem 0 .4rem;font-size:.98rem;font-weight:600}
 .step p{margin:0;font-size:.86rem;color:var(--ink-2);line-height:1.55}
 .safeguard{margin-top:2rem;padding:1.2rem 1.4rem;border:1px solid var(--hair);
   font-size:.86rem;color:var(--ink-2);line-height:1.6}
 .safeguard b{color:var(--ink)}
 
-.privacy{background:#12161F;color:#F4EFE6;border:1px solid rgba(244,239,230,.16);
+.privacy{background:var(--bone);color:var(--ink);border:1px solid var(--hair);
   width:min(92vw,33rem);padding:clamp(1.6rem,4vw,2.4rem);margin:auto}
 .privacy::backdrop{background:rgba(4,5,8,.72);backdrop-filter:blur(5px)}
 .privacy h2{margin:0 0 1.3rem}
@@ -488,52 +444,45 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .privacy li{display:grid;grid-template-columns:auto 1fr;gap:.85rem;align-items:start;
   font-size:.9rem;color:rgba(244,239,230,.62);line-height:1.55}
 .privacy li::before{content:'';width:14px;height:1px;background:var(--accent);margin-top:.72rem}
-.privacy li b{color:#F4EFE6}
-.privacy a{color:#F4EFE6;text-decoration:underline}
+.privacy li b{color:var(--ink)}
+.privacy a{color:var(--ink);text-decoration:underline}
 
 footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   padding:3rem 0 calc(2.2rem + env(safe-area-inset-bottom));margin-top:2rem}
 .foot-top{display:flex;flex-wrap:wrap;gap:1.3rem;justify-content:space-between;align-items:center;padding-bottom:2rem}
 .foot-links{display:flex;flex-wrap:wrap;gap:1.9rem;font-size:.74rem;color:var(--ink-2)}
 .foot-links button:hover,.foot-links a:hover{color:var(--ink)}
-.bigmark{font-family:'Archivo',Helvetica,sans-serif;font-variation-settings:'wdth' 112,'wght' 800;font-size:clamp(3.4rem,17vw,13rem);line-height:.8;
-  text-align:center;color:transparent;-webkit-text-stroke:1.2px var(--hair);
-  user-select:none;margin:0}
+.bigmark{display:block;width:min(78vw,860px);margin:0 auto;opacity:.14;user-select:none}
+.bigmark img{display:block;width:100%;height:auto}
 .legal{text-align:center;font-size:.72rem;color:var(--ink-2);opacity:.8;margin-top:1.3rem}
-.nav .mark,.nav-mid button,.foot-links button,.foot-links a{position:relative}
-.nav .mark::before,.nav-mid button::before,.foot-links button::before,.foot-links a::before{
+.nav .mark,.nav-mid a,.foot-links button,.foot-links a{position:relative}
+.nav .mark::before,.nav-mid a::before,.foot-links button::before,.foot-links a::before{
   content:'';position:absolute;left:-8px;right:-8px;top:50%;translate:0 -50%;height:44px}
 
-.view[hidden]{display:none}
-.js .view{transition:opacity .3s var(--ease),transform .3s var(--ease)}
-.js .view.leaving{opacity:0;transform:translateY(-6px);transition-duration:.16s}
-.js .view.entering{opacity:0;transform:translateY(10px);transition:none}
 .js .rv{opacity:0;transform:translateY(22px);transition:opacity .7s var(--ease),transform .7s var(--ease)}
 .rv.in{opacity:1;transform:none}
 .toast{position:fixed;left:50%;bottom:calc(1.6rem + env(safe-area-inset-bottom));translate:-50% 130%;
   z-index:80;display:flex;align-items:center;gap:.75rem;max-width:min(92vw,430px);
-  padding:.8rem 1.3rem .8rem .8rem;background:var(--accent);color:#0A0A0A;
-  box-shadow:0 16px 40px rgba(0,0,0,.4);font-size:.88rem;line-height:1.35;
+  padding:.8rem 1.3rem .8rem .8rem;background:var(--ink);color:var(--bone);
+  box-shadow:0 16px 40px rgba(21,21,19,.22);font-size:.88rem;line-height:1.35;
   opacity:0;pointer-events:none;transition:opacity .45s var(--ease),translate .55s var(--ease)}
 .toast.on{opacity:1;translate:-50% 0}
 .toast .ic{width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;
-  background:rgba(10,10,10,.16)}
-.toast .ic svg{width:12px;stroke:#0A0A0A;stroke-width:2.4;fill:none;stroke-linecap:round}
+  background:rgba(247,243,237,.18)}
+.toast .ic svg{width:12px;stroke:var(--bone);stroke-width:2.4;fill:none;stroke-linecap:round}
 .toast b{font-weight:700}
-.intro{position:fixed;inset:0;z-index:90;background:#080A10;display:grid;place-items:center;
+.intro{position:fixed;inset:0;z-index:90;background:var(--bone);display:grid;place-items:center;
   transition:opacity .9s var(--ease),visibility .9s}
 .intro.gone{opacity:0;visibility:hidden}
-.intro .mark{font-size:clamp(1.6rem,5vw,2.6rem);color:#F4EFE6;animation:breathe 2.2s var(--ease-io) infinite}
+.intro .mark{width:min(46vw,220px);height:auto;animation:breathe 2.2s var(--ease-io) infinite}
 @keyframes breathe{0%,100%{opacity:.25}50%{opacity:1}}
 
 @media (max-width:980px){
-  .clock{display:none}
   .act{min-height:auto;padding:clamp(3.5rem,9vh,6rem) 0}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
   .act .dial{width:clamp(120px,34vw,180px);order:-1}
   /* the empty right column only exists on desktop; on mobile the signature
      would sit on top of the copy and the buttons, so it stands down */
-  .hero-sig{display:none}   /* no empty right column on mobile */
   .moments{grid-template-columns:1fr}
   .moment{min-height:0;padding:1.3rem}
   .join-grid,.two{grid-template-columns:1fr}
@@ -576,50 +525,56 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 </head>
 <body>
 
-<div class="intro" id="intro" aria-hidden="true"><div class="mark">INVI</div></div>
+<div class="intro" id="intro" aria-hidden="true"><div class="mark"><img src="img/invi-wordmark.png" alt="" width="900" height="220" decoding="async"></div></div>
 <div class="sky" aria-hidden="true"></div>
 <div class="bloom" id="bloom" aria-hidden="true"></div>
 <div class="grain" aria-hidden="true"></div>
 
-<div class="clock" id="clock" aria-hidden="true">
-  <span>Origin</span><i data-c="0"></i><i data-c="1"></i><i data-c="2"></i>
-  <i data-c="3"></i><i data-c="4"></i><i data-c="5"></i><span>After dark</span>
-</div>
 
 <header class="nav" id="nav">
-  <button class="mark" data-go="home">INVI</button>
+  <a class="mark" href="#top" aria-label="INVI, back to top"><img src="img/invi-wordmark.png" alt="INVI" width="900" height="220" fetchpriority="high" decoding="async"></a>
   <nav class="nav-mid">
-    <button data-go="home" aria-current="page">Home</button>
-    <button data-go="brand">The Brand</button>
-    <button data-go="programme">Programme</button>
+    <a href="#top" aria-current="page">Home</a>
+    <a href="#brand">The Brand</a>
+    <a href="#programme">Programme</a>
   </nav>
   <div class="count-pill"><span class="dot"></span><strong id="navCount">0</strong><span class="lbl">in so far</span></div>
 </header>
 
-<main>
-<!-- ══════════════ HOME ══════════════ -->
-<div class="view" id="view-home">
+<main id="top">
 
+<!-- ══════════════ 01 · HERO ══════════════ -->
   <section class="hero">
     <div class="wrap">
-      <p class="tag rv">One day · Three moments</p>
-      <div class="hero-sig" id="heroSig" aria-hidden="true"><span class="sig-out">INVI</span><span class="sig-fill">INVI</span><span class="sig-sheen">INVI</span></div>
+      <p class="tag rv">Scent. Skin. Mood.</p>
       <h1 class="anton t-mega" id="heroMark">
-        <span class="l"><span>Own</span></span>
-        <span class="l"><span>your</span></span>
-        <span class="l"><span class="accent">story.</span></span>
+        <span class="l"><span>Where scent,</span></span>
+        <span class="l"><span>skin and mood</span></span>
+        <span class="l"><span class="accent">meet.</span></span>
       </h1>
-      <p class="lede rv" style="transition-delay:.14s">
-        It starts before the sun does and it doesn't stop until the lights go out.
-        Three are coming. The people who join now decide which one lands first.
+      <p class="proof rv" style="transition-delay:.12s">
+        Built with boys. Backed by science. Inspired by culture.
+      </p>
+      <p class="lede rv" style="transition-delay:.16s">
+        Three are coming, one for each part of the day. The people who join now
+        decide which one lands first.
       </p>
       <div class="hero-actions rv" style="transition-delay:.22s">
         <a href="#join" class="btn btn--solid"><span>Join the community</span><span>→</span></a>
-        <button class="btn" data-go="programme"><span>Build it with us</span></button>
+        <a class="btn btn--quiet" href="#programme"><span>Build it with us</span></a>
       </div>
     </div>
     <div class="scroll-cue"><span class="ln"></span><span>Scroll through the day</span></div>
   </section>
+
+  <!-- one colour interruption: bone gives way to a single moving frame -->
+  <figure class="band rv">
+    <video class="band-media" autoplay muted loop playsinline
+           poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
+      <source src="img/hero-loop.mp4" type="video/mp4">
+      <img src="img/hero-poster-512.webp" alt="A group on the beach as the sun goes down">
+    </video>
+  </figure>
 
   <!-- three acts of one day -->
   <section class="act" data-act="origin">
@@ -630,7 +585,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="rising_sun" data-img="icon-origin.webp"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"><figcaption>First light</figcaption></figure>
     </div>
   </section>
 
@@ -642,7 +597,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="midday_sun" data-img="icon-rise.webp"><span class="orb3d"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"><figcaption>Full sun</figcaption></figure>
     </div>
   </section>
 
@@ -654,147 +609,42 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <div class="dial rv" style="transition-delay:.1s" aria-hidden="true" data-node="moon" data-img="icon-moon.webp"><span class="orb3d moon"></span><canvas class="orb-gl"></canvas><img class="orb-img" alt="" decoding="async"></div>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"><figcaption>After dark</figcaption></figure>
     </div>
   </section>
 
-  <section id="choose">
-    <div class="wrap">
-      <p class="tag rv">Your vote</p>
-      <h2 class="anton t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Which hour is yours?</h2>
-      <p class="lede rv" style="transition-delay:.12s">
-        You get <b style="color:var(--ink)">one vote</b>, and it decides which one we build first.
-        Once it's in, it's locked. Join below to unlock yours.
-      </p>
+<hr class="rule">
 
-      <div class="moments gated" id="moments">
-        <button class="moment locked" data-key="origin" aria-pressed="false" style="--c1:#5FBF95">
-          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">01</span><h3>Origin</h3><p>The moments that start it all.</p>
-        </button>
-        <button class="moment locked" data-key="rise" aria-pressed="false" style="--c1:#F0913C">
-          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">02</span><h3>Rise</h3><p>The moments in motion.</p>
-        </button>
-        <button class="moment locked" data-key="after-dark" aria-pressed="false" style="--c1:#A98BF0">
-          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">03</span><h3>After Dark</h3><p>Moments that need no explanation.</p>
-        </button>
+<!-- ══════════════ 03 · BUILT WITH BOYS ══════════════ -->
+  <figure class="band band--wide rv">
+    <img class="band-media" src="img/hero-crew-1440.webp"
+         srcset="img/hero-crew-720.webp 720w, img/hero-crew-1080.webp 1080w, img/hero-crew-1440.webp 1440w"
+         sizes="100vw" width="1440" height="810"
+         alt="Four friends messing about on a beach basketball court as the sun drops"
+         loading="lazy" decoding="async">
+  </figure>
+
+  <section id="brand" style="padding-top:9rem">
+    <div class="wrap two-up">
+      <div>
+        <p class="tag rv">The brand</p>
+        <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
+          Built for the years that matter most.
+        </h2>
+        <p class="lede rv" style="transition-delay:.16s">
+          INVI is inspired by the Latin word <em>Invictus</em>, unconquered. Meaning to be grounded
+          in who you are. We believe the years between childhood and adulthood shape confidence for
+          life, yet they're the most overlooked years of all.
+        </p>
       </div>
-
-      <div class="confirm" id="confirm"><div class="confirm-in">
-        <div class="confirm-box">
-          <div><p>You've picked <b id="picked">—</b>.</p>
-            <p class="warn">Once you confirm, it's locked. You can't change it later.</p></div>
-          <button class="btn btn--solid" id="confirmBtn"><span>Confirm</span><span>→</span></button>
-        </div>
-      </div></div>
-
-      <div class="results" id="results" tabindex="-1"><div class="results-inner">
-        <div class="results-head">
-          <p class="tag" style="margin:0">Live · everyone who's decided</p>
-          <p style="margin:0;font-size:.86rem;color:var(--ink-2)"><strong id="totalCount">0</strong> have chosen</p>
-        </div>
-        <div id="bars"></div>
-        <p class="nudge" id="nudge" role="status"></p>
-      </div></div>
-    </div>
-  </section>
-
-  <hr class="rule">
-
-  <section id="join">
-    <div class="wrap">
-      <div class="join-grid">
-        <div id="joinForm">
-          <p class="tag rv">Get in</p>
-          <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
-          <p class="lede rv" style="transition-delay:.12s">
-            Your name and email unlock your vote. One thing at a time, nothing else in between.
-          </p>
-          <form class="form rv" id="form" novalidate style="transition-delay:.18s">
-            <div class="fr-pair">
-              <div class="fr" id="r-name">
-                <label for="fname">First name</label>
-                <input id="fname" type="text" autocomplete="given-name" placeholder="What do people call you?">
-                <p class="err" id="e-name"></p>
-              </div>
-              <div class="fr" id="r-email">
-                <label for="email">Email</label>
-                <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
-                <p class="err" id="e-email"></p>
-              </div>
-            </div>
-            <div class="fr" id="r-age">
-              <label id="ageLabel">Age <span class="opt">Optional</span></label>
-              <div class="sel" id="sel">
-                <button type="button" class="sel-btn" id="selBtn" aria-haspopup="listbox" aria-expanded="false">
-                  <span id="selVal">Select your age</span>
-                  <svg class="car" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
-                </button>
-                <ul class="sel-list" id="selList" role="listbox" aria-labelledby="ageLabel"></ul>
-              </div>
-              <p class="note" id="ageNote" hidden>Under 13? Ask a parent or guardian to do this bit with you.</p>
-            </div>
-            <div class="fr" id="r-consent">
-              <label class="consent">
-                <input type="checkbox" id="consent">
-                <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
-                <span>I'm happy for INVI to email me about the launch. You can leave any time.
-                  <a href="#" data-dialog>Privacy</a>.</span>
-              </label>
-              <p class="err" id="e-consent"></p>
-            </div>
-            <div class="form-foot">
-              <button type="submit" class="btn btn--solid" id="submit"><span>Join</span><span>→</span></button>
-            </div>
-          </form>
-          <div class="joined-note" id="joinedNote" hidden>
-            <p>You're in<b id="jnName"></b>. Your vote's waiting.</p>
-            <a href="#choose" class="btn"><span>Pick your hour</span><span>→</span></a>
-          </div>
-          <div class="pass" id="pass">
-            <div class="card">
-              <p class="tag" id="passTag">You're in</p>
-              <p class="pass-moment" id="passMoment">—</p>
-              <p class="pass-no">Member <span id="passNo">0000</span> <span>· vote counted</span></p>
-              <p class="msg" id="passMsg"></p>
-              <div class="pass-actions">
-                <button class="btn" id="shareBtn"><span>Send to a friend</span></button>
-                <button class="btn" data-go="programme"><span>Build it with us</span></button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <aside class="rail rv" style="transition-delay:.12s">
-          <p class="tag" style="margin-bottom:-.3rem">What happens next</p>
-          <div class="row"><span class="n"></span><div><h3>You shape it</h3>
-            <p>Your choice counts toward what gets built first. Watch the numbers move the moment you lock it in.</p></div></div>
-          <div class="row"><span class="n"></span><div><h3>One clue at a time</h3>
-            <p>Small pieces, spaced out, until the whole thing makes sense.</p></div></div>
-          <div class="row"><span class="n"></span><div><h3>You're told first</h3>
-            <p>Before the ads, before the shelves, before anyone else knows it exists.</p></div></div>
-          <div class="row"><span class="n"></span><div><h3>Twelve of you build it with us</h3>
-            <p>A dozen places on the programme, mentored by some of the UK's best entrepreneurs.</p></div></div>
-        </aside>
-      </div>
-    </div>
-  </section>
-</div>
-
-<!-- ══════════════ BRAND ══════════════ -->
-<div class="view" id="view-brand" hidden>
-  <section style="padding-top:9rem">
-    <div class="wrap">
-      <p class="tag rv">The brand</p>
-      <h1 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
-        Built for the years that matter most.
-      </h1>
-      <p class="lede rv" style="transition-delay:.16s">
-        INVI is inspired by the Latin word <em>Invictus</em>, unconquered. Meaning to be grounded
-        in who you are. We believe the years between childhood and adulthood shape confidence for
-        life, yet they're the most overlooked years of all.
-      </p>
+      <!-- the mark worn rather than printed: the guidelines' tonal-mark device -->
+      <figure class="act-media rv" style="transition-delay:.12s;aspect-ratio:704/880">
+        <img src="img/portrait-brand-704.webp"
+             srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
+             sizes="(max-width:980px) 92vw, 44vw" width="704" height="880"
+             alt="A boy wearing a hoodie with the INVI wordmark embossed into the fabric"
+             loading="lazy" decoding="async">
+      </figure>
     </div>
   </section>
   <section class="creed" style="padding-top:0">
@@ -839,21 +689,29 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
           <p>Designed to evolve alongside boys through the years that shape them, rather than showing up once and moving on.</p></div>
       </div>
       <div class="rv" style="margin-top:2.6rem;display:flex;flex-wrap:wrap;gap:.8rem">
-        <button class="btn btn--solid" data-go="home"><span>Join the community</span><span>→</span></button>
-        <button class="btn" data-go="programme"><span>See the programme</span></button>
+        <a class="btn btn--solid" href="#joinForm"><span>Join the community</span><span>→</span></a>
+        <a class="btn" href="#programme"><span>See the programme</span></a>
       </div>
     </div>
   </section>
-</div>
 
-<!-- ══════════════ PROGRAMME ══════════════ -->
-<div class="view" id="view-programme" hidden>
-  <section style="padding-top:9rem">
+<hr class="rule">
+
+<!-- ══════════════ 04 · PROGRAMME ══════════════ -->
+  <figure class="band band--wide rv">
+    <img class="band-media" src="img/skate-bowl-970.webp"
+         srcset="img/skate-bowl-485.webp 485w, img/skate-bowl-728.webp 728w, img/skate-bowl-970.webp 970w"
+         sizes="100vw" width="970" height="476"
+         alt="A skater carving the wall of a concrete bowl in low evening sun"
+         loading="lazy" decoding="async">
+  </figure>
+
+  <section id="programme" style="padding-top:9rem">
     <div class="wrap">
       <p class="tag rv">The entrepreneurship programme</p>
-      <h1 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
+      <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
         Twelve of you will build this with us.
-      </h1>
+      </h2>
       <p class="lede rv" style="transition-delay:.16s">
         We're selecting twelve boys to build INVI alongside us, mentored by some of the UK's best
         entrepreneurs. It's filmed as a series, so the whole thing gets documented as it happens.
@@ -968,155 +826,156 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
           <p class="pass-ref">Ref <span id="progRefPre">INVI</span>-<span id="progRef">0000</span></p>
           <p class="msg" id="progMsg"></p>
           <div class="pass-actions">
-            <button class="btn" data-go="home"><span>Back to the vote</span></button>
+            <a class="btn" href="#choose"><span>Back to the vote</span></a>
           </div>
         </div>
       </div>
     </div>
   </section>
-</div>
+
+<hr class="rule">
+
+<!-- ══════════════ 05 · FIRST DROP ══════════════ -->
+  <section id="choose">
+    <div class="wrap">
+      <p class="tag rv">Your vote</p>
+      <h2 class="anton t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Which hour is yours?</h2>
+      <p class="lede rv" style="transition-delay:.12s">
+        You get <b style="color:var(--ink)">one vote</b>, and it decides which one we build first.
+        Once it's in, it's locked. Join below to unlock yours.
+      </p>
+
+      <div class="moments gated" id="moments">
+        <button class="moment locked" data-key="origin" aria-pressed="false" style="--c1:#3F7FA3;--c2:#78BFD0;--c3:#6F9B4B">
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx">01</span><h3>Origin</h3><p>The moments that start it all.</p>
+        </button>
+        <button class="moment locked" data-key="rise" aria-pressed="false" style="--c1:#6B3A24;--c2:#F28A32;--c3:#F2C84B">
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx">02</span><h3>Rise</h3><p>The moments in motion.</p>
+        </button>
+        <button class="moment locked" data-key="after-dark" aria-pressed="false" style="--c1:#49304A;--c2:#84549A;--c3:#D66BA0">
+          <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
+          <span class="idx">03</span><h3>After Dark</h3><p>Moments that need no explanation.</p>
+        </button>
+      </div>
+
+      <div class="confirm" id="confirm"><div class="confirm-in">
+        <div class="confirm-box">
+          <div><p>You've picked <b id="picked">—</b>.</p>
+            <p class="warn">Once you confirm, it's locked. You can't change it later.</p></div>
+          <button class="btn btn--solid" id="confirmBtn"><span>Confirm</span><span>→</span></button>
+        </div>
+      </div></div>
+
+      <div class="results" id="results" tabindex="-1"><div class="results-inner">
+        <div class="results-head">
+          <p class="tag" style="margin:0">Live · everyone who's decided</p>
+          <p style="margin:0;font-size:.86rem;color:var(--ink-2)"><strong id="totalCount">0</strong> have chosen</p>
+        </div>
+        <div id="bars"></div>
+        <p class="nudge" id="nudge" role="status"></p>
+      </div></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
+  <section id="join">
+    <div class="wrap">
+      <div class="join-grid">
+        <div id="joinForm">
+          <p class="tag rv">Get in</p>
+          <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
+          <p class="lede rv" style="transition-delay:.12s">
+            Your name and email unlock your vote. One thing at a time, nothing else in between.
+          </p>
+          <form class="form rv" id="form" novalidate style="transition-delay:.18s">
+            <div class="fr-pair">
+              <div class="fr" id="r-name">
+                <label for="fname">First name</label>
+                <input id="fname" type="text" autocomplete="given-name" placeholder="What do people call you?">
+                <p class="err" id="e-name"></p>
+              </div>
+              <div class="fr" id="r-email">
+                <label for="email">Email</label>
+                <input id="email" type="email" autocomplete="email" placeholder="you@example.com">
+                <p class="err" id="e-email"></p>
+              </div>
+            </div>
+            <div class="fr" id="r-age">
+              <label id="ageLabel">Age <span class="opt">Optional</span></label>
+              <div class="sel" id="sel">
+                <button type="button" class="sel-btn" id="selBtn" aria-haspopup="listbox" aria-expanded="false">
+                  <span id="selVal">Select your age</span>
+                  <svg class="car" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
+                </button>
+                <ul class="sel-list" id="selList" role="listbox" aria-labelledby="ageLabel"></ul>
+              </div>
+              <p class="note" id="ageNote" hidden>Under 13? Ask a parent or guardian to do this bit with you.</p>
+            </div>
+            <div class="fr" id="r-consent">
+              <label class="consent">
+                <input type="checkbox" id="consent">
+                <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
+                <span>I'm happy for INVI to email me about the launch. You can leave any time.
+                  <a href="#" data-dialog>Privacy</a>.</span>
+              </label>
+              <p class="err" id="e-consent"></p>
+            </div>
+            <div class="form-foot">
+              <button type="submit" class="btn btn--solid" id="submit"><span>Join</span><span>→</span></button>
+            </div>
+          </form>
+          <div class="joined-note" id="joinedNote" hidden>
+            <p>You're in<b id="jnName"></b>. Your vote's waiting.</p>
+            <a href="#choose" class="btn"><span>Pick your hour</span><span>→</span></a>
+          </div>
+          <div class="pass" id="pass">
+            <div class="card">
+              <p class="tag" id="passTag">You're in</p>
+              <p class="pass-moment" id="passMoment">—</p>
+              <p class="pass-no">Member <span id="passNo">0000</span> <span>· vote counted</span></p>
+              <p class="msg" id="passMsg"></p>
+              <div class="pass-actions">
+                <button class="btn" id="shareBtn"><span>Send to a friend</span></button>
+                <a class="btn" href="#programme"><span>Build it with us</span></a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="rail rv" style="transition-delay:.12s">
+          <p class="tag" style="margin-bottom:-.3rem">What happens next</p>
+          <div class="row"><span class="n"></span><div><h3>You shape it</h3>
+            <p>Your choice counts toward what gets built first. Watch the numbers move the moment you lock it in.</p></div></div>
+          <div class="row"><span class="n"></span><div><h3>One clue at a time</h3>
+            <p>Small pieces, spaced out, until the whole thing makes sense.</p></div></div>
+          <div class="row"><span class="n"></span><div><h3>You're told first</h3>
+            <p>Before the ads, before the shelves, before anyone else knows it exists.</p></div></div>
+          <div class="row"><span class="n"></span><div><h3>Twelve of you build it with us</h3>
+            <p>A dozen places on the programme, mentored by some of the UK's best entrepreneurs.</p></div></div>
+        </aside>
+      </div>
+    </div>
+  </section>
+
 </main>
+
 
 <footer>
   <div class="wrap">
     <div class="foot-top">
       <p class="tag">Built by teenagers, for teenagers</p>
       <nav class="foot-links">
-        <button data-go="home">Home</button><button data-go="brand">The Brand</button>
-        <button data-go="programme">Programme</button><button data-dialog>Privacy</button>
+        <a href="#top">Home</a><a href="#brand">The Brand</a>
+        <a href="#programme">Programme</a><button data-dialog>Privacy</button>
         <a href="mailto:hello@invi.com">Contact</a>
       </nav>
     </div>
-    <p class="bigmark">INVI</p>
+    <p class="bigmark"><img src="img/invi-wordmark.png" alt="" width="900" height="220" loading="lazy" decoding="async"></p>
     <p class="legal">© 2026 INVI · United Kingdom · Nothing for sale yet. · Preview build — counts are illustrative.</p>
   </div>
 </footer>
-
-<dialog class="privacy" id="privacy" aria-labelledby="privTitle">
-  <h2 id="privTitle" class="anton t-md">Your data, straight.</h2>
-  <ul>
-    <li><span><b>What we take.</b> Your name, your email, your age if you offer it, your vote, and your application if you send one.</span></li>
-    <li><span><b>What it's for.</b> One email thread about the launch, counting the vote, and reviewing programme applications. That's it.</span></li>
-    <li><span><b>Where it lives.</b> Held privately by INVI in the UK. Never sold, never passed around.</span></li>
-    <li><span><b>Your call.</b> Every email has an unsubscribe. Want wiping entirely? <a href="mailto:hello@invi.com">hello@invi.com</a>.</span></li>
-    <li><span><b>Under 18?</b> A parent or guardian has to consent before you take part in the programme, and we contact them directly.</span></li>
-  </ul>
-  <form method="dialog"><button class="btn"><span>Close</span></button></form>
-</dialog>
-
-<div class="toast" id="toast" role="status" aria-live="polite"><span class="ic"><svg viewBox="0 0 14 14"><path d="M7 3.4v4.2M7 10.4h.01"/></svg></span><span id="toastMsg">Link copied</span></div>
-
-<script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
-"three/addons/":"https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"}}
-</script>
-<script type="module">
-/* Real geometry from celestial-spheres.glb: rising_sun, midday_sun, moon.
-   Loaded once, lazily, and only when a dial is close to view. The CSS spheres
-   stay underneath as the fallback if WebGL or the network is unavailable. */
-(async () => {
-  const dials = [...document.querySelectorAll('.dial[data-node]')];
-  if (!dials.length) return;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  let started = false;
-  /* Try the supplied artwork first. If all three are there we never fetch the
-     model at all, which saves a 3.27MB download on every visit. */
-  const useImages = async () => {
-    const load = d => new Promise(res => {
-      const src = d.dataset.img; if (!src) return res(false);
-      const im = new Image();
-      im.onload = () => { d.querySelector('.orb-img').src = src; res(true); };
-      im.onerror = () => res(false);
-      im.src = src;
-    });
-    const got = await Promise.all(dials.map(load));
-    if (!got.every(Boolean)) return false;
-    dials.forEach(d => d.classList.add('img-ready'));
-    return true;
-  };
-
-  const start = async () => {
-    if (started) return; started = true;
-    if (await useImages()) return;
-    let THREE, GLTFLoader;
-    try {
-      THREE = await import('three');
-      ({ GLTFLoader } = await import('three/addons/loaders/GLTFLoader.js'));
-    } catch { return; }                       // keep the CSS spheres
-    let gltf;
-    try { gltf = await new GLTFLoader().loadAsync('celestial-spheres.glb'); }
-    catch { return; }
-
-    dials.forEach(dial => {
-      const src = gltf.scene.getObjectByName(dial.dataset.node);
-      const cv  = dial.querySelector('canvas');
-      if (!src || !cv) return;
-      let renderer;
-      try {
-        renderer = new THREE.WebGLRenderer({ canvas:cv, alpha:true, antialias:true });
-      } catch { return; }
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-
-      const scene = new THREE.Scene();
-      const obj = src.clone(true);
-      const holder = new THREE.Group();
-      holder.add(obj);
-      scene.add(holder);
-
-      scene.add(new THREE.AmbientLight(0xffffff, 1.25));
-      const key = new THREE.DirectionalLight(0xffffff, 2.8);
-      key.position.set(-2.2, 2.6, 3.2); scene.add(key);
-      const rim = new THREE.DirectionalLight(0xc4d8ff, 1.3);
-      rim.position.set(2.6, -1.2, -2.2); scene.add(rim);
-      const lift = new THREE.DirectionalLight(0xffd9a8, .7);
-      lift.position.set(0, -2.5, 1.5); scene.add(lift);
-
-      // frame from the model's own bounding sphere so all three fill the same
-      // area regardless of how they were exported
-      const FOV = 32;
-      const cam = new THREE.PerspectiveCamera(FOV, 1, .01, 100);
-      const box = new THREE.Box3().setFromObject(obj);
-      const bs  = box.getBoundingSphere(new THREE.Sphere());
-      obj.position.sub(bs.center);
-      cam.position.set(0, 0, (bs.radius / Math.sin((FOV * Math.PI / 180) / 2)) * 1.04);
-      cam.lookAt(0, 0, 0);
-
-      const fit = () => {
-        const r = dial.getBoundingClientRect();
-        const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
-        renderer.setSize(w, h, false);
-        cam.aspect = w / h; cam.updateProjectionMatrix();
-      };
-      fit(); addEventListener('resize', fit, { passive:true });
-
-      let vis = false;
-      new IntersectionObserver(([e]) => { vis = e.isIntersecting; }, { threshold:.05 }).observe(dial);
-      const tick = () => {
-        requestAnimationFrame(tick);
-        if (!vis) return;
-        if (!reduce) holder.rotation.y += 0.0032;
-        renderer.render(scene, cam);
-      };
-      renderer.render(scene, cam);
-      dial.classList.add('gl-ready');
-      tick();
-    });
-  };
-  /* Two ways in: the observer is the fast path, and a short idle callback
-     guarantees a start even if it never fires. Lazy either way. */
-  let io;
-  try {
-    io = new IntersectionObserver(es => {
-      if (es.some(e => e.isIntersecting)) { io && io.disconnect(); start(); }
-    }, { rootMargin:'900px' });
-    dials.forEach(d => io.observe(d));
-  } catch {}
-  const kick = () => { io && io.disconnect(); start(); };
-  if ('requestIdleCallback' in window) requestIdleCallback(kick, { timeout:2500 });
-  else setTimeout(kick, 1500);
-})();
-</script>
 
 <script>
 (() => {
@@ -1127,7 +986,7 @@ const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const SEED  = { origin:1847, rise:2103, 'after-dark':2456 };
 const LABEL = { origin:'Origin', rise:'Rise', 'after-dark':'After Dark' };
-const GRAD  = { origin:['#5FBF95','#2F7A5C'], rise:['#F0913C','#A8511A'], 'after-dark':['#A98BF0','#5B3FA8'] };
+const GRAD  = { origin:['#3F7FA3','#6F9B4B'], rise:['#6B3A24','#F2C84B'], 'after-dark':['#49304A','#D66BA0'] };
 const KEYS  = Object.keys(SEED);
 const STORE = 'invi.state.v4';
 
@@ -1140,89 +999,16 @@ const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); }
 const tally = k => SEED[k] + (state.votes[k] || 0);
 const total = () => KEYS.reduce((n,k) => n + tally(k), 0);
 
-/* ── the sky engine: scroll drives the time of day ──────── */
-const SKY = [
-  /* One cinematic day. Every stop stays dark enough for light text (bg luminance
-     <= .17), so contrast never dips below AA. "Midday" is carried by the sun
-     glow, not a white sky — which matches the deck, where every image is golden
-     hour, blue hour or night, and none is bright daylight. */
-  { at:0.00, s1:'#06080E', s2:'#10141C', ink:[244,239,230], bc:'#16223A', bo:.35, sg:'#2E4A6E' },
-  { at:0.18, s1:'#141020', s2:'#33201A', ink:[244,239,230], bc:'#7A3E22', bo:.55, sg:'#B4612C' },
-  { at:0.36, s1:'#241410', s2:'#5A3018', ink:[244,239,230], bc:'#FFA24A', bo:.7,  sg:'#F0913C' },
-  { at:0.52, s1:'#2E2416', s2:'#6B5426', ink:[244,239,230], bc:'#FFD98A', bo:.75, sg:'#FFC94A' },
-  { at:0.68, s1:'#3A1E10', s2:'#7A3A18', ink:[244,239,230], bc:'#FF8A3A', bo:.7,  sg:'#FF8A3A' },
-  { at:0.84, s1:'#1E1428', s2:'#2E1B3E', ink:[244,239,230], bc:'#7A4AA8', bo:.5,  sg:'#A98BF0' },
-  { at:1.00, s1:'#08060E', s2:'#12101C', ink:[244,239,230], bc:'#2A2140', bo:.35, sg:'#B9B4D6' }
-];
-const mix = (a,b,t) => a.map((v,i) => Math.round(v + (b[i]-v)*t));
-const hex2 = h => [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
-const rgb = a => `rgb(${a[0]},${a[1]},${a[2]})`;
 const root = document.documentElement;
 
-function paintSky(p){
-  let i = 0; while (i < SKY.length-2 && p > SKY[i+1].at) i++;
-  const a = SKY[i], b = SKY[i+1];
-  const t = Math.max(0, Math.min(1, (p - a.at) / (b.at - a.at || 1)));
-  root.style.setProperty('--sky1', rgb(mix(hex2(a.s1), hex2(b.s1), t)));
-  root.style.setProperty('--sky2', rgb(mix(hex2(a.s2), hex2(b.s2), t)));
-  const ink = mix(a.ink, b.ink, t);
-  root.style.setProperty('--ink', rgb(ink));
-  root.style.setProperty('--ink-2', `rgba(${ink[0]},${ink[1]},${ink[2]},.62)`);
-  root.style.setProperty('--hair', `rgba(${ink[0]},${ink[1]},${ink[2]},.18)`);
-  const bl = $('#bloom');
-  bl.style.setProperty('--bloom-c', rgb(mix(hex2(a.bc), hex2(b.bc), t)));
-  bl.style.setProperty('--bloom-o', (a.bo + (b.bo - a.bo) * t).toFixed(3));
-  root.style.setProperty('--sig-c', rgb(mix(hex2(a.sg), hex2(b.sg), t)));
-}
-/* The day is anchored to the acts themselves, not to a raw scroll fraction.
-   Sunrise lands on Origin, midday on Rise, moonrise on After Dark, so the
-   light always matches where the reader actually is. */
-let ANCHORS = null;
-function measureDay(){
-  const acts = $$('#view-home .act');
-  const max = document.body.scrollHeight - innerHeight;
-  if (acts.length < 3 || max <= 0 || $('#view-home').hidden){ ANCHORS = null; return; }
-  const centre = el => { const r = el.getBoundingClientRect();
-    return scrollY + r.top + r.height/2 - innerHeight/2; };
-  const pts = [{s:0,p:0},{s:centre(acts[0]),p:.30},{s:centre(acts[1]),p:.56},
-               {s:centre(acts[2]),p:.80},{s:max,p:1}]
-    .map(a => ({ s: Math.max(0, Math.min(max, a.s)), p:a.p }));
-  for (let i=1;i<pts.length;i++) if (pts[i].s <= pts[i-1].s) pts[i].s = pts[i-1].s + 1;
-  ANCHORS = pts;
-}
-function dayProgress(){
-  const max = document.body.scrollHeight - innerHeight;
-  if (max <= 0) return 0;
-  const y = Math.max(0, Math.min(max, scrollY));
-  if (!ANCHORS) return y / max;
-  for (let i=0;i<ANCHORS.length-1;i++){
-    const a = ANCHORS[i], b = ANCHORS[i+1];
-    if (y <= b.s) return a.p + (b.p - a.p) * ((y - a.s) / (b.s - a.s));
-  }
-  return 1;
-}
 let skyTick = false;
 function onScroll(){
   if (skyTick) return; skyTick = true;
-  requestAnimationFrame(() => {
-    skyTick = false;
-    const p = dayProgress();
-    paintSky(p);
-    /* the mark only lives in the first screen, so its fill has to complete
-       there — tying it to whole-page progress meant it was never seen filling */
-    const heroRun = Math.min(1, scrollY / Math.max(1, innerHeight * 0.42));
-    root.style.setProperty('--fill', ((1 - heroRun) * 100).toFixed(2) + '%');
-    nav.classList.toggle('stuck', scrollY > 40);
-    const ck = $('#clock');
-    if (ck){
-      ck.classList.toggle('on', scrollY > innerHeight * .5 && !$('#view-home').hidden);
-      $$('#clock i').forEach((el,idx) => el.classList.toggle('past', p > (idx+.5)/6));
-    }
-  });
+  requestAnimationFrame(() => { skyTick = false; nav.classList.toggle('stuck', scrollY > 40); });
 }
 const nav = $('#nav');
 addEventListener('scroll', onScroll, { passive:true });
-addEventListener('resize', () => { measureDay(); onScroll(); }, { passive:true });
+addEventListener('resize', onScroll, { passive:true });
 
 /* intro */
 const intro = $('#intro');
@@ -1237,37 +1023,15 @@ const navMark = $('.nav .mark'), heroMark = $('#heroMark');
 let markIO = null;
 function watchMark(){
   markIO && markIO.disconnect();
-  if ($('#view-home').hidden){ navMark.classList.add('show'); return; }
   markIO = new IntersectionObserver(([e]) => navMark.classList.toggle('show', !e.isIntersecting),
     { threshold:.25 });
   markIO.observe(heroMark);
 }
 addEventListener('resize', watchMark);
 
-/* views */
-function go(v){
-  const next = $('#view-' + v), cur = $('.view:not([hidden])');
-  if (cur === next) return;
-  $$('.nav-mid button').forEach(b =>
-    b.dataset.go === v ? b.setAttribute('aria-current','page') : b.removeAttribute('aria-current'));
-  const swap = () => {
-    $$('.view').forEach(el => el.hidden = (el.id !== 'view-' + v));
-    scrollTo({ top:0, behavior:'instant' });
-    observe(); watchMark(); measureDay(); onScroll();
-  };
-  if (reduce || !cur){ swap(); return; }
-  cur.classList.add('leaving');
-  setTimeout(() => {
-    cur.classList.remove('leaving'); swap();
-    next.classList.add('entering');
-    requestAnimationFrame(() => requestAnimationFrame(() => next.classList.remove('entering')));
-  }, 160);
-}
 document.addEventListener('click', e => {
   const d = e.target.closest('[data-dialog]');
   if (d) { e.preventDefault(); $('#privacy').showModal(); return; }
-  const t = e.target.closest('[data-go]');
-  if (t) { e.preventDefault(); go(t.dataset.go); }
 });
 
 function tick(el, to, ms = 1200){
@@ -1583,14 +1347,14 @@ function observe(){
   io = new IntersectionObserver(es => es.forEach(e => {
     if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
   }), { threshold:.12, rootMargin:'0px 0px -5% 0px' });
-  $$('.view:not([hidden]) .rv').forEach(el => io.observe(el));
+  $$('.rv').forEach(el => io.observe(el));
   io2 = new IntersectionObserver(es => es.forEach(e =>
     e.target.classList.toggle('lit', e.isIntersecting)), { threshold:.7 });
-  $$('.view:not([hidden]) .creed .line').forEach(el => io2.observe(el));
+  $$('.creed .line').forEach(el => io2.observe(el));
   io3 = new IntersectionObserver(es => es.forEach(e => {
     if (!e.isIntersecting) return; countUp(e.target); io3.unobserve(e.target);
   }), { threshold:.5 });
-  $$('.view:not([hidden]) .stat b, .view:not([hidden]) .seat b').forEach(el => io3.observe(el));
+  $$('.stat b, .seat b').forEach(el => io3.observe(el));
 }
 
 if (!reduce && matchMedia('(pointer: fine)').matches){
@@ -1617,8 +1381,8 @@ if (state.moment){
   $('#picked').textContent = LABEL[state.moment];
   if (state.confirmed) lockIn(false); else if (state.joined) confirmEl.classList.add('on');
 }
-observe(); watchMark(); measureDay(); paintSky(0); onScroll();
-addEventListener('load', () => { measureDay(); onScroll(); });
+observe(); watchMark(); onScroll();
+addEventListener('load', onScroll);
 })();
 </script>
 </body>

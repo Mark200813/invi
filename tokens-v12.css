@@ -1,0 +1,111 @@
+/* ============================================================
+   INVI · V12 master brand system · design tokens
+   NOT WIRED IN YET. Prepared from the guidelines PDF, waiting on
+   the logo vector and Viv's confirmation on light vs dark.
+
+   Every contrast figure below was measured, not estimated.
+   ============================================================ */
+
+:root{
+  /* ── foundation ─────────────────────────────────────────
+     Guidelines: "Bone / stone / concrete first. Dusk only for
+     selected impact sections." Ink is for copy, never the
+     dominant page colour. Mix roughly 60/25/15. */
+  --bone:#F7F3ED;          /* RGB 247 243 237 */
+  --stone:#EFE9DF;         /* RGB 239 233 223 */
+  --concrete:#B8ADA0;      /* RGB 184 173 160 */
+  --dusk:#303347;          /* RGB 48 51 71   */
+  --ink:#151513;           /* RGB 21 21 19   */
+
+  /* ── energy ─────────────────────────────────────────────
+     Accents. See the text-safety table below before putting
+     any of these on type. */
+  --mineral-blue:#3F7FA3;
+  --fresh-green:#6F9B4B;
+  --tangerine:#F28A32;
+  --sun-yellow:#F2C84B;
+  --mood-pink:#D66BA0;
+
+  /* ── depth ──────────────────────────────────────────────*/
+  --terracotta:#B85F3D;
+  --aubergine:#49304A;
+  --olive:#73785C;
+
+  /* ── text on the light foundation ───────────────────────
+     Measured against bone AND stone; the figure is the worse
+     of the two. Ink at .60 lands on 4.48:1, which misses AA by
+     less than a rounding error, so secondary sits at .68. */
+  --text:var(--ink);                      /* 16.54:1 on bone */
+  --text-2:rgba(21,21,19,.68);            /*  5.75:1 worst   */
+  --hair:rgba(21,21,19,.16);              /* rules, non-text */
+
+  /* ── text on dusk sections ──────────────────────────────*/
+  --text-on-dusk:var(--bone);             /* 11.24:1 */
+  --text-2-on-dusk:rgba(247,243,237,.72);
+
+  /* ── locked scent gradients ─────────────────────────────
+     135deg, stops at 0 / 52 / 100%. Reserved for scent and
+     campaign moments. Not default UI, and never animated on
+     a loop. RISE opens on deep brown, not terracotta: the PDF
+     carries both, and deep brown is the layer on top. */
+  --grad-origin:linear-gradient(135deg,#3F7FA3 0%,#78BFD0 52%,#6F9B4B 100%);
+  --grad-rise:linear-gradient(135deg,#6B3A24 0%,#F28A32 52%,#F2C84B 100%);
+  --grad-after-dark:linear-gradient(135deg,#49304A 0%,#84549A 52%,#D66BA0 100%);
+
+  /* ── type ───────────────────────────────────────────────
+     Inter is the only approved live typeface. Campaign
+     condensed type is supplied artwork only, so it cannot be
+     set in CSS at all until it is licensed. */
+  --font:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --h1:72px;   --h1-lh:72px;
+  --h2:48px;   --h2-lh:52px;
+  --h3:28px;   --h3-lh:34px;
+  --body:18px; --body-lh:28px;
+  --eyebrow:12px; --eyebrow-lh:16px; --eyebrow-ls:.12em;
+
+  /* ── grid + space ───────────────────────────────────────*/
+  --max:1280px;
+  --margin:80px;           /* 64-80 desktop */
+  --section:140px;         /* 120-160 desktop */
+}
+
+@media (max-width:1023px){
+  :root{ --margin:32px; --section:84px; }   /* 24-32 sides, 72-96 section */
+}
+@media (max-width:767px){
+  :root{
+    --h1:44px; --h1-lh:46px;
+    --h2:34px; --h2-lh:38px;
+    --body:17px; --body-lh:26px;
+    --margin:24px; --section:72px;
+  }
+}
+
+/* ============================================================
+   COLOUR ON TEXT: measured, do not guess
+   ------------------------------------------------------------
+   On BONE #F7F3EDor STONE #EFE9DF:
+     INK           16.5 / 15.1  AAA  body, any size
+     DUSK          11.2 / 10.3  AAA  body, any size
+     AUBERGINE     10.5 /  9.6  AAA  body, any size
+     OLIVE          4.2 /  3.8  large text only (18.66px+ / 14px bold)
+     TERRACOTTA     4.0 /  3.7  large text only
+     MINERAL BLUE   4.0 /  3.6  large text only
+     FRESH GREEN    2.9 /  2.7  decorative only, never text
+     MOOD PINK      2.9 /  2.7  decorative only, never text
+     TANGERINE      2.3 /  2.1  decorative only, never text
+     SUN YELLOW     1.5 /  1.3  decorative only, never text
+
+   On DUSK #303347:
+     BONE          11.2  AAA
+     SUN YELLOW     7.8  AAA   (warm accents invert well here)
+     TANGERINE      5.0  AA
+     FRESH GREEN    3.8  large only
+     MOOD PINK      3.8  large only
+     INK            1.5  never
+
+   NOTE FOR VIV: the guidelines group Aubergine and Olive as
+   "larger text only after contrast testing". Tested: Aubergine
+   clears AAA for body at 10.5:1 and is safe anywhere. Olive is
+   the one that needs the restriction, at 4.2:1.
+   ============================================================ */

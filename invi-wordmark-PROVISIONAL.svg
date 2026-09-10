@@ -1,0 +1,14 @@
+<!-- INVI wordmark, traced from the V12 guidelines PDF.
+     PROVISIONAL. Not the master artwork.
+     Source: 900x220 stencil mask (SMask xref 12), the largest instance in the PDF.
+     Trace accuracy: 99.76% IoU against that source; differences are anti-aliasing only.
+     KNOWN RISK: the PDF holds two copies of the mark whose widths differ by 1.2%
+     (page 18 specimen = 4.039:1, this mask = 4.091:1). Which is true cannot be
+     determined from the PDF. Replace with 01_LOGOS vector when it arrives. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 220"
+     role="img" aria-label="INVI" fill="currentColor">
+  <path d="M 0 0 L 71 0 L 71 219 L 0 219 L 0 0 Z"/>
+  <path d="M 110 0 L 237 0 L 346 82 L 349 81 L 349 0 L 420 0 L 420 219 L 349 219 L 349 177 L 189 56 L 181 57 L 181 219 L 110 219 L 110 0 Z"/>
+  <path d="M 443 0 L 528 0 L 621 160 L 627 160 L 630 156 L 720 0 L 799 0 L 671 219 L 570 219 L 443 0 Z"/>
+  <path d="M 828 0 L 899 0 L 899 219 L 828 219 L 828 0 Z"/>
+</svg>
