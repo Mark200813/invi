@@ -72,7 +72,7 @@ a{color:inherit;text-decoration:none}
 .anton{font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   letter-spacing:-.008em;line-height:1.02;margin:0}
 .t-mega,.t-xl{line-height:.98}
-.t-mega{font-size:clamp(3.6rem,15vw,13rem)}
+.t-mega{font-size:clamp(2.6rem,6.4vw,6rem);letter-spacing:-.038em}
 .t-xl  {font-size:clamp(2.8rem,9vw,7.5rem)}
 .t-lg  {font-size:clamp(2rem,5.2vw,4rem)}
 .t-md  {font-size:clamp(1.5rem,3.2vw,2.4rem)}
@@ -135,15 +135,30 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   border-color .4s var(--ease),transform .5s var(--ease),opacity .4s var(--ease)}
 
 /* ── hero ───────────────────────────────────────────────── */
-.hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;
-  padding-top:7rem;position:relative}
-.hero h1{margin-bottom:2rem}
+/* Two real columns, so type and photograph can never collide. The figure is a
+   grid track that runs to the viewport edge; the type keeps the shell margin. */
+.hero{min-height:100svh;display:grid;grid-template-columns:1fr min(44vw,600px);
+  align-items:stretch;position:relative;overflow:hidden}
+.hero > .wrap{width:auto;max-width:none;margin:0;align-self:center;z-index:2;
+  padding:7rem clamp(1.5rem,3vw,3rem) 2rem calc((100vw - var(--shell))/2)}
+.hero-figure{position:relative;height:100%;min-height:100%;overflow:hidden;
+  -webkit-mask-image:linear-gradient(100deg,transparent 0,#000 30%);
+  mask-image:linear-gradient(100deg,transparent 0,#000 30%)}
+.hero-figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;overflow:visible}
+  .hero-figure{height:auto;min-height:0;aspect-ratio:4/5;margin-top:2.5rem;
+    -webkit-mask-image:none;mask-image:none}
+  .hero-figure img{position:absolute}
+  .hero > .wrap{padding-inline:calc((100vw - var(--shell))/2)}
+}
+.hero h1{margin-bottom:1.4rem;text-wrap:balance}
 .hero h1 .l{display:block;overflow:hidden}
-.hero h1 .l>span{display:block;transform:translateY(105%);
-  animation:up 1.1s var(--ease) forwards}
+.hero h1 .l>span{display:block;transform:none;
+  animation:up 1.1s var(--ease) backwards}
 .hero h1 .l:nth-child(2)>span{animation-delay:.12s}
 .hero h1 .l:nth-child(3)>span{animation-delay:.24s}
-@keyframes up{to{transform:translateY(0)}}
+@keyframes up{from{transform:translateY(105%)}}
 .hero .lede{margin-bottom:2.6rem}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
 .scroll-cue{position:absolute;bottom:2.2rem;left:calc((100vw - var(--shell))/2);
@@ -172,16 +187,24 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .btn--quiet:hover{color:var(--ink);border-color:transparent}
 
 /* ── the three acts ─────────────────────────────────────── */
-.act{min-height:96svh;display:flex;align-items:center;position:relative;overflow:hidden}
+.act{min-height:88svh;display:flex;align-items:center;position:relative;overflow:hidden}
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
-  grid-template-columns:1fr minmax(300px,44%);gap:clamp(2rem,5vw,4.5rem);align-items:center}
-/* photography carries the acts now. Sized as a real column rather than an
-   icon, per "large format, full-bleed where useful". */
+  gap:clamp(2rem,5vw,4.5rem);align-items:center}
 .act-media{position:relative;margin:0;overflow:hidden;background:var(--stone)}
 .act-media img{display:block;width:100%;height:100%;object-fit:cover}
-.act-media figcaption{position:absolute;left:0;bottom:0;padding:.5rem .7rem;
-  font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--bone);background:var(--ink)}
+
+/* Each act turns the page over: the photograph takes the opposite edge from
+   the one before it and runs off the side of the screen, so the three read as
+   a sequence rather than the same template three times. */
+@media (min-width:901px){
+  /* keyed to the act itself, not its position among siblings, so inserting a
+     section elsewhere cannot silently flip the rhythm */
+  .act-in{grid-template-columns:1fr 46%}
+  .act .act-media{margin-right:calc((var(--shell) - 100vw)/2)}
+  .act[data-act="rise"] .act-in{grid-template-columns:46% 1fr}
+  .act[data-act="rise"] .act-media{order:-1;margin-right:0;
+    margin-left:calc((var(--shell) - 100vw)/2);transform:translateY(3rem)}
+}
 .act h2{margin:0 0 1rem}
 .act .note{font-size:.98rem;color:var(--ink-2);max-width:34ch;line-height:1.65}
 .act .kicker{font-size:.68rem;letter-spacing:.24em;text-transform:uppercase;
@@ -417,9 +440,9 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .quote cite{display:block;margin-top:.7rem;font-size:.78rem;font-style:normal;color:var(--ink-2)}
 .creed .line{font-family:'Inter',system-ui,sans-serif;font-weight:600;text-transform:uppercase;
   font-size:clamp(1.6rem,4.4vw,3.4rem);line-height:1;padding:clamp(.9rem,2.2vh,1.5rem) 0;margin:0;
-  border-bottom:1px solid var(--hair);color:rgba(244,239,230,.22);transition:color .7s var(--ease)}
+  border-bottom:1px solid var(--hair);color:rgba(21,21,19,.52);transition:color .7s var(--ease)}
 .creed .line.lit{color:var(--ink)}
-.creed .line em{font-style:normal;color:var(--accent)}
+.creed .line em{font-style:normal;color:var(--accent-ink)}
 
 /* programme */
 .seats{display:flex;flex-wrap:wrap;gap:2.4rem;margin-top:2rem;padding:1.6rem 0;
@@ -471,11 +494,29 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   background:rgba(247,243,237,.18)}
 .toast .ic svg{width:12px;stroke:var(--bone);stroke-width:2.4;fill:none;stroke-linecap:round}
 .toast b{font-weight:700}
-.intro{position:fixed;inset:0;z-index:90;background:var(--bone);display:grid;place-items:center;
-  transition:opacity .9s var(--ease),visibility .9s}
-.intro.gone{opacity:0;visibility:hidden}
-.intro .mark{width:min(46vw,220px);height:auto;animation:breathe 2.2s var(--ease-io) infinite}
-@keyframes breathe{0%,100%{opacity:.25}50%{opacity:1}}
+/* One signature entrance. The mark wipes in, holds, then the whole curtain
+   lifts to hand the page over. Once a session, and instant under reduced motion. */
+.intro{position:fixed;inset:0;z-index:90;background:var(--ink);display:grid;place-items:center;
+  transition:transform 1s cubic-bezier(.76,0,.24,1),visibility 1s;will-change:transform}
+.intro.gone{transform:translateY(-101%);visibility:hidden}
+.intro .mark{width:min(52vw,280px);height:auto;position:relative}
+/* visible is the default state; the keyframe animates in from hidden with
+   `backwards` fill. If the animation never runs the mark is simply there,
+   rather than clipped to nothing forever. */
+.intro .mark img{display:block;width:100%;height:auto;
+  filter:invert(1) brightness(1.6);
+  clip-path:inset(0 0 0 0);animation:wipe 1s cubic-bezier(.76,0,.24,1) .15s backwards}
+/* a hairline travels with the wipe, so the mark reads as drawn rather than faded */
+.intro .mark::after{content:'';position:absolute;top:-8%;bottom:-8%;width:1px;
+  background:var(--bone);left:0;opacity:0;animation:scribe 1.15s cubic-bezier(.76,0,.24,1) .15s forwards}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}}
+@keyframes scribe{0%{left:0;opacity:0}12%{opacity:.9}88%{opacity:.9}100%{left:100%;opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  .intro .mark img{clip-path:none;animation:none}
+  .intro .mark::after{display:none}
+  .intro{transition:opacity .2s}
+  .intro.gone{transform:none;opacity:0}
+}
 
 @media (max-width:980px){
   .act{min-height:auto;padding:clamp(3.5rem,9vh,6rem) 0}
@@ -509,7 +550,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
    window and the hero runs past two screens. Here it scales off the short
    axis instead, which is the one actually running out. */
 @media (orientation:landscape) and (max-height:560px) and (max-width:1024px){
-  .t-mega{font-size:clamp(1.9rem,8.5vh,5rem)}
+  .t-mega{font-size:clamp(2rem,7.4vh,3.4rem)}
   .hero{padding-top:4.5rem;min-height:0}
   .hero h1{margin-bottom:.9rem}
   .hero .tag{margin-bottom:.5rem}
@@ -546,14 +587,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <!-- ══════════════ 01 · HERO ══════════════ -->
   <section class="hero">
     <div class="wrap">
-      <p class="tag rv">Scent. Skin. Mood.</p>
       <h1 class="anton t-mega" id="heroMark">
         <span class="l"><span>Where scent,</span></span>
         <span class="l"><span>skin and mood</span></span>
         <span class="l"><span class="accent">meet.</span></span>
       </h1>
       <p class="proof rv" style="transition-delay:.12s">
-        Built with boys. Backed by science. Inspired by culture.
+        Built with boys. <span>Backed by science.</span> Inspired by culture.
       </p>
       <p class="lede rv" style="transition-delay:.16s">
         Three are coming, one for each part of the day. The people who join now
@@ -564,6 +604,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <a class="btn btn--quiet" href="#programme"><span>Build it with us</span></a>
       </div>
     </div>
+    <!-- the portrait is structural: it holds the right edge of the composition
+         and bleeds off the viewport, rather than sitting in a box beside it -->
+    <div class="hero-figure" aria-hidden="true">
+      <img src="img/portrait-brand-704.webp"
+           srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
+           sizes="(max-width:900px) 100vw, 46vw" width="704" height="880" alt=""
+           fetchpriority="high" decoding="async">
+    </div>
+
     <div class="scroll-cue"><span class="ln"></span><span>Scroll through the day</span></div>
   </section>
 
@@ -585,7 +634,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"><figcaption>First light</figcaption></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
     </div>
   </section>
 
@@ -597,7 +646,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"><figcaption>Full sun</figcaption></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
     </div>
   </section>
 
@@ -609,7 +658,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"><figcaption>After dark</figcaption></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;aspect-ratio:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
     </div>
   </section>
 
@@ -627,8 +676,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <section id="brand" style="padding-top:9rem">
     <div class="wrap two-up">
       <div>
-        <p class="tag rv">The brand</p>
-        <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
+                <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
           Built for the years that matter most.
         </h2>
         <p class="lede rv" style="transition-delay:.16s">
@@ -708,8 +756,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <section id="programme" style="padding-top:9rem">
     <div class="wrap">
-      <p class="tag rv">The entrepreneurship programme</p>
-      <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
+            <h2 class="anton t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
         Twelve of you will build this with us.
       </h2>
       <p class="lede rv" style="transition-delay:.16s">
@@ -740,8 +787,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <hr class="rule">
   <section id="apply">
     <div class="wrap">
-      <p class="tag rv">Apply</p>
-      <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
+            <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
       <p class="lede rv" style="transition-delay:.12s">Applications are read by the team. We'll come back to everyone either way.</p>
       <div class="dossier rv" style="transition-delay:.15s">
         <span>Application</span><i><b id="progBar"></b></i><span>Twelve places</span>
@@ -838,8 +884,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <!-- ══════════════ 05 · FIRST DROP ══════════════ -->
   <section id="choose">
     <div class="wrap">
-      <p class="tag rv">Your vote</p>
-      <h2 class="anton t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Which hour is yours?</h2>
+            <h2 class="anton t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Which hour is yours?</h2>
       <p class="lede rv" style="transition-delay:.12s">
         You get <b style="color:var(--ink)">one vote</b>, and it decides which one we build first.
         Once it's in, it's locked. Join below to unlock yours.
@@ -885,8 +930,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     <div class="wrap">
       <div class="join-grid">
         <div id="joinForm">
-          <p class="tag rv">Get in</p>
-          <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
+                    <h2 class="anton t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
           <p class="lede rv" style="transition-delay:.12s">
             Your name and email unlock your vote. One thing at a time, nothing else in between.
           </p>
@@ -1015,8 +1059,8 @@ const intro = $('#intro');
 const seen = (() => { try { return sessionStorage.getItem('invi.seen'); } catch { return null; } })();
 try { sessionStorage.setItem('invi.seen','1'); } catch {}
 if (seen) intro.remove();
-else { setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 900);
-       setTimeout(() => intro.remove(), 2000); }
+else { setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 1500);
+       setTimeout(() => intro.remove(), 2800); }
 
 /* wordmark handover */
 const navMark = $('.nav .mark'), heroMark = $('#heroMark');
