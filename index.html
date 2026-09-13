@@ -180,8 +180,13 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 
 /* ── full-bleed bands ───────────────────────────────────── */
 .band{position:relative;margin:0;width:100%;overflow:hidden;background:var(--dusk);
-  aspect-ratio:21/9;max-height:70svh}
+  aspect-ratio:16/9;max-height:80svh}
 .band-media{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
+/* The loop is a portrait frame and all of its movement sits in the lower half:
+   the sky barely changes, the swimmers and the surf carry it. A 21:9 letterbox
+   cut their legs off and left the still half on screen, so it read as a
+   photograph. Taller, and framed low, so the motion is the thing you see. */
+video.band-media{object-position:center 66%}
 .band--wide{aspect-ratio:970/476}
 @media (max-width:768px){.band{aspect-ratio:4/5;max-height:none}
   .band-media{object-position:center}
