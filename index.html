@@ -141,14 +141,22 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   align-items:stretch;position:relative;overflow:hidden}
 .hero > .wrap{width:auto;max-width:none;margin:0;align-self:center;z-index:2;
   padding:7rem clamp(1.5rem,3vw,3rem) 2rem calc((100vw - var(--shell))/2)}
+/* The photograph dissolves into the page on the left, where it meets the type,
+   and the top edge is taken off just enough that the hair does not end on a
+   ruled line. Deeper than about 5% and the fade eats the head instead of the
+   edge. Right and bottom run off the viewport, so they need no treatment. */
 .hero-figure{position:relative;height:100%;min-height:100%;overflow:hidden;
-  -webkit-mask-image:linear-gradient(100deg,transparent 0,#000 30%);
-  mask-image:linear-gradient(100deg,transparent 0,#000 30%)}
-.hero-figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+  -webkit-mask-image:linear-gradient(to right,transparent 0,#000 20%),
+                     linear-gradient(to bottom,transparent 0,#000 4%);
+  mask-image:linear-gradient(to right,transparent 0,#000 20%),
+             linear-gradient(to bottom,transparent 0,#000 4%);
+  -webkit-mask-composite:source-in;mask-composite:intersect}
+.hero-figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 0}
 @media (max-width:900px){
   .hero{grid-template-columns:1fr;overflow:visible}
   .hero-figure{height:auto;min-height:0;aspect-ratio:4/5;margin-top:2.5rem;
-    -webkit-mask-image:none;mask-image:none}
+    -webkit-mask-image:linear-gradient(to bottom,transparent 0,#000 5%);
+    mask-image:linear-gradient(to bottom,transparent 0,#000 5%)}
   .hero-figure img{position:absolute}
   .hero > .wrap{padding-inline:calc((100vw - var(--shell))/2)}
 }
@@ -368,10 +376,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .sel-list li:nth-child(3){transition-delay:.08s} .sel-list li:nth-child(4){transition-delay:.11s}
 .sel-list li:nth-child(5){transition-delay:.14s} .sel-list li:nth-child(6){transition-delay:.17s}
 .sel-list li:nth-child(7){transition-delay:.2s}  .sel-list li:nth-child(8){transition-delay:.23s}
-.sel-list button{width:100%;text-align:left;padding:.55rem .7rem;font-size:.92rem;color:rgba(244,239,230,.7);
+.sel-list button{width:100%;text-align:left;padding:.55rem .7rem;font-size:.92rem;color:var(--ink-2);
   transition:background .25s var(--ease),color .25s var(--ease)}
 .sel-list button:hover{background:rgba(21,21,19,.06);color:var(--ink)}
-.sel-list button[aria-selected="true"]{color:var(--accent)}
+.sel-list button[aria-selected="true"]{color:var(--accent-ink);font-weight:600}
 .consent{display:flex;gap:.8rem;align-items:flex-start;font-size:.85rem;color:var(--ink-2);
   line-height:1.55;cursor:pointer;user-select:none}
 .consent input{position:absolute;opacity:0;width:0;height:0}
@@ -1021,6 +1029,20 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   </div>
 </footer>
 
+<dialog class="privacy" id="privacy" aria-labelledby="privTitle">
+  <h2 id="privTitle" class="anton t-md">Your data, straight.</h2>
+  <ul>
+    <li><span><b>What we take.</b> Your name, your email, your age if you offer it, your vote, and your application if you send one.</span></li>
+    <li><span><b>What it's for.</b> One email thread about the launch, counting the vote, and reviewing programme applications. That's it.</span></li>
+    <li><span><b>Where it lives.</b> Held privately by INVI in the UK. Never sold, never passed around.</span></li>
+    <li><span><b>Your call.</b> Every email has an unsubscribe. Want wiping entirely? <a href="mailto:hello@invi.com">hello@invi.com</a>.</span></li>
+    <li><span><b>Under 18?</b> A parent or guardian has to consent before you take part in the programme, and we contact them directly.</span></li>
+  </ul>
+  <form method="dialog"><button class="btn"><span>Close</span></button></form>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span class="ic"><svg viewBox="0 0 14 14"><path d="M7 3.4v4.2M7 10.4h.01"/></svg></span><span id="toastMsg">Link copied</span></div>
+
 <script>
 (() => {
 'use strict';
@@ -1045,10 +1067,31 @@ const total = () => KEYS.reduce((n,k) => n + tally(k), 0);
 
 const root = document.documentElement;
 
-let skyTick = false;
+/* One page means the nav has to follow the reader. The current section is the
+   last one whose top has passed the middle of the viewport, which keeps the
+   mark stable while a long section scrolls rather than flickering at edges. */
+const navLinks = $$('.nav-mid a');
+const navTargets = navLinks.map(a => {
+  const id = a.getAttribute('href').slice(1);
+  return { link: a, el: id === 'top' ? $('.hero') : document.getElementById(id) };
+}).filter(t => t.el);
+function markSection(){
+  const line = scrollY + innerHeight * 0.4;
+  let current = navTargets[0];
+  navTargets.forEach(t => { if (t.el.getBoundingClientRect().top + scrollY <= line) current = t; });
+  /* the foot of the page always belongs to the last link */
+  if (innerHeight + scrollY >= document.body.scrollHeight - 4) current = navTargets[navTargets.length-1];
+  navTargets.forEach(t => t.link === current.link
+    ? t.link.setAttribute('aria-current','page')
+    : t.link.removeAttribute('aria-current'));
+}
+/* Deliberately not rAF-throttled. The old guard set a flag and cleared it
+   inside the frame callback, so a single dropped frame wedged the handler shut
+   and the nav stopped following the page. This reads three rects per scroll,
+   which is cheap enough to do straight. */
 function onScroll(){
-  if (skyTick) return; skyTick = true;
-  requestAnimationFrame(() => { skyTick = false; nav.classList.toggle('stuck', scrollY > 40); });
+  nav.classList.toggle('stuck', scrollY > 40);
+  markSection();
 }
 const nav = $('#nav');
 addEventListener('scroll', onScroll, { passive:true });
@@ -1425,7 +1468,7 @@ if (state.moment){
   $('#picked').textContent = LABEL[state.moment];
   if (state.confirmed) lockIn(false); else if (state.joined) confirmEl.classList.add('on');
 }
-observe(); watchMark(); onScroll();
+observe(); watchMark(); onScroll(); markSection();
 addEventListener('load', onScroll);
 })();
 </script>
