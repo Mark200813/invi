@@ -187,6 +187,14 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
    cut their legs off and left the still half on screen, so it read as a
    photograph. Taller, and framed low, so the motion is the thing you see. */
 video.band-media{object-position:center 66%}
+/* only ever shown when autoplay was refused */
+.band-play{position:absolute;left:clamp(1rem,3vw,2rem);bottom:clamp(1rem,3vw,2rem);
+  display:flex;align-items:center;gap:.55rem;padding:.85rem 1.2rem;min-height:44px;border:0;
+  background:var(--ink);color:var(--bone);font:inherit;font-size:.72rem;font-weight:600;
+  letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
+.band-play::before{content:'';width:0;height:0;border-left:8px solid var(--bone);
+  border-top:5px solid transparent;border-bottom:5px solid transparent}
+.band-play:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
 .band--wide{aspect-ratio:970/476}
 @media (max-width:768px){.band{aspect-ratio:4/5;max-height:none}
   .band-media{object-position:center}
@@ -627,12 +635,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   </section>
 
   <!-- one colour interruption: bone gives way to a single moving frame -->
-  <figure class="band rv">
-    <video class="band-media" autoplay muted loop playsinline preload="metadata"
+  <figure class="band">
+    <video class="band-media" autoplay muted loop playsinline preload="auto"
            poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
       <source src="img/hero-loop.mp4" type="video/mp4">
       <img src="img/hero-poster-512.webp" alt="A group on the beach as the sun goes down">
     </video>
+    <button class="band-play" type="button" hidden>Play</button>
   </figure>
 
   <!-- three acts of one day -->
@@ -1442,12 +1451,21 @@ function countUp(el){
   loop.muted = true;                 // property, not just the attribute
   loop.playsInline = true;
   if (reduce){ loop.removeAttribute('autoplay'); loop.pause(); return; }
-  const kick = () => { const p = loop.play(); if (p) p.catch(() => {}); };
+  const cue = document.querySelector('.band-play');
+  const showCue = () => { if (cue && loop.paused) cue.hidden = false; };
+  const kick = () => {
+    const p = loop.play();
+    if (p) p.then(() => { if (cue) cue.hidden = true; }).catch(showCue);
+  };
+  if (cue) cue.addEventListener('click', () => { loop.play().catch(() => {}); cue.hidden = true; });
+  loop.addEventListener('playing', () => { if (cue) cue.hidden = true; });
+  let armed = false;
+  const arm = () => { if (armed) return; armed = true; setTimeout(showCue, 1500); };
   if ('IntersectionObserver' in window){
     new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting) kick(); else loop.pause();
+      if (e.isIntersecting){ kick(); arm(); } else loop.pause();
     }), { threshold:.2 }).observe(loop);
-  } else kick();
+  } else { kick(); arm(); }
   /* iOS suspends media when the tab is backgrounded and does not always
      resume on return */
   addEventListener('pageshow', kick);
