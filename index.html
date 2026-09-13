@@ -628,7 +628,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <!-- one colour interruption: bone gives way to a single moving frame -->
   <figure class="band rv">
-    <video class="band-media" autoplay muted loop playsinline
+    <video class="band-media" autoplay muted loop playsinline preload="metadata"
            poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
       <source src="img/hero-loop.mp4" type="video/mp4">
       <img src="img/hero-poster-512.webp" alt="A group on the beach as the sun goes down">
@@ -1431,6 +1431,29 @@ function countUp(el){
   };
   el.textContent = '0' + suffix; requestAnimationFrame(step);
 }
+/* The autoplay attribute is evaluated when the element loads. On a phone this
+   band sits well below the fold, so the browser declines to start it and never
+   reconsiders. Start it when it comes into view instead, and let it rest when
+   it leaves, which also spares the battery. muted has to be set as a property,
+   not just an attribute, before play() will be allowed. */
+(() => {
+  const loop = document.querySelector('video.band-media');
+  if (!loop) return;
+  loop.muted = true;                 // property, not just the attribute
+  loop.playsInline = true;
+  if (reduce){ loop.removeAttribute('autoplay'); loop.pause(); return; }
+  const kick = () => { const p = loop.play(); if (p) p.catch(() => {}); };
+  if ('IntersectionObserver' in window){
+    new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) kick(); else loop.pause();
+    }), { threshold:.2 }).observe(loop);
+  } else kick();
+  /* iOS suspends media when the tab is backgrounded and does not always
+     resume on return */
+  addEventListener('pageshow', kick);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
+})();
+
 function observe(){
   io && io.disconnect(); io2 && io2.disconnect(); io3 && io3.disconnect();
   io = new IntersectionObserver(es => es.forEach(e => {
