@@ -43,9 +43,13 @@ the belief.
    the belief is stated plainly.
 2. **The visitor acts, not reads.** Join → vote → share is the spine; every
    section serves it.
-3. **Route 2 "Everyday Epic".** Near-black, cinematic, blue-hour atmosphere;
-   gradients are the brand's signature visual; the wordmark is embossed into
-   surfaces, not printed on top.
+3. **Route 2 "Everyday Epic", on the V12 foundation.** Bone, stone and concrete
+   carry the page; Dusk appears in exactly one impact section. The three locked
+   scent gradients are the brand's signature visual and are meant to be seen —
+   each act owns one as a full-bleed colour field, at roughly 60% foundation /
+   25% photography / 15% gradient. The wordmark is supplied artwork, never
+   redrawn. (This supersedes the earlier near-black, blue-hour direction, which
+   the guidelines inverted.)
 4. **Their choice visibly matters.** Live counts, a locked vote, a numbered
    pass — co-creation is the moat.
 5. **Official copy only.** Headlines come from the brand strategy deck, not
