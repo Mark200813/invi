@@ -173,7 +173,9 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .btn>*{position:relative;z-index:1}
 .btn:hover{color:var(--bone)}
 .btn:hover::after{transform:translateY(0)}
-.btn:active{transform:scale(.98)}
+/* was transform:scale(.98). V12 bans scale as a state change; component states
+   shift tone instead. */
+.btn:active{opacity:.82}
 .btn--solid{background:var(--ink);border-color:var(--ink);color:var(--bone)}
 .btn--solid::after{background:var(--ink)}
 .btn--solid:hover{color:var(--bone)}
@@ -290,6 +292,37 @@ video.band-media{object-position:center 66%}
   font-size:clamp(2.6rem,10.8vw,10.8rem);line-height:.9;letter-spacing:-.05em;
   font-weight:500;text-transform:uppercase;margin-inline-start:-.05em}
 .shorthand .em{color:var(--accent-ink);transition:color .6s var(--ease)}
+
+/* ── the pinned day ─────────────────────────────────────────
+   Enhancement only. Without .js, under reduced motion, or below 901px, none
+   of this applies and the three acts are three ordinary stacked sections —
+   which is also what a search engine and a text browser see. --p is written
+   by the scroll handler; everything below just reads it. */
+.day-stage > .act{opacity:1}
+@media (min-width:901px) and (prefers-reduced-motion:no-preference){
+  .js .day{height:320svh}
+  .js .day-stage{position:sticky;top:0;height:100svh;overflow:hidden}
+  .js .day-stage > .act{position:absolute;inset:0;min-height:0;opacity:var(--o,1);
+    will-change:opacity}
+  /* the light that travels with the day: one soft band crossing the field,
+     driven by scroll position, never looping */
+  .js .day-stage > .act .act-in::before{content:'';position:absolute;
+    inset:-50% -30%;z-index:-1;pointer-events:none;
+    background:radial-gradient(ellipse 42% 60% at calc(var(--p,0) * 130% - 15%) 42%,
+      rgba(255,255,255,.34),transparent 68%)}
+  /* crop drift: each photograph moves a little within its own frame while its
+     world is on screen. A few percent of object-position, not a parallax layer */
+  .js .day-stage > .act .act-media img{object-position:50% calc(32% + var(--p,0) * 18%)}
+}
+/* a three-mark clock, so a pinned frame still tells you where you are */
+.day-rail{position:absolute;right:calc((100vw - var(--shell))/2);bottom:clamp(1.4rem,4vh,2.6rem);
+  z-index:3;display:none;gap:.5rem;margin:0}
+.js .day-rail{display:flex}
+.day-rail i{width:34px;height:2px;background:var(--on-field);opacity:.25;
+  transition:opacity .45s var(--ease)}
+.day-rail i.on{opacity:.85}
+@media (max-width:900px){.day-rail{display:none!important}}
+@media (prefers-reduced-motion:reduce){.day-rail{display:none!important}}
 
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
   gap:clamp(2rem,5vw,4.5rem);align-items:center;position:relative;z-index:2}
@@ -642,8 +675,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 .toast b{font-weight:700}
 /* One signature entrance. The mark wipes in, holds, then the whole curtain
    lifts to hand the page over. Once a session, and instant under reduced motion. */
+/* pointer-events:none from the first frame. Measured before this change: the
+   curtain was hit-testable, opaque and full-screen, and the primary CTA did
+   not become clickable for 2,952ms — .gone was added at 1500ms, visibility
+   only flips at the END of a 1s transition, and the node was not removed
+   until 2800ms. Motion must never delay interaction, so the curtain is now
+   decorative from the start and the whole sequence is shorter. */
 .intro{position:fixed;inset:0;z-index:90;background:var(--ink);display:grid;place-items:center;
-  transition:transform 1s cubic-bezier(.76,0,.24,1),visibility 1s;will-change:transform}
+  pointer-events:none;
+  transition:transform .75s cubic-bezier(.76,0,.24,1),visibility .75s;will-change:transform}
 .intro.gone{transform:translateY(-101%);visibility:hidden}
 .intro .mark{width:min(52vw,280px);height:auto;position:relative}
 .intro .mark-svg{width:100%;height:auto}
@@ -787,7 +827,22 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     <button class="band-play" type="button" hidden>Play</button>
   </figure>
 
-  <!-- three acts of one day -->
+  <!-- ═══ THE DAY ═══════════════════════════════════════════════════════
+       The signature scroll moment. The three scent worlds pass through one
+       pinned frame instead of sitting as three slides: the colour field
+       cross-dissolves, a light travels across it, and each photograph's crop
+       drifts while its own world is on screen.
+
+       Built with position:sticky and about twenty lines in the scroll handler
+       that already runs. No GSAP, no CDN, no smooth-scroll library. CSS
+       scroll-driven animation would have been the purest route but is not
+       Baseline — Firefox still keeps animation-timeline behind a flag — so a
+       JS path is required regardless, and once it exists GSAP buys nothing
+       here: sticky already does the pinning that ScrollTrigger is for.
+
+       Degrades to three ordinary stacked sections without JS, under reduced
+       motion, and below 901px. -->
+  <div class="day" id="day"><div class="day-stage">
   <section class="act" data-act="origin">
     <div class="act-in">
       <div class="rv">
@@ -823,6 +878,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     </div>
     <h2 class="display t-crop act-word"><span>After Dark</span></h2>
   </section>
+  <p class="day-rail" aria-hidden="true"><i></i><i></i><i></i></p>
+  </div></div>
 
 <hr class="rule">
 
@@ -1253,9 +1310,67 @@ function markSection(){
    inside the frame callback, so a single dropped frame wedged the handler shut
    and the nav stopped following the page. This reads three rects per scroll,
    which is cheap enough to do straight. */
+/* THE DAY.
+   One pinned frame, three scent worlds passing through it. Progress across the
+   track drives a per-act opacity and a per-act --p that the CSS uses for the
+   travelling light and the crop drift.
+
+   Each act peaks at an even point along the track and falls off either side,
+   so two worlds overlap through the handover and the field dissolves rather
+   than cutting. Reading one rect per scroll; no rAF flag, for the same reason
+   markSection() has none — a dropped frame used to wedge the old guard shut. */
+const day = $('#day'), dayActs = $$('#day .act'), dayRail = $$('.day-rail i');
+const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
+/* Matches the media query that turns the pin on, so the check costs nothing.
+   Reading position:sticky off getComputedStyle here would force a style
+   recalculation on every single scroll event. */
+const dayPinned = matchMedia('(min-width:901px) and (prefers-reduced-motion: no-preference)');
+let dayCleared = false;
+function paintDay(){
+  if (!day || !dayActs.length) return;
+  if (!dayPinned.matches){            /* mobile, or reduced motion */
+    if (dayCleared) return;
+    dayActs.forEach(a => { a.style.removeProperty('--o'); a.style.removeProperty('--p'); });
+    dayCleared = true;
+    return;
+  }
+  dayCleared = false;
+  const r = day.getBoundingClientRect();
+  const travel = r.height - innerHeight;
+  const p = travel > 0 ? clamp01(-r.top / travel) : 0;
+  const last = dayActs.length - 1, seg = 1 / last;
+
+  /* A true cross-dissolve, not a blend of three translucent layers. The first
+     world stays fully opaque underneath and each later one wipes in on top of
+     it, so the stack is opaque at every point in the scroll.
+
+     The earlier version faded all three on a triangular curve. Two layers at
+     0.5 leave (1-.5)(1-.5) = 25% of the page showing through, and measured at
+     the handover the three summed to 0.55 — the field visibly washed out to
+     bone halfway between worlds.
+
+     Each world also holds still for a stretch before handing over, so the day
+     reads as three places rather than one permanent dissolve. */
+  let lead = 0;
+  dayActs.forEach((a, i) => {
+    let o = 1;
+    if (i > 0){
+      const mid = seg * (i - 0.5), half = seg * 0.22;
+      const t = clamp01((p - (mid - half)) / (half * 2));
+      o = t * t * (3 - 2 * t);                    /* smoothstep */
+    }
+    a.style.setProperty('--o', o.toFixed(3));
+    if (o > 0.5) lead = i;
+  });
+  /* one light, travelling across the whole passage rather than resetting */
+  day.firstElementChild.style.setProperty('--p', p.toFixed(3));
+  dayRail.forEach((el, i) => el.classList.toggle('on', i === lead));
+}
+
 function onScroll(){
   nav.classList.toggle('stuck', scrollY > 40);
   markSection();
+  paintDay();
 }
 const nav = $('#nav');
 addEventListener('scroll', onScroll, { passive:true });
@@ -1266,8 +1381,8 @@ const intro = $('#intro');
 const seen = (() => { try { return sessionStorage.getItem('invi.seen'); } catch { return null; } })();
 try { sessionStorage.setItem('invi.seen','1'); } catch {}
 if (seen) intro.remove();
-else { setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 1500);
-       setTimeout(() => intro.remove(), 2800); }
+else { setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 900);
+       setTimeout(() => intro.remove(), reduce ? 400 : 1700); }
 
 /* wordmark handover */
 const navMark = $('.nav .mark'), heroMark = $('#heroMark');
