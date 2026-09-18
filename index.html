@@ -329,15 +329,31 @@ video.band-media{object-position:center 66%}
 .day-rail{position:absolute;right:calc((100vw - var(--shell))/2);bottom:clamp(1.4rem,4vh,2.6rem);
   z-index:3;display:none;gap:.5rem;margin:0}
 .js .day-rail{display:flex}
-.day-rail i{width:34px;height:2px;background:var(--on-field);opacity:.25;
-  transition:opacity .45s var(--ease)}
-.day-rail i.on{opacity:.85}
+/* Ink, declared outright rather than via var(--on-field). The rail is a sibling
+   of the three acts, not a descendant, so --on-field never resolved to the
+   active act's value — it fell through to the :root default. Ink happens to be
+   the right answer here anyway: the rail sits at 90-95% of whichever ramp is
+   showing, and measured there ink gives 5.03 / 5.91 / 10.42 against the three
+   fields while bone fails two of them. Declaring it makes that deliberate.
+
+   The real defect was the opacity. At .25 the marks measured 1.51-1.66:1 and
+   were invisible; non-text needs 3:1. Both states are now legible and the
+   active one is distinguished by length instead, which composites. */
+.day-rail i{width:34px;height:2px;background:var(--ink);opacity:.78;
+  transform:scaleX(.45);transform-origin:left center;
+  transition:transform .45s var(--ease),opacity .45s var(--ease)}
+.day-rail i.on{opacity:1;transform:scaleX(1)}
 @media (max-width:980px){.day-rail{display:none!important}}
 @media (prefers-reduced-motion:reduce){.day-rail{display:none!important}}
 
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
   gap:clamp(2rem,5vw,4.5rem);align-items:center;position:relative;z-index:2}
-.act-media{position:relative;margin:0;overflow:hidden;background:var(--stone)}
+/* The placeholder was --stone, which is correct on a bone page and wrong on a
+   colour field: a lazy-loaded photograph showed a pale rectangle over the
+   gradient until it decoded. A dark veil reads as "image loading" on all
+   three fields. */
+.act-media{position:relative;margin:0;overflow:hidden;
+  background:color-mix(in srgb,var(--ink) 14%,transparent)}
 .act-media img{display:block;width:100%;height:100%;object-fit:cover}
 
 /* Device 03, cropped type. The act's name runs along the foot of the field at
@@ -370,8 +386,19 @@ video.band-media{object-position:center 66%}
 @media (min-width:981px){
   /* keyed to the act itself, not its position among siblings, so inserting a
      section elsewhere cannot silently flip the rhythm */
-  .act-in{grid-template-columns:1fr 46%}
-  .act .act-media{margin-right:calc((var(--shell) - 100vw)/2)}
+  /* Reserve the band the cropped word occupies. Without this the photograph
+     was centred in the whole act and its hard bottom edge landed 10px inside
+     the word — measured: figure bottom 784, word top 774, and .act-in sits a
+     layer above, so the image sliced straight through the letterforms. The
+     word keeps its own strip of clear field and the two never meet. */
+  .act-in{grid-template-columns:1fr 46%;padding-bottom:clamp(6rem,10.5vw,10.5rem)}
+  /* ORIGIN's portrait is 656x875, so at a 669px column it wants 892px of
+     height inside a 900px act that only has ~569px left once the section
+     padding and the word's band are taken out. Uncapped it overflowed both
+     ends and pushed its bottom edge 102px past the top of the word. Capping
+     the frame lets object-fit:cover crop the photograph instead. */
+  .act .act-media{margin-right:calc((var(--shell) - 100vw)/2);
+    max-height:calc(100svh - 23rem)}
   .act[data-act="rise"] .act-in{grid-template-columns:46% 1fr}
   .act[data-act="rise"] .act-media{order:-1;margin-right:0;
     margin-left:calc((var(--shell) - 100vw)/2);transform:translateY(3rem)}
