@@ -44,6 +44,13 @@
   --accent:#3F7FA3; --accent-ink:#3A7596;
   --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
   --shell:min(1280px,90vw);
+  /* 100vw includes the classic scrollbar; the layout box that .wrap centres
+     against does not. Every rule that aligned something to the shell edge was
+     therefore half a scrollbar (~7-8px) out on Windows. --sbw is measured in
+     JS and kept up to date on resize; 0px is the right fallback for overlay
+     scrollbars and for no-JS. */
+  --sbw:0px;
+  --edge:calc((100vw - var(--sbw) - var(--shell))/2);
   /* V12 asks for 24-32px side margins on mobile; 5vw alone is 19.5px at 390 */
   --gutter:clamp(1.5rem,5vw,2rem);
 
@@ -75,6 +82,15 @@
 [data-moment="after-dark"] {--accent:#49304A;--accent-ink:#49304A}
 
 *,*::before,*::after{box-sizing:border-box}
+/* The UA rule for [hidden] is display:none at (0,1,0), and several
+   component rules here set display at the same specificity later in the
+   sheet — .fr{display:grid}, .joined-note{display:grid},
+   .band-play{display:flex} — so they silently won. Three elements marked
+   hidden rendered anyway: the post-join note before anyone had joined, a
+   Play button over an autoplaying video, and the guardian-email field,
+   whose value was then dropped on submit because the .hidden PROPERTY
+   was still true. */
+[hidden]{display:none!important}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;color-scheme:light}
 /* kills the 300ms double-tap delay and the default grey flash on tap */
 body{touch-action:manipulation;-webkit-tap-highlight-color:rgba(21,21,19,.08)}
@@ -148,10 +164,15 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .nav{position:fixed;inset:0 0 auto 0;z-index:40;display:flex;align-items:center;
   justify-content:space-between;gap:1rem;
   padding:calc(1.1rem + env(safe-area-inset-top)) 0 1.1rem;
-  padding-left:max(calc((100vw - var(--shell))/2), env(safe-area-inset-left));
-  padding-right:max(calc((100vw - var(--shell))/2), env(safe-area-inset-right));
+  padding-left:max(var(--edge), env(safe-area-inset-left));
+  padding-right:max(var(--edge), env(safe-area-inset-right));
   transition:background .4s var(--ease)}
-.nav.stuck{background:color-mix(in srgb,var(--bone) 84%,transparent);backdrop-filter:blur(14px)}
+/* rgba first: color-mix is unsupported on Safari <16.2 / Firefox <113, and
+   without a fallback the nav had NO background there while the blur was also
+   missing, dropping the links straight onto the scrolling page. */
+.nav.stuck{background:rgba(247,243,237,.84);
+  background:color-mix(in srgb,var(--bone) 84%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
 .mark{display:block;width:auto;height:1.05rem}
 /* One rule for every instance. Once the vector lands, `color` drives the
    mark and .mark--invert can go. */
@@ -169,7 +190,9 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .nav-mid a[aria-current="page"]::after,.nav-mid a:hover::after{transform:scaleX(1);transform-origin:left}
 .count-pill{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--ink-2)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 2.8s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 currentColor}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+/* the halo used currentColor, which inherits .count-pill's grey, so a blue
+   dot pulsed a grey ring */
+@keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
 
 /* ── buttons ────────────────────────────────────────────── */
 .btn{position:relative;display:inline-flex;align-items:center;gap:.6rem;padding:1rem 2rem;
@@ -195,10 +218,10 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* ── hero ───────────────────────────────────────────────── */
 /* Two real columns, so type and photograph can never collide. The figure is a
    grid track that runs to the viewport edge; the type keeps the shell margin. */
-.hero{min-height:100svh;display:grid;grid-template-columns:1fr min(44vw,600px);
+.hero{min-height:100vh;min-height:100svh;display:grid;grid-template-columns:1fr min(44vw,600px);
   align-items:stretch;position:relative;overflow:hidden}
 .hero > .wrap{width:auto;max-width:none;margin:0;align-self:center;z-index:2;
-  padding:7rem clamp(1.5rem,3vw,3rem) 2rem calc((100vw - var(--shell))/2)}
+  padding:7rem clamp(1.5rem,3vw,3rem) 2rem var(--edge)}
 .hero-figure{position:relative;height:100%;min-height:100%;overflow:hidden;
   -webkit-mask-image:linear-gradient(100deg,transparent 0,#000 30%);
   mask-image:linear-gradient(100deg,transparent 0,#000 30%)}
@@ -209,7 +232,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
     -webkit-mask-image:none;mask-image:none}
   .hero-figure img{position:absolute}
   .hero-figure img{position:absolute}
-  .hero > .wrap{padding-inline:calc((100vw - var(--shell))/2)}
+  .hero > .wrap{padding-inline:var(--edge)}
 }
 .hero h1{margin-bottom:1.4rem;text-wrap:balance}
 .hero h1 .l{display:block;overflow:hidden}
@@ -220,7 +243,7 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 @keyframes up{from{transform:translateY(105%)}}
 .hero .lede{margin-bottom:2.6rem}
 .hero-actions{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center}
-.scroll-cue{position:absolute;bottom:2.2rem;left:calc((100vw - var(--shell))/2);
+.scroll-cue{position:absolute;bottom:2.2rem;left:var(--edge);
   display:flex;align-items:center;gap:.8rem;font-size:.75rem;font-weight:500;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-2)}
 .scroll-cue .ln{width:44px;height:1px;background:var(--hair);position:relative;overflow:hidden}
@@ -230,11 +253,11 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 
 .two-up{display:grid;grid-template-columns:1fr minmax(300px,44%);
   gap:clamp(2rem,5vw,4.5rem);align-items:center}
-@media (max-width:980px){.two-up{grid-template-columns:1fr}}
+@media (max-width:980.98px){.two-up{grid-template-columns:1fr}}
 
 /* ── full-bleed bands ───────────────────────────────────── */
 .band{position:relative;margin:0;width:100%;overflow:hidden;background:var(--dusk);
-  aspect-ratio:16/9;max-height:80svh}
+  aspect-ratio:16/9;max-height:80vh;max-height:80svh}
 .band-media{display:block;width:100%;height:100%;object-fit:cover;object-position:center 58%}
 /* The loop is a portrait frame and all of its movement sits in the lower half:
    the sky barely changes, the swimmers and the surf carry it. A 21:9 letterbox
@@ -253,7 +276,7 @@ video.band-media{object-position:center 66%}
 .band picture{display:contents}
 /* the mobile sources are 4:5 files, so the frame matches them and object-fit
    has nothing left to crop away */
-@media (max-width:767px){.band{aspect-ratio:4/5;max-height:none}
+@media (max-width:767.98px){.band{aspect-ratio:4/5;max-height:none}
   .band-media{object-position:center}
   .band--wide{aspect-ratio:4/5}}
 .proof{margin:0 0 1.1rem;font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;
@@ -273,7 +296,7 @@ video.band-media{object-position:center 66%}
      AFTER DARK  bone clears body to   63%               -> bone  (copy sits left,  ~28%)
    The left/right/left alternation lands each copy block inside its own safe
    band. Moving a block across the diagonal breaks contrast. */
-.act{min-height:100svh;display:flex;align-items:center;position:relative;
+.act{min-height:100vh;min-height:100svh;display:flex;align-items:center;position:relative;
   overflow:hidden;isolation:isolate;color:var(--on-field)}
 .act[data-act="origin"]    {--field:var(--grad-origin)}
 .act[data-act="rise"]      {--field:var(--grad-rise)}
@@ -310,9 +333,9 @@ video.band-media{object-position:center 66%}
    which is also what a search engine and a text browser see. --p is written
    by the scroll handler; everything below just reads it. */
 .day-stage > .act{opacity:1}
-@media (min-width:981px) and (prefers-reduced-motion:no-preference){
-  .js .day{height:320svh}
-  .js .day-stage{position:sticky;top:0;height:100svh;overflow:hidden}
+@media (min-width:980.99px) and (prefers-reduced-motion:no-preference){
+  .js .day{height:320vh;height:320svh}
+  .js .day-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
   .js .day-stage > .act{position:absolute;inset:0;min-height:0;opacity:var(--o,1);
     will-change:opacity}
   /* the light that travels with the day: one soft band crossing the field,
@@ -326,7 +349,7 @@ video.band-media{object-position:center 66%}
   .js .day-stage > .act .act-media img{object-position:50% calc(32% + var(--p,0) * 18%)}
 }
 /* a three-mark clock, so a pinned frame still tells you where you are */
-.day-rail{position:absolute;right:calc((100vw - var(--shell))/2);bottom:clamp(1.4rem,4vh,2.6rem);
+.day-rail{position:absolute;right:var(--edge);bottom:clamp(1.4rem,4vh,2.6rem);
   z-index:3;display:none;gap:.5rem;margin:0}
 .js .day-rail{display:flex}
 /* Ink, declared outright rather than via var(--on-field). The rail is a sibling
@@ -343,7 +366,7 @@ video.band-media{object-position:center 66%}
   transform:scaleX(.45);transform-origin:left center;
   transition:transform .45s var(--ease),opacity .45s var(--ease)}
 .day-rail i.on{opacity:1;transform:scaleX(1)}
-@media (max-width:980px){.day-rail{display:none!important}}
+@media (max-width:980.98px){.day-rail{display:none!important}}
 @media (prefers-reduced-motion:reduce){.day-rail{display:none!important}}
 
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
@@ -353,6 +376,7 @@ video.band-media{object-position:center 66%}
    gradient until it decoded. A dark veil reads as "image loading" on all
    three fields. */
 .act-media{position:relative;margin:0;overflow:hidden;
+  background:rgba(21,21,19,.14);
   background:color-mix(in srgb,var(--ink) 14%,transparent)}
 .act-media img{display:block;width:100%;height:100%;object-fit:cover}
 
@@ -374,16 +398,16 @@ video.band-media{object-position:center 66%}
    both, so the word takes ink where the act is tall and narrow and bone
    where it is wide. Every other element on the page uses one colour. */
 .act[data-act="after-dark"] .act-word{color:var(--ink)}
-@media (min-width:981px){.act[data-act="after-dark"] .act-word{color:var(--bone)}}
+@media (min-width:980.99px){.act[data-act="after-dark"] .act-word{color:var(--bone)}}
 .act-word > span{display:block;white-space:nowrap;
-  padding-inline-start:calc((100vw - var(--shell))/2)}
+  padding-inline-start:var(--edge)}
 .act[data-act="rise"] .act-word > span{text-align:right;padding-inline-start:0;
-  padding-inline-end:calc((100vw - var(--shell))/2)}
+  padding-inline-end:var(--edge)}
 
 /* Each act turns the page over: the photograph takes the opposite edge from
    the one before it and runs off the side of the screen, so the three read as
    a sequence rather than the same template three times. */
-@media (min-width:981px){
+@media (min-width:980.99px){
   /* keyed to the act itself, not its position among siblings, so inserting a
      section elsewhere cannot silently flip the rhythm */
   /* Reserve the band the cropped word occupies. Without this the photograph
@@ -397,11 +421,11 @@ video.band-media{object-position:center 66%}
      padding and the word's band are taken out. Uncapped it overflowed both
      ends and pushed its bottom edge 102px past the top of the word. Capping
      the frame lets object-fit:cover crop the photograph instead. */
-  .act .act-media{margin-right:calc((var(--shell) - 100vw)/2);
-    max-height:calc(100svh - 23rem)}
+  .act .act-media{margin-right:calc(-1 * var(--edge));
+    max-height:calc(100vh - 23rem);max-height:calc(100svh - 23rem)}
   .act[data-act="rise"] .act-in{grid-template-columns:46% 1fr}
   .act[data-act="rise"] .act-media{order:-1;margin-right:0;
-    margin-left:calc((var(--shell) - 100vw)/2);transform:translateY(3rem)}
+    margin-left:calc(-1 * var(--edge));transform:translateY(3rem)}
 }
 .act h2{margin:0 0 1rem}
 .act .note{font-size:clamp(1.0625rem,.35vw + .97rem,1.125rem);color:var(--on-field-2);
@@ -418,7 +442,10 @@ video.band-media{object-position:center 66%}
    than --ink, because --ink is also a background (buttons) and remapping it
    would put bone on bone. */
 .sec-dusk{background:var(--dusk);color:var(--bone);position:relative;isolation:isolate;
-  --ink-2:rgba(247,243,237,.78);--hair:rgba(247,243,237,.24);--accent-ink:var(--bone)}
+  --ink-2:rgba(247,243,237,.78);--hair:rgba(247,243,237,.24);
+  /* --accent-ink was remapped but --accent was not, so .tag::before and
+     .moment .chk kept Mineral Blue, which measures 2.83:1 on dusk. */
+  --accent-ink:var(--bone);--accent:var(--bone)}
 .sec-dusk::after{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
   background-image:var(--noise);background-size:190px 190px;opacity:.3;mix-blend-mode:overlay}
 .sec-dusk > *{position:relative;z-index:1}
@@ -455,17 +482,21 @@ video.band-media{object-position:center 66%}
   pointer-events:none;background-image:var(--noise);background-size:190px 190px;
   opacity:.34;mix-blend-mode:overlay;
   clip-path:inset(0 0 var(--band,56%) 0);transition:clip-path .55s var(--ease)}
-.moment:hover:not(.locked){--band:48%}
+/* :not(.locked) contributes its argument's specificity, so the hover rule
+   outranked the pressed one and hovering your own locked-in choice shrank its
+   band from 40% back to 48%. Scoping hover to the unpressed state fixes the
+   order of intent rather than escalating specificity. */
+.moment:hover:not(.locked):not([aria-pressed="true"]){--band:48%}
 .moment[aria-pressed="true"]{--band:40%}
 .moment > *{position:relative;z-index:2}
-.moment h3{color:var(--bone)}
+.moment .m-name{color:var(--bone)}
 .moments.decided .moment:not([aria-pressed="true"]){opacity:.3}
 .moments.decided .moment{pointer-events:none}
 .moment.locked{cursor:pointer}
 .moment .idx{font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;color:var(--ink-2)}
-.moment h3{margin:0;font-family:'Inter',system-ui,sans-serif;font-weight:500;text-transform:uppercase;
+.moment .m-name{display:block;margin:0;font-family:'Inter',system-ui,sans-serif;font-weight:500;text-transform:uppercase;
   font-size:clamp(1.4rem,2.4vw,2rem);line-height:.95;letter-spacing:-.01em}
-.moment p{margin:0;font-size:.9375rem;color:var(--ink-2);line-height:1.5}
+.moment .m-desc{display:block;margin:0;font-size:.9375rem;color:var(--ink-2);line-height:1.5}
 .moment .chk{position:absolute;top:1rem;right:1rem;width:22px;height:22px;border-radius:50%;
   background:var(--accent);display:grid;place-items:center;opacity:0;transform:scale(.5);
   transition:opacity .4s var(--ease),transform .4s var(--ease)}
@@ -509,7 +540,7 @@ video.band-media{object-position:center 66%}
    and the form reads as a single act rather than a list of chores. */
 .fr-pair{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem}
 .fr{display:grid;gap:.4rem;position:relative}
-.fr label{font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;text-transform:uppercase;
+.fr label,.fr .fld-label{font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;text-transform:uppercase;
   color:var(--ink-2);display:flex;gap:.5rem;align-items:baseline}
 .fr label .req{color:var(--accent-ink)}
 .fr label .opt{opacity:.6;font-weight:500}
@@ -528,7 +559,7 @@ video.band-media{object-position:center 66%}
   outline:2px solid var(--accent-ink);outline-offset:3px}
 /* a field that is done says so, rather than leaving you to guess */
 .fr label{transition:color .3s var(--ease)}
-.fr.ok label{color:var(--ink)}
+.fr.ok label,.fr.ok .fld-label{color:var(--ink)}
 .fr.ok label:not(.consent)::after{content:'';width:9px;height:5px;border-left:1.5px solid var(--accent);
   border-bottom:1.5px solid var(--accent);rotate:-45deg;margin-left:.1rem;
   animation:tickIn .32s var(--ease) both}
@@ -634,6 +665,7 @@ video.band-media{object-position:center 66%}
 .pass.on{display:block;animation:rise .8s var(--ease) both}
 @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
 .card{position:relative;overflow:hidden;border:1px solid var(--hair);padding:clamp(1.6rem,3.5vw,2.5rem);
+  background:rgba(247,243,237,.7);
   background:color-mix(in srgb,var(--bone) 70%,transparent);max-width:32rem}
 .card::before{content:'';position:absolute;inset:0;border:1px solid var(--accent);
   opacity:.5;pointer-events:none;transition:border-color .6s var(--ease)}
@@ -697,7 +729,7 @@ video.band-media{object-position:center 66%}
 .privacy{background:var(--bone);color:var(--ink);border:1px solid var(--hair);
   overscroll-behavior:contain;
   width:min(92vw,33rem);padding:clamp(1.6rem,4vw,2.4rem);margin:auto}
-.privacy::backdrop{background:rgba(4,5,8,.72);backdrop-filter:blur(5px)}
+.privacy::backdrop{background:rgba(4,5,8,.72);-webkit-backdrop-filter:blur(5px);backdrop-filter:blur(5px)}
 .privacy h2{margin:0 0 1.3rem}
 .privacy ul{list-style:none;margin:0 0 1.7rem;padding:0;display:grid;gap:.95rem}
 .privacy li{display:grid;grid-template-columns:auto 1fr;gap:.85rem;align-items:start;
@@ -768,26 +800,44 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
    comes off the raw gradient and onto the foundation, where it is ink on bone
    at 16.5:1 regardless of viewport. The colour field keeps the photograph and
    the cropped word, which is where it does the work anyway. */
-@media (max-width:980px){
+@media (max-width:980.98px){
   /* The breakout is measured against the act, not the viewport. Using
-     calc((var(--shell) - 100vw)/2) put the block 7.67px off centre, because
+     calc(-1 * var(--edge)) put the block 7.67px off centre, because
      100vw counts the scrollbar and the layout box does not — so it bled past
      the left edge and left a bone sliver down the right. Here .act-in is
      width:auto, so an equal negative margin and padding cancel exactly
      whatever the gutter resolves to. */
-  .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
+  /* The word's band has to be reserved here too. The desktop rule that does
+     this is scoped to >=981px, so on a phone the photograph ran straight into
+     the cropped word — measured at 390: 9px of overlap on ORIGIN and AFTER
+     DARK, 35px on RISE, with the word set in ink over an arbitrary
+     photograph, where contrast is not guaranteed by anything. */
+  .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter);
+    padding-bottom:clamp(1.5rem,5vw,2.5rem)}
+  /* On a phone the act's height comes from its content, so reserving a band
+     inside .act-in simply made the act taller and the absolutely-positioned
+     word moved down with it — the overlap stayed at exactly 9px however much
+     padding was added. The word goes into flow here instead: it follows the
+     photograph, and a negative bottom margin against .act's overflow:hidden
+     keeps it cropped by the section edge the way it is on desktop. */
+  /* .act .act-word, not .act-word: the word is an <h2>, and `.act h2{margin:0 0
+     1rem}` outranks a single class. While the word was absolutely positioned
+     that never showed; in flow it silently won and the margin computed to
+     +16px, so changing this value had no effect at all. */
+  .act .act-word{position:static;margin:0 0 -.26em}
   .act .act-copy{background:var(--bone);color:var(--ink);
     margin-inline:calc(-1 * var(--gutter));
     padding:clamp(1.5rem,6vw,2.2rem) var(--gutter) clamp(1.7rem,6vw,2.4rem)}
   .act .act-copy .kicker{color:var(--accent-ink);opacity:1}
   .act .act-copy .note{color:var(--ink-2)}
 }
-@media (max-width:980px){
-  .act{min-height:auto;padding:clamp(3.5rem,9vh,6rem) 0}
+@media (max-width:980.98px){
+  /* display:block so the in-flow word stacks under .act-in rather than
+     becoming a second flex item beside it. No bottom padding: the word's
+     negative margin has to reach past the section edge to be cropped, and a
+     padding shorthand here previously reset it. */
+  .act{min-height:auto;display:block;padding:clamp(3.5rem,9vh,6rem) 0 0}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
-  .act .dial{width:clamp(120px,34vw,180px);order:-1}
-  /* the empty right column only exists on desktop; on mobile the signature
-     would sit on top of the copy and the buttons, so it stands down */
   .moments{grid-template-columns:1fr}
   .moment{min-height:0;padding:1.3rem}
   .join-grid,.two{grid-template-columns:1fr}
@@ -906,7 +956,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <!-- one colour interruption: bone gives way to a single moving frame -->
   <figure class="band">
-    <video class="band-media" autoplay muted loop playsinline preload="auto"
+    <video class="band-media" autoplay muted loop playsinline preload="metadata"
            poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
       <source src="img/hero-loop.mp4" type="video/mp4">
       <img src="img/hero-poster-512.webp" width="512" height="640" alt="A group on the beach as the sun goes down">
@@ -1127,19 +1177,19 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <div class="fr-pair">
           <div class="fr" id="p-name">
             <label for="pname">Full name</label>
-            <input id="pname" type="text" autocomplete="name" placeholder="First and last">
+            <input id="pname" type="text" autocomplete="name" aria-describedby="pe-name" placeholder="First and last">
             <p class="err" id="pe-name" aria-live="polite"></p>
           </div>
           <div class="fr" id="p-email">
             <label for="pemail">Email</label>
-            <input id="pemail" type="email" autocomplete="email" inputmode="email" spellcheck="false" placeholder="you@example.com">
+            <input id="pemail" type="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="pe-email" placeholder="you@example.com">
             <p class="err" id="pe-email" aria-live="polite"></p>
           </div>
         </div>
         <div class="fr" id="p-age">
-          <label id="pageLabel">Age</label>
+          <span id="pageLabel" class="fld-label">Age</span>
           <div class="sel" id="psel">
-            <button type="button" class="sel-btn" id="pselBtn" aria-haspopup="listbox" aria-expanded="false">
+            <button type="button" class="sel-btn" id="pselBtn" role="combobox" aria-controls="pselList" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="pageLabel pselVal" aria-describedby="pe-age">
               <span id="pselVal">Select your age</span>
               <svg class="car" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
             </button>
@@ -1149,7 +1199,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </div>
         <div class="fr" id="p-guardian" hidden>
           <label for="pguardian">Parent or guardian's email <span class="req">Required under 18</span></label>
-          <input id="pguardian" type="email" autocomplete="email" inputmode="email" spellcheck="false" placeholder="their@email.com">
+          <input id="pguardian" type="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="pe-guardian" placeholder="their@email.com">
           <p class="err" id="pe-guardian" aria-live="polite"></p>
         </div>
         </div>
@@ -1162,7 +1212,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
           <label for="pwhy" class="ask">What would you bring to the twelve?</label>
           <p class="help" id="whyHelp">No right answer and no word count to hit. A few lines in
             your own words beats a paragraph in someone else's.</p>
-          <textarea id="pwhy" aria-describedby="whyHelp" placeholder="Start anywhere."></textarea>
+          <textarea id="pwhy" aria-describedby="whyHelp pe-why whyCount" placeholder="Start anywhere."></textarea>
           <p class="err" id="pe-why" aria-live="polite"></p>
           <p class="count" id="whyCount" aria-live="polite"></p>
         </div>
@@ -1179,7 +1229,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </ul>
         <div class="fr" id="p-consent">
           <label class="consent">
-            <input type="checkbox" id="pconsent">
+            <input type="checkbox" id="pconsent" aria-describedby="pe-consent">
             <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
             <span>I've read the three points above and I'm putting my name forward.
               <a href="#" data-dialog>Privacy</a>.</span>
@@ -1221,15 +1271,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <div class="moments gated" id="moments">
         <button class="moment locked" data-key="origin" aria-pressed="false" style="--c1:#3F7FA3;--c2:#78BFD0;--c3:#6F9B4B">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">01</span><h3>Origin</h3><p>The moments that start it all.</p>
+          <span class="idx">01</span><span class="m-name">Origin</span><span class="m-desc">The moments that start it all.</span>
         </button>
         <button class="moment locked" data-key="rise" aria-pressed="false" style="--c1:#6B3A24;--c2:#F28A32;--c3:#F2C84B">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">02</span><h3>Rise</h3><p>The moments in motion.</p>
+          <span class="idx">02</span><span class="m-name">Rise</span><span class="m-desc">The moments in motion.</span>
         </button>
         <button class="moment locked" data-key="after-dark" aria-pressed="false" style="--c1:#49304A;--c2:#84549A;--c3:#D66BA0">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
-          <span class="idx">03</span><h3>After Dark</h3><p>Moments that need no explanation.</p>
+          <span class="idx">03</span><span class="m-name">After Dark</span><span class="m-desc">Moments that need no explanation.</span>
         </button>
       </div>
 
@@ -1266,19 +1316,19 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             <div class="fr-pair">
               <div class="fr" id="r-name">
                 <label for="fname">First name</label>
-                <input id="fname" type="text" autocomplete="given-name" placeholder="What do people call you?">
+                <input id="fname" type="text" autocomplete="given-name" aria-describedby="e-name" placeholder="What do people call you?">
                 <p class="err" id="e-name" aria-live="polite"></p>
               </div>
               <div class="fr" id="r-email">
                 <label for="email">Email</label>
-                <input id="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" placeholder="you@example.com">
+                <input id="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="e-email" placeholder="you@example.com">
                 <p class="err" id="e-email" aria-live="polite"></p>
               </div>
             </div>
             <div class="fr" id="r-age">
-              <label id="ageLabel">Age <span class="opt">Optional</span></label>
+              <span id="ageLabel" class="fld-label">Age <span class="opt">Optional</span></span>
               <div class="sel" id="sel">
-                <button type="button" class="sel-btn" id="selBtn" aria-haspopup="listbox" aria-expanded="false">
+                <button type="button" class="sel-btn" id="selBtn" role="combobox" aria-controls="selList" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ageLabel selVal">
                   <span id="selVal">Select your age</span>
                   <svg class="car" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
                 </button>
@@ -1288,7 +1338,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             </div>
             <div class="fr" id="r-consent">
               <label class="consent">
-                <input type="checkbox" id="consent">
+                <input type="checkbox" id="consent" aria-describedby="e-consent">
                 <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
                 <span>I'm happy for INVI to email me about the launch. You can leave any time.
                   <a href="#" data-dialog>Privacy</a>.</span>
@@ -1367,6 +1417,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 (() => {
 'use strict';
 document.documentElement.classList.add('js');
+/* --edge aligns things to the shell's outer edge, and it is derived from
+   100vw, which counts a classic scrollbar that the layout box excludes.
+   Measuring the difference keeps the two in step; it is 0 for overlay
+   scrollbars, which is also the CSS fallback. */
+const setScrollbarWidth = () => document.documentElement.style.setProperty(
+  '--sbw', (window.innerWidth - document.documentElement.clientWidth) + 'px');
+setScrollbarWidth();
+addEventListener('resize', setScrollbarWidth, { passive:true });
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1386,6 +1444,18 @@ let state = Object.assign(
     joined:false, name:'', applied:false },
   (() => { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } })()
 );
+/* Object.assign replaces `votes` wholesale, so a stored blob carrying
+   "votes":null (or a string, or a number) made tally() throw on the very first
+   count — before observe() ran. Every .rv element then stayed at opacity:0 and
+   the page rendered blank below the hero. Same for a moment key that is not one
+   of the three. Sanitise once, here, rather than guarding every read. */
+if (!state.votes || typeof state.votes !== 'object' || Array.isArray(state.votes)){
+  state.votes = { origin:0, rise:0, 'after-dark':0 };
+}
+KEYS.forEach(k => { const n = Number(state.votes[k]); state.votes[k] = Number.isFinite(n) ? n : 0; });
+if (state.moment !== null && !KEYS.includes(state.moment)){
+  state.moment = null; state.confirmed = false;
+}
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch {} };
 const tally = k => SEED[k] + (state.votes[k] || 0);
 const total = () => KEYS.reduce((n,k) => n + tally(k), 0);
@@ -1428,7 +1498,7 @@ const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
 /* Matches the media query that turns the pin on, so the check costs nothing.
    Reading position:sticky off getComputedStyle here would force a style
    recalculation on every single scroll event. */
-const dayPinned = matchMedia('(min-width:981px) and (prefers-reduced-motion: no-preference)');
+const dayPinned = matchMedia('(min-width:980.99px) and (prefers-reduced-motion: no-preference)');
 let dayCleared = false;
 function paintDay(){
   if (!day || !dayActs.length) return;
@@ -1501,7 +1571,13 @@ addEventListener('resize', watchMark);
 
 document.addEventListener('click', e => {
   const d = e.target.closest('[data-dialog]');
-  if (d) { e.preventDefault(); $('#privacy').showModal(); return; }
+  if (d) {
+    const dlg = $('#privacy');
+    if (!dlg || typeof dlg.showModal !== 'function') return;   /* let the link behave normally */
+    e.preventDefault();
+    try { dlg.showModal(); } catch { dlg.setAttribute('open',''); }
+    return;
+  }
 });
 
 function tick(el, to, ms = 1200){
@@ -1593,8 +1669,11 @@ function odometer(el, str){
     `<span class="odo-d"><i>${[0,1,2,3,4,5,6,7,8,9].join('<br>')}</i></span>`).join('');
   const digits = [...el.querySelectorAll('.odo-d i')];
   void el.offsetHeight;
+  /* The strip is ten digits tall inside a 1em window, and a translateY
+     percentage resolves against the transformed element's OWN height — so
+     -100% moved it ten rows, not one. Each row is a tenth of the strip. */
   digits.forEach((d,i) => { d.style.transitionDelay = (i*85)+'ms';
-    d.style.transform = `translateY(-${Number(str[i])*100}%)`; });
+    d.style.transform = `translateY(-${Number(str[i])*10}%)`; });
 }
 
 const AGES = ['Under 13','13','14','15','16','17','18 or over',"I'm a parent"];
@@ -1617,7 +1696,7 @@ function buildSelect(wrapSel, btnSel, listSel, valSel, onPick){
       if (!sel.classList.contains('open')){ btn.click(); opts[0].focus(); }
       else opts[Math.min(i+1, opts.length-1)].focus(); }
     else if (e.key === 'ArrowUp'){ e.preventDefault(); i > 0 ? opts[i-1].focus() : btn.focus(); }
-    else if (e.key === 'Escape') close();
+    else if (e.key === 'Escape'){ close(); btn.focus(); }   /* focus was landing on <body> */
   });
   document.addEventListener('click', e => { if (!sel.contains(e.target)) close(); });
 }
@@ -1647,6 +1726,16 @@ function validate(){
 /* On a failed submit the page said what was wrong but left the caret wherever
    it was, so a keyboard or screen-reader user had to go hunting. Move focus to
    the first field that failed and let the browser scroll it into view. */
+/* The .bad class styled the field but told assistive tech nothing. Mirror it
+   onto aria-invalid on the control itself, so a screen-reader user who leaves
+   and returns to a field still knows it failed. */
+function syncInvalid(form){
+  form.querySelectorAll('.fr').forEach(row => {
+    const bad = row.classList.contains('bad');
+    const ctl = row.querySelector('input:not([type=checkbox]), textarea, .sel-btn, input[type=checkbox]');
+    if (ctl) bad ? ctl.setAttribute('aria-invalid','true') : ctl.removeAttribute('aria-invalid');
+  });
+}
 function focusFirstError(form){
   const bad = form.querySelector('.fr.bad');
   if (!bad) return;
@@ -1658,7 +1747,10 @@ $('#consent').addEventListener('change', () => {
   if ($('#consent').checked){ $('#r-consent').classList.remove('bad'); $('#e-consent').textContent=''; } });
 form.addEventListener('submit', e => {
   e.preventDefault();
-  if (!validate()){ focusFirstError(form); return; }
+  /* sync on both outcomes: clearing .bad without clearing aria-invalid left
+     the field announced as invalid after it had been corrected */
+  const okJoin = validate(); syncInvalid(form);
+  if (!okJoin){ focusFirstError(form); return; }
   const btn = $('#submit'); btn.disabled = true; btn.querySelector('span').textContent = 'Adding you';
   console.log('[INVI demo] waitlist →', { first_name:$('#fname').value.trim(),
     email:$('#email').value.trim(), age, ts:new Date().toISOString() });
@@ -1734,7 +1826,15 @@ const CHECKS = {
           '#r-consent' : () => $('#consent').checked }
 };
 let barT;
-function paint(which){
+/* Renamed from `paint`. There were two top-level `function paint`
+   declarations in this IIFE — this one and the result-bar painter above.
+   Function declarations hoist, so the later won for every call site, and
+   `paint()` from the vote path landed here with which===undefined:
+   CHECKS[undefined] is undefined, `for...in undefined` is a spec no-op,
+   then it returned early. Nothing threw and nothing painted, so after
+   confirming a vote all three bars sat at 0% / scaleX(0) with the
+   counters stuck on 0. */
+function paintForm(which){
   const map = CHECKS[which];
   let done = 0, total = 0;
   for (const sel in map){
@@ -1758,11 +1858,11 @@ function paint(which){
   clearTimeout(barT); barT = setTimeout(() => dossier.classList.remove('moving'), 900);
 }
 ['input','change'].forEach(ev => {
-  progForm.addEventListener(ev, () => paint('prog'));
-  form.addEventListener(ev, () => paint('join'));
+  progForm.addEventListener(ev, () => { paintForm('prog'); syncInvalid(progForm); });
+  form.addEventListener(ev, () => { paintForm('join'); syncInvalid(form); });
 });
 /* the age list is a custom listbox, so it reports itself */
-$('#pselList').addEventListener('click', () => setTimeout(() => paint('prog'), 0));
+$('#pselList').addEventListener('click', () => setTimeout(() => paintForm('prog'), 0));
 $$('#progForm .fsec').forEach(sec => {
   sec.addEventListener('focusin',  () => { $$('#progForm .fsec').forEach(s => s.classList.remove('here'));
                                            sec.classList.add('here'); });
@@ -1770,10 +1870,11 @@ $$('#progForm .fsec').forEach(sec => {
 progForm.addEventListener('focusout', () => setTimeout(() => {
   if (!progForm.contains(document.activeElement)) $$('#progForm .fsec').forEach(s => s.classList.remove('here'));
 }, 0));
-paint('prog'); paint('join');
+paintForm('prog'); paintForm('join');
 progForm.addEventListener('submit', e => {
   e.preventDefault();
-  if (!validateProg()){ focusFirstError(progForm); return; }
+  const okProg = validateProg(); syncInvalid(progForm);
+  if (!okProg){ focusFirstError(progForm); return; }
   const btn = $('#psubmit'); btn.disabled = true; btn.querySelector('span').textContent = 'Sending';
   console.log('[INVI demo] programme →', { name:$('#pname').value.trim(), email:$('#pemail').value.trim(),
     age:progAge, guardian_email:$('#p-guardian').hidden ? '' : $('#pguardian').value.trim(),
