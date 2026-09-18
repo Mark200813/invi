@@ -40,6 +40,8 @@
   --accent:#3F7FA3; --accent-ink:#3A7596;
   --ease:cubic-bezier(.22,1,.36,1); --ease-io:cubic-bezier(.65,0,.35,1);
   --shell:min(1280px,90vw);
+  /* V12 asks for 24-32px side margins on mobile; 5vw alone is 19.5px at 390 */
+  --gutter:clamp(1.5rem,5vw,2rem);
 
   /* The three locked scent gradients, 135deg, stops at 0/52/100. These are the
      brand's expressive layer and they are meant to be seen: each act owns one
@@ -56,7 +58,7 @@
      The acts already alternate left/right/left, which lands each block inside
      its own safe band. Move a block across the diagonal and this breaks. */
   --on-field:var(--ink);
-  --on-field-2:rgba(21,21,19,.86);   /* measured on the ramp: 5.17 / 6.25 / 5.76 */
+  --on-field-2:var(--ink);
   --on-field-hair:rgba(21,21,19,.26);
 
   /* one grain tile, shared by every surface that opts in via .grain-on */
@@ -242,9 +244,12 @@ video.band-media{object-position:center 66%}
   border-top:5px solid transparent;border-bottom:5px solid transparent}
 .band-play:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
 .band--wide{aspect-ratio:970/476}
-@media (max-width:768px){.band{aspect-ratio:4/5;max-height:none}
+.band picture{display:contents}
+/* the mobile sources are 4:5 files, so the frame matches them and object-fit
+   has nothing left to crop away */
+@media (max-width:767px){.band{aspect-ratio:4/5;max-height:none}
   .band-media{object-position:center}
-  .band--wide{aspect-ratio:3/2}}
+  .band--wide{aspect-ratio:4/5}}
 .proof{margin:0 0 1.1rem;font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;
   text-transform:uppercase;color:var(--ink-2)}
 .btn--quiet{border-color:transparent;padding-inline:0;margin-inline-start:1.2rem}
@@ -267,7 +272,7 @@ video.band-media{object-position:center 66%}
 .act[data-act="origin"]    {--field:var(--grad-origin)}
 .act[data-act="rise"]      {--field:var(--grad-rise)}
 .act[data-act="after-dark"]{--field:var(--grad-after-dark);
-  --on-field:var(--bone);--on-field-2:rgba(247,243,237,.86);--on-field-hair:rgba(247,243,237,.34)}
+  --on-field:var(--bone);--on-field-2:var(--bone);--on-field-hair:rgba(247,243,237,.34)}
 .act::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--field)}
 /* device 01, tactile grain — on the field, not over the whole page */
 .act::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
@@ -299,7 +304,7 @@ video.band-media{object-position:center 66%}
    which is also what a search engine and a text browser see. --p is written
    by the scroll handler; everything below just reads it. */
 .day-stage > .act{opacity:1}
-@media (min-width:901px) and (prefers-reduced-motion:no-preference){
+@media (min-width:981px) and (prefers-reduced-motion:no-preference){
   .js .day{height:320svh}
   .js .day-stage{position:sticky;top:0;height:100svh;overflow:hidden}
   .js .day-stage > .act{position:absolute;inset:0;min-height:0;opacity:var(--o,1);
@@ -321,7 +326,7 @@ video.band-media{object-position:center 66%}
 .day-rail i{width:34px;height:2px;background:var(--on-field);opacity:.25;
   transition:opacity .45s var(--ease)}
 .day-rail i.on{opacity:.85}
-@media (max-width:900px){.day-rail{display:none!important}}
+@media (max-width:980px){.day-rail{display:none!important}}
 @media (prefers-reduced-motion:reduce){.day-rail{display:none!important}}
 
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
@@ -339,6 +344,15 @@ video.band-media{object-position:center 66%}
    .act-in sits a layer above. */
 .act-word{position:absolute;left:0;right:0;bottom:-.185em;z-index:1;
   margin:0;pointer-events:none;user-select:none;color:var(--on-field)}
+/* AFTER DARK's word is the one element whose safe colour changes with the
+   viewport, because the stretch of ramp it covers does. Measured:
+     320px   ramp 61-100%  -> bone 2.94 FAILS (Mood Pink), ink passes
+     1024px  ramp 41- 88%  -> ink  2.76 FAILS (Aubergine), bone passes
+   Bone clears large text to 97% of this ramp, ink from 47%. Neither covers
+   both, so the word takes ink where the act is tall and narrow and bone
+   where it is wide. Every other element on the page uses one colour. */
+.act[data-act="after-dark"] .act-word{color:var(--ink)}
+@media (min-width:981px){.act[data-act="after-dark"] .act-word{color:var(--bone)}}
 .act-word > span{display:block;white-space:nowrap;
   padding-inline-start:calc((100vw - var(--shell))/2)}
 .act[data-act="rise"] .act-word > span{text-align:right;padding-inline-start:0;
@@ -347,7 +361,7 @@ video.band-media{object-position:center 66%}
 /* Each act turns the page over: the photograph takes the opposite edge from
    the one before it and runs off the side of the screen, so the three read as
    a sequence rather than the same template three times. */
-@media (min-width:901px){
+@media (min-width:981px){
   /* keyed to the act itself, not its position among siblings, so inserting a
      section elsewhere cannot silently flip the rhythm */
   .act-in{grid-template-columns:1fr 46%}
@@ -357,7 +371,8 @@ video.band-media{object-position:center 66%}
     margin-left:calc((var(--shell) - 100vw)/2);transform:translateY(3rem)}
 }
 .act h2{margin:0 0 1rem}
-.act .note{font-size:1.125rem;color:var(--on-field-2);max-width:34ch;line-height:1.53}
+.act .note{font-size:clamp(1.0625rem,.35vw + .97rem,1.125rem);color:var(--on-field-2);
+  max-width:34ch;line-height:1.53}
 .act .kicker{font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;
   text-transform:uppercase;color:var(--on-field);margin:0 0 1.4rem;opacity:.9}
 
@@ -703,6 +718,28 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   .intro.gone{transform:none;opacity:0}
 }
 
+/* ── acts on a phone ────────────────────────────────────────
+   A phone makes each act tall and narrow, which runs the 135deg ramp steeply
+   through the copy. Measured at 320: RISE's copy block spans 15-59% of its
+   own ramp, and neither ink (safe from 31%) nor bone (safe to 22%) clears AA
+   across that whole stretch. No choice of text colour fixes it, so the copy
+   comes off the raw gradient and onto the foundation, where it is ink on bone
+   at 16.5:1 regardless of viewport. The colour field keeps the photograph and
+   the cropped word, which is where it does the work anyway. */
+@media (max-width:980px){
+  /* The breakout is measured against the act, not the viewport. Using
+     calc((var(--shell) - 100vw)/2) put the block 7.67px off centre, because
+     100vw counts the scrollbar and the layout box does not — so it bled past
+     the left edge and left a bone sliver down the right. Here .act-in is
+     width:auto, so an equal negative margin and padding cancel exactly
+     whatever the gutter resolves to. */
+  .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
+  .act .act-copy{background:var(--bone);color:var(--ink);
+    margin-inline:calc(-1 * var(--gutter));
+    padding:clamp(1.5rem,6vw,2.2rem) var(--gutter) clamp(1.7rem,6vw,2.4rem)}
+  .act .act-copy .kicker{color:var(--accent-ink);opacity:1}
+  .act .act-copy .note{color:var(--ink-2)}
+}
 @media (max-width:980px){
   .act{min-height:auto;padding:clamp(3.5rem,9vh,6rem) 0}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
@@ -721,6 +758,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   .moment .idx{font-size:.7rem}
   /* every age is a full tap target, not a 41px sliver */
   .sel-list button{min-height:44px;display:flex;align-items:center}
+}
+@media (max-width:420px){
+  /* At 320 the nav runs out of room: mark + three links + the live count came
+     to ~307px inside 288px of usable width, and the count pushed off the right
+     edge. The count is social proof, not navigation, and the same figure is
+     shown again on the vote — so it stands down and the links stay. */
+  .count-pill{display:none}
 }
 @media (max-width:560px){
   .statgrid,.pillars,.steps{grid-template-columns:1fr}
@@ -845,7 +889,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <div class="day" id="day"><div class="day-stage">
   <section class="act" data-act="origin">
     <div class="act-in">
-      <div class="rv">
+      <div class="act-copy rv">
         <p class="kicker">First light</p>
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
@@ -857,7 +901,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <section class="act" data-act="rise">
     <div class="act-in">
-      <div class="rv">
+      <div class="act-copy rv">
         <p class="kicker">Full sun</p>
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
@@ -869,7 +913,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <section class="act" data-act="after-dark">
     <div class="act-in">
-      <div class="rv">
+      <div class="act-copy rv">
         <p class="kicker">After dark</p>
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
@@ -884,12 +928,21 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <hr class="rule">
 
 <!-- ══════════════ 03 · BUILT WITH BOYS ══════════════ -->
+  <!-- Art direction, not resolution switching. The desktop file is 16:9; a
+       phone showing that same frame squeezed to a letterbox loses the faces,
+       which are the whole point of the shot. The mobile source is a separate
+       4:5 crop chosen by edge energy rather than by centring. -->
   <figure class="band band--wide rv">
-    <img class="band-media" src="img/hero-crew-1440.webp"
-         srcset="img/hero-crew-720.webp 720w, img/hero-crew-1080.webp 1080w, img/hero-crew-1440.webp 1440w"
-         sizes="100vw" width="1440" height="810"
-         alt="Four friends messing about on a beach basketball court as the sun drops"
-         loading="lazy" decoding="async">
+    <picture>
+      <source media="(min-width:768px)"
+              srcset="img/hero-crew-720.webp 720w, img/hero-crew-1080.webp 1080w, img/hero-crew-1440.webp 1440w"
+              sizes="100vw" width="1440" height="810">
+      <img class="band-media" src="img/hero-crew-mob-390.webp"
+           srcset="img/hero-crew-mob-390.webp 390w, img/hero-crew-mob-585.webp 585w, img/hero-crew-mob-780.webp 780w"
+           sizes="100vw" width="390" height="488"
+           alt="Four friends messing about on a beach basketball court as the sun drops"
+           loading="lazy" decoding="async">
+    </picture>
   </figure>
 
   <!-- the brand's locked shorthand, set as the page's one pure type moment -->
@@ -970,12 +1023,20 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <hr class="rule">
 
 <!-- ══════════════ 04 · PROGRAMME ══════════════ -->
+  <!-- The 2:1 desktop frame centres on empty bowl wall; the skater sits at
+       about 20% across, so a centre crop on a phone loses the subject
+       entirely. The mobile source is cropped to him. -->
   <figure class="band band--wide rv">
-    <img class="band-media" src="img/skate-bowl-970.webp"
-         srcset="img/skate-bowl-485.webp 485w, img/skate-bowl-728.webp 728w, img/skate-bowl-970.webp 970w"
-         sizes="100vw" width="970" height="476"
-         alt="A skater carving the wall of a concrete bowl in low evening sun"
-         loading="lazy" decoding="async">
+    <picture>
+      <source media="(min-width:768px)"
+              srcset="img/skate-bowl-485.webp 485w, img/skate-bowl-728.webp 728w, img/skate-bowl-970.webp 970w"
+              sizes="100vw" width="970" height="476">
+      <img class="band-media" src="img/skate-bowl-mob-390.webp"
+           srcset="img/skate-bowl-mob-390.webp 390w, img/skate-bowl-mob-585.webp 585w, img/skate-bowl-mob-780.webp 780w"
+           sizes="100vw" width="390" height="488"
+           alt="A skater carving the wall of a concrete bowl in low evening sun"
+           loading="lazy" decoding="async">
+    </picture>
   </figure>
 
   <section id="programme" style="padding-top:9rem">
@@ -1324,7 +1385,7 @@ const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
 /* Matches the media query that turns the pin on, so the check costs nothing.
    Reading position:sticky off getComputedStyle here would force a style
    recalculation on every single scroll event. */
-const dayPinned = matchMedia('(min-width:901px) and (prefers-reduced-motion: no-preference)');
+const dayPinned = matchMedia('(min-width:981px) and (prefers-reduced-motion: no-preference)');
 let dayCleared = false;
 function paintDay(){
   if (!day || !dayActs.length) return;
