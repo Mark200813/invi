@@ -1,0 +1,14 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "reason": "V12 brand guidelines lock Inter as the only approved live typeface",
+        "createdAt": "2026-09-18T18:46:19.256Z"
+      }
+    ]
+  }
+}
