@@ -69,6 +69,14 @@
   /* V12 asks for 24-32px side margins on mobile; 5vw alone is 19.5px at 390 */
   --gutter:clamp(1.5rem,5vw,2rem);
 
+  /* A colour field is an interruption, not a slab. It never starts or stops at
+     a line: it dissolves into the bone ground over --feather at each end, and
+     it sits at 92% so the foundation still reads through it. 92 is not a taste
+     call - it is the floor at which every measured text decision on a field
+     still holds. Below it, bone on AFTER DARK's copy band starts to fail. */
+  --field-o:.92;
+  --feather-top:17vh; --feather-bot:15vh;
+
   /* The three locked scent gradients, 135deg, stops at 0/52/100. These are the
      brand's expressive layer and they are meant to be seen: each act owns one
      as a full-bleed colour field, not as a wash behind a card. */
@@ -174,7 +182,11 @@ main{position:relative;z-index:3}
 section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .wrap{width:var(--shell);margin-inline:auto}
 .rule{height:1px;background:var(--hair);border:0;margin:0}
-#joinForm,#choose,#results,#join,#apply,#brand,#programme,#top{scroll-margin-top:6rem}
+/* Was a fixed 6rem on eight hand-listed ids, which missed everything else the
+   page scrolls to - a legend or a field that failed validation is scrolled by
+   the browser with no offset at all, and lands under the fixed nav. --navh is
+   measured, so this tracks the real bar rather than a guess at it. */
+[id],legend{scroll-margin-top:calc(var(--navh,3.9rem) + 1.4rem)}
 
 /* ── nav ────────────────────────────────────────────────── */
 /* viewport-fit=cover lets the page under the notch and the rounded corners, so
@@ -188,9 +200,21 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 /* rgba first: color-mix is unsupported on Safari <16.2 / Firefox <113, and
    without a fallback the nav had NO background there while the blur was also
    missing, dropping the links straight onto the scrolling page. */
-.nav.stuck{background:rgba(247,243,237,.84);
-  background:color-mix(in srgb,var(--bone) 84%,transparent);
-  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+/* The background moves onto a pseudo-element so it can be feathered. As a
+   rule on .nav itself it painted a bone bar with a dead-straight bottom edge
+   across the top of whichever colour field was on screen - a rectangle pasted
+   over the artwork, and the single most visible seam on the page. Masking .nav
+   directly would fade the wordmark and the links with it, so the sheet gets
+   its own layer and dissolves downward. It is absolutely positioned because
+   .nav is a flex row and a static pseudo-element would become a flex item. */
+.nav::before{content:'';position:absolute;inset:0 0 -1.7rem 0;z-index:-1;opacity:0;
+  background:rgba(247,243,237,.86);
+  background:color-mix(in srgb,var(--bone) 86%,transparent);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  -webkit-mask-image:linear-gradient(to bottom,#000 0,#000 56%,transparent 100%);
+  mask-image:linear-gradient(to bottom,#000 0,#000 56%,transparent 100%);
+  transition:opacity .4s var(--ease)}
+.nav.stuck::before{opacity:1}
 .mark{display:block;width:auto;height:1.05rem}
 /* One rule for every instance. Once the vector lands, `color` drives the
    mark and .mark--invert can go. */
@@ -199,23 +223,73 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .nav .mark{opacity:0;transform:translateY(-6px);pointer-events:none;
   transition:opacity .5s var(--ease),transform .5s var(--ease)}
 .nav .mark.show{opacity:1;transform:none;pointer-events:auto}
-.nav-mid{display:flex;gap:1.4rem}
-.nav-mid a{font-size:.72rem;font-weight:500;letter-spacing:.08em;color:var(--ink-2);
-  position:relative;padding:.25rem 0;transition:color .3s var(--ease)}
+/* ── the menu ───────────────────────────────────────────────
+   Written mobile-first: the button and the panel are the base state and the
+   horizontal nav is the enhancement at 768px, which is the one place in this
+   sheet where that direction is the natural one. */
+.nav-toggle{display:inline-flex;align-items:center;gap:.6rem;order:9;
+  min-height:44px;padding:.35rem 0 .35rem .5rem;
+  font-size:.72rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-2);transition:color .3s var(--ease)}
+.nav-toggle:hover{color:var(--ink)}
+/* device 06, minimal monoline: two hairlines that cross. A tone and transform
+   change, not a spin - the V12 motion list allows the first and bans the second. */
+.nav-ico{position:relative;display:block;width:20px;height:11px;flex:none}
+.nav-ico::before,.nav-ico::after{content:'';position:absolute;left:0;right:0;
+  height:1px;background:currentColor;
+  transition:transform .3s var(--ease)}
+.nav-ico::before{top:0}
+.nav-ico::after{bottom:0}
+.nav.open .nav-ico::before{transform:translateY(5px) rotate(45deg)}
+.nav.open .nav-ico::after{transform:translateY(-5px) rotate(-45deg)}
+
+/* left/right resolve against the containing block's PADDING box, which for
+   a fixed bar with no border is the full viewport - so 0 is already the
+   screen edge. Negating the nav's own padding here ran the panel 19px past
+   both sides; body{overflow-x:hidden} was the only reason it did not show. */
+.nav-mid{display:flex;flex-direction:column;gap:0;
+  position:absolute;top:100%;left:0;right:0;
+  padding:0 var(--gutter);
+  /* The panel and the page are both bone, so without a closing rule the menu
+     simply dissolved into the hero and there was no telling where it ended. */
+  background:var(--bone);
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair);
+  /* visibility, not display: it takes the links out of the tab order the way
+     display:none does, and unlike display it can be transitioned. */
+  opacity:0;visibility:hidden;transform:translateY(-8px);
+  transition:opacity .28s var(--ease),transform .28s var(--ease),visibility .28s}
+.nav.open .nav-mid{opacity:1;visibility:visible;transform:none}
+/* A 44px tap target inside 1.1rem of padding makes a 79px bar on a phone,
+   which is a lot of a 844px screen to give to navigation. The target keeps
+   its height; the bar gives up its padding instead. */
+@media (max-width:767.98px){
+  .nav{padding-top:calc(.62rem + env(safe-area-inset-top));padding-bottom:.62rem}
+}
+@media (min-width:768px){
+  .nav-toggle{display:none}
+  .nav-mid{flex-direction:row;gap:1.4rem;position:static;padding:0;
+    background:none;border:0;opacity:1;visibility:visible;transform:none;
+    transition:none}
+}
+.nav-mid a{font-size:.8125rem;font-weight:500;letter-spacing:.08em;color:var(--ink-2);
+  position:relative;display:flex;align-items:center;min-height:48px;
+  border-bottom:1px solid var(--hair);transition:color .3s var(--ease)}
+.nav-mid a:last-child{border-bottom:0}
+@media (min-width:768px){
+  .nav-mid a{font-size:.72rem;display:inline;min-height:0;border-bottom:0;padding:.25rem 0}
+}
 .nav-mid a::after{content:'';position:absolute;left:0;bottom:0;height:1px;width:100%;
   background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
+/* in the stacked panel this would sit on top of the row divider and read as a
+   doubled rule, so the current section is marked by tone alone there */
+@media (max-width:767.98px){.nav-mid a::after{display:none}}
 .nav-mid a:hover,.nav-mid a[aria-current="page"]{color:var(--ink)}
 .nav-mid a[aria-current="page"]::after,.nav-mid a:hover::after{transform:scaleX(1);transform-origin:left}
-/* #navCount animates 0 -> 6,406, i.e. one character to five, and .nav is a
-   space-between flex row — so it shunted the nav links sideways for the whole
-   1.7s count-up. Reserving the width stops that; tabular figures alone would
-   not, because it is the character COUNT that changes. */
 .count-pill{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--ink-2)}
-#navCount{display:inline-block;min-width:4.5ch;text-align:right;font-variant-numeric:tabular-nums}
-.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 2.8s infinite}
-/* the halo used currentColor, which inherits .count-pill's grey, so a blue
-   dot pulsed a grey ring */
-@keyframes pulse{0%{box-shadow:0 0 0 0 var(--accent)}70%{box-shadow:0 0 0 8px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.count-pill strong{font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums}
+/* The pulse is gone with the fake counter. A dot that breathes says "live",
+   and 62 is a standing figure, not a feed. It stays as a mark, not a signal. */
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none}
 
 /* ── buttons ────────────────────────────────────────────── */
 .btn{position:relative;display:inline-flex;align-items:center;gap:.6rem;padding:1rem 2rem;
@@ -291,14 +365,24 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
    cut their legs off and left the still half on screen, so it read as a
    photograph. Taller, and framed low, so the motion is the thing you see. */
 video.band-media{object-position:center 66%}
-/* only ever shown when autoplay was refused */
+/* On screen for as long as the clip is, and it reports which way it will go.
+   Medium, not SemiBold: V12 sets CTAs at Medium. */
 .band-play{position:absolute;left:clamp(1rem,3vw,2rem);bottom:clamp(1rem,3vw,2rem);
-  display:flex;align-items:center;gap:.55rem;padding:.85rem 1.2rem;min-height:44px;border:0;
-  background:var(--ink);color:var(--bone);font:inherit;font-size:.72rem;font-weight:600;
-  letter-spacing:.14em;text-transform:uppercase;cursor:pointer}
-.band-play::before{content:'';width:0;height:0;border-left:8px solid var(--bone);
+  z-index:3;display:flex;align-items:center;gap:.6rem;
+  padding:.85rem 1.2rem;min-height:44px;border:0;
+  background:var(--ink);color:var(--bone);font:inherit;font-size:.72rem;font-weight:500;
+  letter-spacing:.14em;text-transform:uppercase;cursor:pointer;
+  transition:opacity .3s var(--ease)}
+.band-play::before{content:'';flex:none}
+/* device 06, monoline: a triangle to start, two bars to stop */
+.band-play[data-state="paused"]::before{width:0;height:0;border-left:8px solid var(--bone);
   border-top:5px solid transparent;border-bottom:5px solid transparent}
-.band-play:focus-visible{outline:2px solid var(--bone);outline-offset:3px}
+.band-play[data-state="playing"]::before{width:3px;height:11px;background:var(--bone);
+  box-shadow:6px 0 0 var(--bone);margin-right:6px}
+/* A bone ring alone is only guaranteed to read against the ink panel behind
+   the label. The ink halo keeps it visible whatever frame is underneath. */
+.band-play:focus-visible{outline:2px solid var(--bone);outline-offset:3px;
+  box-shadow:0 0 0 6px var(--ink)}
 .band--wide{aspect-ratio:970/476}
 .band picture{display:contents}
 /* the mobile sources are 4:5 files, so the frame matches them and object-fit
@@ -323,16 +407,43 @@ video.band-media{object-position:center 66%}
      AFTER DARK  bone clears body to   63%               -> bone  (copy sits left,  ~28%)
    The left/right/left alternation lands each copy block inside its own safe
    band. Moving a block across the diagonal breaks contrast. */
+/* The bone ground, declared on the act itself. Two reasons, and the second
+   only appeared once the field stopped being opaque: in the pinned stage the
+   three acts are absolutely stacked, so a field at 92% let the act underneath
+   read straight through it - at the end of the passage AFTER DARK's word had
+   RISE's word showing inside its letterforms, and RISE's photograph was
+   visible behind AFTER DARK's copy. Each act now carries the page ground it
+   is tinting, so it composites against bone and covers the one below. */
 .act{min-height:100vh;min-height:100svh;display:flex;align-items:center;position:relative;
-  overflow:hidden;isolation:isolate;color:var(--on-field)}
-.act[data-act="origin"]    {--field:var(--grad-origin)}
-.act[data-act="rise"]      {--field:var(--grad-rise)}
-.act[data-act="after-dark"]{--field:var(--grad-after-dark);
+  overflow:hidden;isolation:isolate;color:var(--on-field);background:var(--bone)}
+.act[data-act="origin"]    {--field:var(--grad-origin);--grade:#78BFD0}
+.act[data-act="rise"]      {--field:var(--grad-rise);--grade:#F28A32}
+.act[data-act="after-dark"]{--field:var(--grad-after-dark);--grade:#84549A;
   --on-field:var(--bone);--on-field-2:var(--bone)}
-.act::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--field)}
-/* device 01, tactile grain — on the field, not over the whole page */
-.act::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
-  background-image:var(--noise);background-size:190px 190px;opacity:.42;mix-blend-mode:overlay}
+
+/* The field used to be inset:0 at full strength, so three saturated slabs met
+   the page and each other at dead-straight lines. It now arrives and leaves:
+   the mask dissolves it into the bone ground over --feather at each end, and
+   where two acts stack the two feathers meet and leave a band of foundation
+   breathing between the worlds. --field-o lets the bone read through the
+   middle as well, so the world tints the page instead of replacing it. */
+.act{--field-mask:linear-gradient(to bottom,
+       transparent 0, #000 var(--feather-top),
+       #000 calc(100% - var(--feather-bot)), transparent 100%)}
+.act::before{content:'';position:absolute;inset:0;z-index:0;background:var(--field);
+  opacity:var(--field-o);
+  -webkit-mask-image:var(--field-mask);mask-image:var(--field-mask)}
+
+/* Device 01, tactile grain. One tile, crossing the field AND the photographs
+   rather than two tiles with a seam between them: the figures used to carry
+   their own .grain-on layer at a different opacity and a different origin, so
+   the texture visibly changed at the edge of every image - which is part of
+   what made the photographs read as placed on top rather than part of the
+   world. This layer sits above the media and below the copy, and takes the
+   same mask as the field so the texture ends where the colour does. */
+.act::after{content:'';position:absolute;inset:0;z-index:3;pointer-events:none;
+  background-image:var(--noise);background-size:190px 190px;opacity:.42;mix-blend-mode:overlay;
+  -webkit-mask-image:var(--field-mask);mask-image:var(--field-mask)}
 
 /* ── the shorthand ──────────────────────────────────────────
    Device 03 again, and the one place on the page where type is the whole
@@ -367,10 +478,42 @@ video.band-media{object-position:center 66%}
   .js .day-stage{position:sticky;top:0;height:100vh;height:100svh;overflow:hidden}
   .js .day-stage > .act{position:absolute;inset:0;min-height:0;opacity:var(--o,1);
     will-change:opacity}
+  /* In the pinned frame the bottom of the field is the bottom of the screen,
+     not a seam, and the cropped word lives there - so only the top feathers,
+     which is what lifts the nav off the artwork. Shorter than the stacked
+     feather, and deliberately: at 17vh it was erasing the dark end of every
+     ramp, which on RISE is the terracotta the whole world is anchored to. */
+  .js .day-stage > .act{--field-mask:linear-gradient(to bottom,
+      transparent 0, #000 9vh, #000 100%)}
+
+  /* ── one field, interpolated ────────────────────────────
+     The three worlds used to be three separate fields butted together: each
+     act painted its own locked gradient and the handover was a cross-fade of
+     one slab into the next, so the colour arrived in three steps. There is
+     now a single field value, --day-field, written on the stage by the scroll
+     handler and inherited by all three acts, so whichever act is on screen is
+     showing the same colour - the world changes by interpolation, and the
+     cross-dissolve below only swaps the photograph, the word and the copy.
+     Each act keeps its own locked gradient as the fallback, so the frame
+     before the handler first runs is still correct. */
+  .js .day-stage > .act[data-act="origin"]    {--field:var(--day-field,var(--grad-origin))}
+  .js .day-stage > .act[data-act="rise"]      {--field:var(--day-field,var(--grad-rise))}
+  .js .day-stage > .act[data-act="after-dark"]{--field:var(--day-field,var(--grad-after-dark))}
+  /* The copy has its own envelope, and it is set by contrast, not by taste.
+     ORIGIN's block sits at 6-40% of its ramp and RISE's at 52-72%, on opposite
+     sides of the diagonal, so neither is legible on the other's field; AFTER
+     DARK's is bone and fails on everything except its own. Each block is
+     therefore only ever on screen while the field is holding its own locked
+     colours, and the handover happens in the gap. Verified at 1001 points
+     along the track: worst copy contrast 5.05:1, worst word 3.08:1. */
+  .js .day-stage > .act .act-copy{opacity:var(--oc,1)}
+  .js .day-stage > .act .act-word{opacity:var(--ow,1)}
   /* the light that travels with the day: one soft band crossing the field,
-     driven by scroll position, never looping */
+     driven by scroll position, never looping. z-index 1, not -1: .act-in no
+     longer creates a stacking context, so a negative index would drop this
+     behind the field it is supposed to be lighting. */
   .js .day-stage > .act .act-in::before{content:'';position:absolute;
-    inset:-50% -30%;z-index:-1;pointer-events:none;
+    inset:-50% -30%;z-index:1;pointer-events:none;
     background:radial-gradient(ellipse 42% 60% at calc(var(--p,0) * 130% - 15%) 42%,
       rgba(255,255,255,.34),transparent 68%)}
   /* crop drift: each photograph moves a little within its own frame while its
@@ -395,8 +538,14 @@ video.band-media{object-position:center 66%}
    were invisible; non-text needs 3:1. Both states are now legible and the
    active one is distinguished by length instead, which composites. */
 
+/* No z-index here on purpose. position:relative alone does not create a
+   stacking context, so the children below compete directly inside .act and
+   the grain layer can sit between the photograph and the copy. With z-index:2
+   they were sealed inside .act-in and the grain could only be under both. */
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
-  gap:clamp(2rem,5vw,4.5rem);align-items:center;position:relative;z-index:2}
+  gap:clamp(2rem,5vw,4.5rem);align-items:center;position:relative}
+/* field 0 · word 1 · photograph 2 · grain 3 · copy 4 */
+.act .act-copy{position:relative;z-index:4}
 /* The placeholder was --stone, which is correct on a bone page and wrong on a
    colour field: a lazy-loaded photograph showed a pale rectangle over the
    gradient until it decoded. A dark veil reads as "image loading" on all
@@ -405,6 +554,39 @@ video.band-media{object-position:center 66%}
   background:rgba(21,21,19,.14);
   background:color-mix(in srgb,var(--ink) 14%,transparent)}
 .act-media img{display:block;width:100%;height:100%;object-fit:cover}
+
+/* ── photographs inside a world ────────────────────────────
+   A four-sided hard rectangle floating on flat colour is what "placed" looks
+   like. Two of its edges now dissolve into the field instead: one on the
+   figure, one on the image inside it, which gets two axes without needing
+   mask-composite (still prefixed and inconsistent across engines). Never all
+   four - that is a vignette sticker, which is the other failure mode.
+   The edge that dissolves is always the one facing INTO the field; the
+   opposite edge is the one running off the screen. */
+.act .act-media{z-index:2;
+  -webkit-mask-image:var(--fig-mask);mask-image:var(--fig-mask)}
+.act .act-media img{-webkit-mask-image:var(--img-mask);mask-image:var(--img-mask)}
+/* Which two edges is measured, not chosen. The field is feathered at the top,
+   so the top of a frame sitting up there meets near-bone and its straight edge
+   reads as a pasted rectangle - that edge has to be the soft one. ORIGIN's and
+   AFTER DARK's frames land at 84px and 108px, inside that zone; RISE's starts
+   at 236px, well down in solid colour, so it keeps a crisp top and softens
+   along the bottom instead. */
+.act[data-act="origin"]     .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 15%);
+                                       --img-mask:linear-gradient(to bottom,transparent 0,#000 15%)}
+.act[data-act="rise"]       .act-media{--fig-mask:linear-gradient(to left,transparent 0,#000 15%);
+                                       --img-mask:linear-gradient(to bottom,#000 76%,transparent 100%)}
+.act[data-act="after-dark"] .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 13%);
+                                       --img-mask:linear-gradient(to bottom,transparent 0,#000 14%)}
+/* A light grade pulled from the act's own ramp - its middle stop - so the
+   photograph and the field share a colour temperature instead of being two
+   unrelated images side by side. soft-light keeps the faces: it shifts the
+   midtones and leaves the black and white points where they are. */
+.act .act-media::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:var(--grade);mix-blend-mode:soft-light;opacity:var(--grade-o,.5)}
+/* RISE's photograph is a sunset already carrying the ramp's own colour; a
+   full-strength tangerine grade on top of it just clips the highlights. */
+.act[data-act="rise"] .act-media{--grade-o:.3}
 
 /* Device 03, cropped type. The act's name runs along the foot of the field at
    poster scale and bleeds off the bottom edge of the section, which clips it.
@@ -420,15 +602,12 @@ video.band-media{object-position:center 66%}
    intended overhang. */
 .act .act-word{position:absolute;left:0;right:0;bottom:-.3em;z-index:1;
   margin:0;pointer-events:none;user-select:none;color:var(--on-field)}
-/* AFTER DARK's word is the one element whose safe colour changes with the
-   viewport, because the stretch of ramp it covers does. Measured:
-     320px   ramp 61-100%  -> bone 2.94 FAILS (Mood Pink), ink passes
-     1024px  ramp 41- 88%  -> ink  2.76 FAILS (Aubergine), bone passes
-   Bone clears large text to 97% of this ramp, ink from 47%. Neither covers
-   both, so the word takes ink where the act is tall and narrow and bone
-   where it is wide. Every other element on the page uses one colour. */
+/* This element used to change colour with the viewport, because neither ink
+   nor bone cleared 3:1 across the whole stretch of ramp it can cover. Dropping
+   the field to 92% over bone moved that: measured across ramp 41-100%, ink now
+   gives 3.31 at its worst against 2.76 before, so one colour covers every
+   width and the conditional swap is gone. */
 .act[data-act="after-dark"] .act-word{color:var(--ink)}
-@media (min-width:980.99px){.act[data-act="after-dark"] .act-word{color:var(--bone)}}
 .act-word > span{display:block;white-space:nowrap;
   padding-inline-start:var(--edge)}
 .act[data-act="rise"] .act-word > span{text-align:right;padding-inline-start:0;
@@ -446,6 +625,16 @@ video.band-media{object-position:center 66%}
      layer above, so the image sliced straight through the letterforms. The
      word keeps its own strip of clear field and the two never meet. */
   .act-in{grid-template-columns:1fr 46%;padding-bottom:clamp(6rem,10.5vw,10.5rem)}
+  /* Three frames, not one rectangle three times. Every act used to resolve to
+     the same 46% column at the same height, which is the "template" read.
+     Each world now gets its own crop shape and its own vertical position:
+     ORIGIN tall and narrow, RISE wide and short and dropped, AFTER DARK
+     square-ish and lifted. Ratios come from the frame, so object-fit does the
+     cropping and no source file is stretched. */
+  .act[data-act="origin"]     .act-in{grid-template-columns:1fr 41%}
+  .act[data-act="after-dark"] .act-in{grid-template-columns:1fr 48%}
+  .act[data-act="origin"]     .act-media{height:calc(100svh - 20rem)}
+  .act[data-act="after-dark"] .act-media{height:calc(100svh - 27rem);transform:translateY(-2rem)}
   /* ORIGIN's portrait is 656x875, so at a 669px column it wants 892px of
      height inside a 900px act that only has ~569px left once the section
      padding and the word's band are taken out. Uncapped it overflowed both
@@ -459,9 +648,19 @@ video.band-media{object-position:center 66%}
      which is what the bleed depends on. */
   .act .act-media{margin-right:calc(-1 * var(--edge));
     aspect-ratio:auto;height:calc(100vh - 23rem);height:calc(100svh - 23rem)}
-  .act[data-act="rise"] .act-in{grid-template-columns:46% 1fr}
+  .act[data-act="rise"] .act-in{grid-template-columns:53% 1fr}
   .act[data-act="rise"] .act-media{order:-1;margin-right:0;
-    margin-left:calc(-1 * var(--edge));transform:translateY(3rem)}
+    margin-left:calc(-1 * var(--edge));transform:translateY(3rem);
+    height:calc(100svh - 33rem);min-height:17rem}
+}
+/* The copy block was centred in all three acts, which left it alone in the
+   middle of a large field and gave the three the same composition. Each one
+   now takes a different position against its photograph, so the eye travels
+   down the passage instead of resetting. Centre stays the default; these move
+   the copy only, never the frame. */
+@media (min-width:980.99px){
+  .act[data-act="origin"] .act-copy{align-self:end;padding-bottom:1.5rem}
+  .act[data-act="rise"]   .act-copy{align-self:start;padding-top:3.5rem}
 }
 .act h2{margin:0 0 1rem}
 .act .note{font-size:clamp(1.0625rem,.35vw + .97rem,1.125rem);color:var(--on-field-2);
@@ -496,16 +695,29 @@ video.band-media{object-position:center 66%}
 .sec-dusk .btn--solid::after{background:var(--bone)}
 .sec-dusk .btn--solid:hover{color:var(--dusk)}
 
-.moments{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:clamp(2rem,5vh,3rem);
-  background:var(--hair);border:1px solid var(--hair)}
+/* ── the vote, as one instrument ────────────────────────────
+   This was a 1px grid of bordered boxes, each with a coloured header: the
+   shape of a pricing table, and it read as three products to compare rather
+   than one control with three positions. The gutters and the outer box are
+   gone, so the three locked ramps abut and run as a single spectrum across
+   the row, and the framing is editorial - one hairline above, one below -
+   instead of a border drawn round each card. */
+.moments{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:clamp(2rem,5vh,3rem);
+  background:none;border:0;
+  border-top:1px solid var(--hair);border-bottom:1px solid var(--hair)}
 /* The gradient is a real colour field across the head of the card, not a wash
    behind the text. Keeping the copy on dusk instead of on the ramp is what
    makes the gradient usable at full strength: bone on dusk measures 11.24:1,
    while bone over the pale end of ORIGIN measures 1.87:1. */
-.moment{position:relative;overflow:hidden;isolation:isolate;background:var(--dusk);
+.moment{position:relative;overflow:hidden;isolation:isolate;background:transparent;
   padding:1.7rem 1.5rem 1.6rem;text-align:left;display:flex;flex-direction:column;gap:.55rem;
   min-height:264px;justify-content:flex-end;color:var(--bone);
-  transition:opacity .4s var(--ease),transform .5s var(--ease)}
+  transition:opacity .4s var(--ease)}
+/* The copy zones keep a hairline between them; the colour above does not,
+   or the spectrum would be cut into three again. It stops short of the band
+   at its widest, so the rule never crosses the ramp. */
+.moment + .moment{background-image:linear-gradient(var(--hair),var(--hair));
+  background-size:1px 34%;background-position:0 100%;background-repeat:no-repeat}
 /* The band grows by clip-path, not by height. Animating height relayouts the
    pseudo-element every frame; clip-path composites. scaleY() was the other
    option but it stretches a 135deg gradient, visibly changing its angle as it
@@ -526,7 +738,10 @@ video.band-media{object-position:center 66%}
 .moment[aria-pressed="true"]{--band:40%}
 .moment > *{position:relative;z-index:2}
 .moment .m-name{color:var(--bone)}
-.moments.decided .moment:not([aria-pressed="true"]){opacity:.3}
+/* recede by tone, not by scale: the band drops back toward the dusk ground
+   and the ramp desaturates, so the chosen zone is the only lit one */
+.moments.decided .moment:not([aria-pressed="true"]){opacity:.45}
+.moments.decided .moment:not([aria-pressed="true"])::before{filter:saturate(.35)}
 .moments.decided .moment{pointer-events:none}
 .moment.locked{cursor:pointer}
 .moment .idx{font-size:.75rem;font-weight:500;line-height:1.333;letter-spacing:.12em;color:var(--ink-2)}
@@ -566,6 +781,13 @@ video.band-media{object-position:center 66%}
 .bar-row .pct{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums;
   color:var(--ink-2);min-width:52px;text-align:right}
 .bar-row.me .pct{color:var(--accent-ink)}
+/* No live tally yet: the row keeps its name and its marker, and drops the
+   share it cannot honestly state. One grid column instead of three. */
+.results.pending .bar-row{grid-template-columns:1fr auto}
+.results.pending .track{display:none}
+.results.pending .pct{font-weight:500;letter-spacing:.12em;text-transform:uppercase;
+  font-size:.72rem;min-width:0}
+.results.pending .bar-row+.bar-row{border-top:1px solid var(--hair)}
 .nudge{margin-top:1.4rem;font-size:.94rem;color:var(--ink-2)}
 .nudge b{color:var(--ink)}
 
@@ -723,11 +945,25 @@ video.band-media{object-position:center 66%}
 .joined-note b{color:var(--ink)}
 .note{font-size:.8125rem;color:var(--ink-2);margin:.15rem 0 0}
 
-.rail{display:grid;gap:1.4rem;align-content:start;padding-top:2rem}
-.rail .row{display:grid;grid-template-columns:auto 1fr;gap:1rem;align-items:start}
-.rail .n{width:18px;height:1px;margin-top:.72rem;background:var(--accent);transition:background .6s var(--ease)}
-.rail h3{margin:0 0 .25rem;font-size:.95rem;font-weight:600}
-.rail p{margin:0;font-size:1rem;color:var(--ink-2);line-height:1.55}
+/* ── what happens next ──────────────────────────────────────
+   Four bold labels, four paragraphs and a decorative dash: default markup
+   carrying the four most concrete promises on the page. It now runs on the
+   same numbered rhythm as the programme steps - 01 to 04 in the eyebrow
+   style, each row opened by a hairline - so the sequence reads as a sequence.
+   The numbers come from a counter rather than the markup: they are a reading
+   aid, not content, and a screen reader already has the list. */
+.rail{counter-reset:rail;display:grid;gap:0;align-content:start;padding-top:2rem}
+.rail .row{counter-increment:rail;display:grid;grid-template-columns:2.4rem 1fr;
+  gap:1.1rem;align-items:start;padding:1.15rem 0 1.3rem;border-top:1px solid var(--hair)}
+.rail .n{width:auto;height:auto;margin:0;background:none;
+  font-size:.75rem;font-weight:500;line-height:1.9;letter-spacing:.12em;
+  color:var(--accent-ink);font-variant-numeric:tabular-nums;
+  transition:color .6s var(--ease)}
+.rail .n::before{content:counter(rail,decimal-leading-zero)}
+/* Medium, not SemiBold: V12 asks for scale and space before extra weight. */
+.rail h3{margin:0 0 .3rem;font-size:1.0625rem;font-weight:500;letter-spacing:-.012em}
+.rail p{margin:0;font-size:.975rem;color:var(--ink-2);line-height:1.55;
+  max-width:40ch;text-wrap:pretty}
 .two{display:grid;grid-template-columns:.8fr 1.4fr;gap:clamp(1.8rem,5vw,4rem);align-items:start}
 .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;margin-top:2.4rem}
 .pillar{border-top:1px solid var(--hair);padding-top:1.2rem}
@@ -858,6 +1094,23 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      exactly that padding — which put it back over the word on RISE. The gap
      belongs to the word, in flow, where it cannot be overrun. */
   .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
+  /* On a phone every photograph sat inside the gutter, so all three were
+     boxes on colour. Two of them now run off the edge and the frame becomes
+     the screen; the third keeps its margins, so the rhythm alternates the way
+     it does on desktop. */
+  .act[data-act="rise"]       .act-media{margin-right:calc(-1 * var(--gutter))}
+  .act[data-act="after-dark"] .act-media{margin-left:calc(-1 * var(--gutter))}
+  /* ORIGIN is the one that stays framed here, so neither of its vertical
+     edges runs off the screen and a feather on one of them would read as a
+     lighting accident rather than a bleed. It keeps the soft top edge only. */
+  .act[data-act="origin"]     .act-media{--fig-mask:none}
+  /* These two bleed the opposite way here to the way they do on desktop, so
+     their feathers have to swap with them. Left as they were, each frame was
+     dissolving the edge that had already left the screen while the edge
+     facing the colour field stayed a hard rectangle - the exact defect the
+     mask exists to fix, applied to the wrong side. */
+  .act[data-act="rise"]       .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 15%)}
+  .act[data-act="after-dark"] .act-media{--fig-mask:linear-gradient(to left,transparent 0,#000 13%)}
   /* On a phone the act's height comes from its content, so reserving a band
      inside .act-in simply made the act taller and the absolutely-positioned
      word moved down with it — the overlap stayed at exactly 9px however much
@@ -868,7 +1121,15 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      1rem}` outranks a single class. While the word was absolutely positioned
      that never showed; in flow it silently won and the margin computed to
      +16px, so changing this value had no effect at all. */
-  .act .act-word{position:static;margin:clamp(3.2rem,13vw,4.5rem) 0 -.26em}
+  /* The negative bottom margin is gone. It pulled the act's bottom edge up
+     through the middle of the letterforms: measured at 390, 15px of a 46px
+     line box sat below the edge and overflow:hidden sawed 31% off the cap
+     height, so ORIGIN and RISE were both cut in half. The brand rule is that
+     oversized type may LEAVE the frame - off the side, not through the
+     waist - so the crop is horizontal here and there is no vertical clip at
+     all. Uppercase at line-height .82 sits between 0.047em and 0.774em of
+     its own line box, so nothing touches the edge on its own either. */
+  .act .act-word{position:static;margin:clamp(3rem,12vw,4.2rem) 0 0}
   .act .act-copy{background:var(--bone);color:var(--ink);
     margin-inline:calc(-1 * var(--gutter));
     padding:clamp(1.5rem,6vw,2.2rem) var(--gutter) clamp(1.7rem,6vw,2.4rem)}
@@ -880,7 +1141,26 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      becoming a second flex item beside it. No bottom padding: the word's
      negative margin has to reach past the section edge to be cropped, and a
      padding shorthand here previously reset it. */
-  .act{min-height:auto;display:block;padding:clamp(3.5rem,9vh,6rem) 0 0}
+  .act{min-height:auto;display:block;
+    padding:clamp(3.5rem,9vh,6rem) 0 clamp(2rem,6vh,3.2rem)}
+  /* Poster scale, on the axis that is actually short. 12vw with a 3.5rem
+     floor meant the floor won on every phone - 56px in a 390px viewport,
+     with ORIGIN at 179px occupying 46% of the screen, which is not a crop of
+     anything. Sized from the longest single token instead: ORIGIN measures
+     319px at 100px, so 32.6vw sets it about 4% wider than the screen and the
+     outer stems are what gets trimmed. No cap: a 10.5rem ceiling held the
+     word at 168px on a 768px tablet, which left ORIGIN 224px short of the
+     frame and still wrapped AFTER DARK - the word neither filled the screen
+     nor fitted on one line. Uncapped it tops out at 319px just below the
+     desktop breakpoint, where the layout changes completely anyway. */
+  .act .t-crop{font-size:32.6vw}
+  /* "After Dark" is 575px at 100px - 5.75 screens wide at this size - so it
+     wraps, which is what the guideline asks for where a phrase cannot fit on
+     one line. AFTER and DARK are 298 and 255, both inside the frame. */
+  .act .act-word > span{white-space:normal;padding-inline:0;text-wrap:balance}
+  .act[data-act="origin"] .act-word > span,
+  .act[data-act="after-dark"] .act-word > span{margin-inline-start:-.045em}
+  .act[data-act="rise"] .act-word > span{margin-inline-end:-.045em}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
   .moments{grid-template-columns:1fr}
   .moment{min-height:0;padding:1.3rem}
@@ -933,6 +1213,11 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
    axis instead, which is the one actually running out. */
 @media (orientation:landscape) and (max-height:560px) and (max-width:1024px){
   .t-mega{font-size:clamp(2rem,7.4vh,3.4rem)}
+  /* Same reason as the headline: 32.6vw is measured off the long edge, which
+     on a phone held sideways is the one with room to spare. At 844x390 it
+     resolved to 275px in a 390px-tall window, and AFTER DARK's two lines came
+     to 451px - taller than the screen. Scaled off the short axis instead. */
+  .act .t-crop{font-size:min(32.6vw,38vh)}
   .hero{padding-top:0;min-height:0}
   .hero h1{margin-bottom:.9rem}
   /* The rule shrank the headline but never touched .hero-figure, which is what
@@ -967,7 +1252,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      place when 01_LOGOS arrives.
 
      ASSET REQUEST (Viv): INVI_WORDMARK_PRIMARY_V12.svg from 01_LOGOS.
-     To drop it in, replace the single <image> line below with the vector's
+     To drop it in, replace the single <image> line below with the vector’s
      <path> data and set fill="currentColor". Every instance then inherits its
      colour from CSS, the .mark--invert filter hack below can be deleted, and
      the footer mark stops being under-resolved (it renders at 860px CSS from
@@ -984,12 +1269,24 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
 <header class="nav" id="nav">
   <a class="mark" href="#top" aria-label="INVI, back to top"><svg class="mark-svg" viewBox="0 0 900 220" role="img" aria-label="INVI"><use href="#invi-wordmark"></use></svg></a>
-  <nav class="nav-mid">
+  <!-- V12: "use a simple menu icon, not compressed desktop navigation". The
+       button sits here, before the panel it controls, so a keyboard reaches
+       the trigger first and the links second; `order` puts it on the right.
+       The label stays "Menu" in both states - aria-expanded carries the
+       state, and a name that changes under you is worse than one that does
+       not. Hidden from 768px up, where the full nav fits without squeezing. -->
+  <button class="nav-toggle" id="navToggle" type="button" aria-expanded="false" aria-controls="navMid">
+    <span class="nav-ico" aria-hidden="true"></span><span>Menu</span>
+  </button>
+  <nav class="nav-mid" id="navMid" aria-label="Sections">
     <a href="#top" aria-current="page">Home</a>
     <a href="#brand">The Brand</a>
     <a href="#programme">Programme</a>
   </nav>
-  <div class="count-pill"><span class="dot"></span><strong id="navCount">0</strong><span class="lbl">in so far</span></div>
+  <!-- A real figure, stated in plain markup so it is right with JS off, and no
+       longer a live-looking ticker. 62 is the brand’s own number and it is
+       said twice more on this page. -->
+  <div class="count-pill"><span class="dot"></span><strong>62</strong><span class="lbl">in the community</span></div>
 </header>
 
 <main id="top" tabindex="-1">
@@ -1040,13 +1337,21 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <source src="img/hero-loop.mp4" type="video/mp4">
       <img src="img/hero-poster-512.webp" width="512" height="640" alt="A group on the beach as the sun goes down">
     </video>
-    <button class="band-play" type="button" hidden>Play</button>
+    <!-- The clip is 4.8 seconds on an infinite loop, so it is moving content
+         that starts on its own and runs well past five - WCAG 2.2.2 wants a
+         way to stop it. This button used to appear only when autoplay was
+         REFUSED, which is the one case where nothing is moving; while the
+         loop actually ran there was no control at all. It is now a toggle,
+         on screen whenever the clip is. -->
+    <button class="band-play" type="button" hidden data-state="paused">
+      <span class="band-play-t">Play</span>
+    </button>
   </figure>
 
   <!-- ═══ THE DAY ═══════════════════════════════════════════════════════
        The signature scroll moment. The three scent worlds pass through one
        pinned frame instead of sitting as three slides: the colour field
-       cross-dissolves, a light travels across it, and each photograph's crop
+       cross-dissolves, a light travels across it, and each photograph’s crop
        drifts while its own world is on screen.
 
        Built with position:sticky and about twenty lines in the scroll handler
@@ -1063,10 +1368,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     <div class="act-in">
       <div class="act-copy rv">
         <p class="kicker">First light</p>
-        <p class="note">Before anyone's asked anything of you. The quiet part of the day
+        <p class="note">Before anyone’s asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;--ar:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word" id="act-origin"><span>Origin</span></h2>
   </section>
@@ -1078,7 +1383,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;--ar:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word" id="act-rise"><span>Rise</span></h2>
   </section>
@@ -1088,9 +1393,9 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <div class="act-copy rv">
         <p class="kicker">After dark</p>
         <p class="note">When it counts and nobody needs it explained. The version of you
-          that only comes out once the day's done.</p>
+          that only comes out once the day’s done.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
+      <figure class="act-media rv" style="transition-delay:.1s;--ar:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word" id="act-after-dark"><span>After Dark</span></h2>
   </section>
@@ -1115,7 +1420,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     </picture>
   </figure>
 
-  <!-- the brand's locked shorthand, set as the page's one pure type moment -->
+  <!-- the brand’s locked shorthand, set as the page’s one pure type moment -->
   <section class="shorthand" aria-label="Scent. Skin. Mood.">
     <p class="display"><span class="em">Scent.</span> Skin. Mood.</p>
   </section>
@@ -1129,7 +1434,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="lede rv" style="transition-delay:.16s">
           INVI is inspired by the Latin word <em>Invictus</em>, unconquered. Meaning to be grounded
           in who you are. We believe the years between childhood and adulthood shape confidence for
-          life, yet they're the most overlooked years of all.
+          life, yet they’re the most overlooked years of all.
         </p>
       </div>
       <!-- the mark worn rather than printed: the guidelines' tonal-mark device -->
@@ -1157,13 +1462,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <div>
         <h2 class="display t-lg rv">A generation is redefining confidence, and few brands have moved with them.</h2>
         <blockquote class="quote rv" style="transition-delay:.1s">
-          "People always say what masculinity shouldn't be, but don't say what it is."
+          “People always say what masculinity shouldn’t be, but don’t say what it is.”
           <cite>Male Allies UK</cite>
         </blockquote>
         <div class="statgrid">
-          <div class="stat rv"><b>81%</b><span>don't feel there are enough spaces to be a boy today</span></div>
-          <div class="stat rv" style="transition-delay:.06s"><b>79%</b><span>aren't clear what masculinity means</span></div>
-          <div class="stat rv" style="transition-delay:.12s"><b>72%</b><span>don't have more than one person who knows them well</span></div>
+          <div class="stat rv"><b>81%</b><span>don’t feel there are enough spaces to be a boy today</span></div>
+          <div class="stat rv" style="transition-delay:.06s"><b>79%</b><span>aren’t clear what masculinity means</span></div>
+          <div class="stat rv" style="transition-delay:.12s"><b>72%</b><span>don’t have more than one person who knows them well</span></div>
           <div class="stat rv" style="transition-delay:.18s"><b>85%</b><span>want to help shape a brand built for them</span></div>
         </div>
         <p class="note rv" style="margin-top:1.2rem">Independent research by Male Allies UK with 1,032 teenage boys, plus 62 boys who told us directly.</p>
@@ -1173,13 +1478,13 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <hr class="rule">
   <section>
     <div class="wrap">
-      <p class="tag rv">How we're building it</p>
+      <p class="tag rv">How we’re building it</p>
       <h2 class="display t-lg rv" style="transition-delay:.06s;margin-top:1rem">We launch culture, before we launch anything else.</h2>
       <div class="pillars">
         <div class="pillar rv"><span class="k">Built with boys</span><h3>Not marketed to them</h3>
           <p>Our founding community of 62 boys already influences everything from development to brand and content.</p></div>
         <div class="pillar rv" style="transition-delay:.08s"><span class="k">Credible role models</span><h3>Belief, not noise</h3>
-          <p>We don't build community through creators alone. We build it through culture, credible role models, and our own community of boys.</p></div>
+          <p>We don’t build community through creators alone. We build it through culture, credible role models, and our own community of boys.</p></div>
         <div class="pillar rv" style="transition-delay:.16s"><span class="k">A brand that grows</span><h3>Here for the duration</h3>
           <p>Designed to evolve alongside boys through the years that shape them, rather than showing up once and moving on.</p></div>
       </div>
@@ -1215,8 +1520,8 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         Twelve of you will build this with us.
       </h2>
       <p class="lede rv" style="transition-delay:.16s">
-        We're selecting twelve boys to build INVI alongside us, mentored by some of the UK's best
-        entrepreneurs. It's filmed as a series, so the whole thing gets documented as it happens.
+        We’re selecting twelve boys to build INVI alongside us, mentored by some of the UK’s best
+        entrepreneurs. It’s filmed as a series, so the whole thing gets documented as it happens.
       </p>
       <div class="seats rv" style="transition-delay:.22s">
         <div class="seat"><b>12</b><span>places on the programme</span></div>
@@ -1227,7 +1532,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <div class="step rv"><span class="k">01</span><h3>Apply</h3>
           <p>Tell us who you are and why you want in. No CV, no experience needed.</p></div>
         <div class="step rv" style="transition-delay:.06s"><span class="k">02</span><h3>Get selected</h3>
-          <p>Twelve places. We're looking for people with something to say, not the loudest ones.</p></div>
+          <p>Twelve places. We’re looking for people with something to say, not the loudest ones.</p></div>
         <div class="step rv" style="transition-delay:.12s"><span class="k">03</span><h3>Get mentored</h3>
           <p>Sessions led by leading UK entrepreneurs, showing what confidence and ambition actually look like.</p></div>
         <div class="step rv" style="transition-delay:.18s"><span class="k">04</span><h3>Build it</h3>
@@ -1235,7 +1540,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       </div>
       <div class="safeguard rv">
         <b>Worth knowing first.</b> The programme is filmed, and under 18s need a parent or
-        guardian's consent to take part. The full terms sit with the application below.
+        guardian’s consent to take part. The full terms sit with the application below.
       </div>
     </div>
   </section>
@@ -1243,7 +1548,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <section id="apply">
     <div class="wrap">
             <h2 class="display t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
-      <p class="lede rv" style="transition-delay:.12s">Applications are read by the team. We'll come back to everyone either way.</p>
+      <p class="lede rv" style="transition-delay:.12s">Applications are read by the team. We’ll come back to everyone either way.</p>
       <div class="dossier rv" style="transition-delay:.15s">
         <span>Application</span><i><b id="progBar"></b></i><span>Twelve places</span>
       </div>
@@ -1275,7 +1580,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
           <p class="err" id="pe-age" aria-live="polite"></p>
         </div>
         <div class="fr" id="p-guardian" hidden>
-          <label for="pguardian">Parent or guardian's email <span class="req">Required under 18</span></label>
+          <label for="pguardian">Parent or guardian’s email <span class="req">Required under 18</span></label>
           <input id="pguardian" type="email" autocomplete="email" inputmode="email" spellcheck="false" aria-describedby="pe-guardian" placeholder="their@email.com">
           <p class="err" id="pe-guardian" aria-live="polite"></p>
         </div>
@@ -1288,7 +1593,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <div class="fr" id="p-why">
           <label for="pwhy" class="ask">What would you bring to the twelve?</label>
           <p class="help" id="whyHelp">No right answer and no word count to hit. A few lines in
-            your own words beats a paragraph in someone else's.</p>
+            your own words beats a paragraph in someone else’s.</p>
           <textarea id="pwhy" aria-describedby="whyHelp pe-why whyCount" placeholder="Start anywhere."></textarea>
           <p class="err" id="pe-why" aria-live="polite"></p>
           <p class="count" id="whyCount" aria-live="polite"></p>
@@ -1301,14 +1606,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <div class="fsec-body">
         <ul class="terms">
           <li>The programme is filmed as a documentary series.</li>
-          <li>Under 18s need a parent or guardian's consent, and we contact them directly.</li>
+          <li>Under 18s need a parent or guardian’s consent, and we contact them directly.</li>
           <li>Filming follows clear protocols and community spaces are moderated throughout.</li>
         </ul>
         <div class="fr" id="p-consent">
           <label class="consent">
             <input type="checkbox" id="pconsent" aria-describedby="pe-consent">
             <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
-            <span>I've read the three points above and I'm putting my name forward.
+            <span>I’ve read the three points above and I’m putting my name forward.
               <button type="button" class="linklike" data-dialog>Privacy</button>.</span>
           </label>
           <p class="err" id="pe-consent" aria-live="polite"></p>
@@ -1342,7 +1647,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             <h2 class="display t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Which hour is yours?</h2>
       <p class="lede rv" style="transition-delay:.12s">
         You get <b>one vote</b>, and it decides which one we build first.
-        Once it's in, it's locked. Join below to unlock yours.
+        Once it’s in, it’s locked. Join below to unlock yours.
       </p>
 
       <div class="moments" id="moments">
@@ -1362,16 +1667,16 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
       <div class="confirm" id="confirm"><div class="confirm-in">
         <div class="confirm-box">
-          <div><p>You've picked <b id="picked">—</b>.</p>
-            <p class="warn">Once you confirm, it's locked. You can't change it later.</p></div>
+          <div><p>You’ve picked <b id="picked">—</b>.</p>
+            <p class="warn">Once you confirm, it’s locked. You can’t change it later.</p></div>
           <button class="btn btn--solid" id="confirmBtn"><span>Confirm</span><span>→</span></button>
         </div>
       </div></div>
 
       <div class="results" id="results" tabindex="-1"><div class="results-inner">
         <div class="results-head">
-          <p class="tag" style="margin:0">Live · everyone who's decided</p>
-          <p style="margin:0;font-size:.86rem;color:var(--ink-2)"><strong id="totalCount">0</strong> have chosen</p>
+          <p class="tag" style="margin:0">Your pick</p>
+          <p style="margin:0;font-size:.86rem;color:var(--ink-2)"><strong id="totalCount">0</strong> <span id="totalWord">votes</span> on this device</p>
         </div>
         <div id="bars"></div>
         <p class="nudge" id="nudge" role="status"></p>
@@ -1417,7 +1722,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
               <label class="consent">
                 <input type="checkbox" id="consent" aria-describedby="e-consent">
                 <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
-                <span>I'm happy for INVI to email me about the launch. You can leave any time.
+                <span>I’m happy for INVI to email me about the launch. You can leave any time.
                   <button type="button" class="linklike" data-dialog>Privacy</button>.</span>
               </label>
               <p class="err" id="e-consent" aria-live="polite"></p>
@@ -1427,14 +1732,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             </div>
           </form>
           <div class="joined-note" id="joinedNote" hidden>
-            <p>You're in<b id="jnName"></b>. Your vote's waiting.</p>
+            <p>You’re in<b id="jnName"></b>. Your vote’s waiting.</p>
             <a href="#choose" class="btn"><span>Pick your hour</span><span>→</span></a>
           </div>
           <div class="pass" id="pass">
             <div class="card">
-              <p class="tag" id="passTag">You're in</p>
+              <p class="tag" id="passTag">You’re in</p>
               <p class="pass-moment" id="passMoment">—</p>
-              <p class="pass-no">Member <span id="passNo">0000</span> <span>· vote counted</span></p>
+              <p class="pass-no">Ref INVI-<span id="passNo">0000</span> <span>· vote saved</span></p>
               <p class="msg" id="passMsg"></p>
               <div class="pass-actions">
                 <button class="btn" id="shareBtn"><span>Send to a friend</span></button>
@@ -1449,10 +1754,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             <p>Your choice counts toward what gets built first. Watch the numbers move the moment you lock it in.</p></div></div>
           <div class="row"><span class="n"></span><div><h3>One clue at a time</h3>
             <p>Small pieces, spaced out, until the whole thing makes sense.</p></div></div>
-          <div class="row"><span class="n"></span><div><h3>You're told first</h3>
+          <div class="row"><span class="n"></span><div><h3>You’re told first</h3>
             <p>Before the ads, before the shelves, before anyone else knows it exists.</p></div></div>
           <div class="row"><span class="n"></span><div><h3>Twelve of you build it with us</h3>
-            <p>A dozen places on the programme, mentored by some of the UK's best entrepreneurs.</p></div></div>
+            <p>A dozen places on the programme, mentored by some of the UK’s best entrepreneurs.</p></div></div>
         </aside>
       </div>
     </div>
@@ -1472,7 +1777,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       </nav>
     </div>
     <p class="bigmark"><svg class="mark-svg" viewBox="0 0 900 220" aria-hidden="true" focusable="false"><use href="#invi-wordmark"></use></svg></p>
-    <p class="legal">© 2026 INVI · United Kingdom · Nothing for sale yet. · Preview build — counts are illustrative.</p>
+    <p class="legal">© 2026 INVI · United Kingdom · Nothing for sale yet. · Preview build — the vote is stored on your device, not a live tally.</p>
   </div>
 </footer>
 
@@ -1480,7 +1785,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <h2 id="privTitle" class="display t-md">Your data, straight.</h2>
   <ul>
     <li><span><b>What we take.</b> Your name, your email, your age if you offer it, your vote, and your application if you send one.</span></li>
-    <li><span><b>What it's for.</b> One email thread about the launch, counting the vote, and reviewing programme applications. That's it.</span></li>
+    <li><span><b>What it’s for.</b> One email thread about the launch, counting the vote, and reviewing programme applications. That’s it.</span></li>
     <li><span><b>Where it lives.</b> Held privately by INVI in the UK. Never sold, never passed around.</span></li>
     <li><span><b>Your call.</b> Every email has an unsubscribe. Want wiping entirely? <a href="mailto:hello@invi.com">hello@invi.com</a>.</span></li>
     <li><span><b>Under 18?</b> A parent or guardian has to consent before you take part in the programme, and we contact them directly.</span></li>
@@ -1505,7 +1810,14 @@ addEventListener('resize', setScrollbarWidth, { passive:true });
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const SEED  = { origin:1847, rise:2103, 'after-dark':2456 };
+/* Was { origin:1847, rise:2103, 'after-dark':2456 } - 6,406 votes that had
+   never been cast, animated up on load as if they were live, on a page aimed
+   at 13-18 year olds and next to the brand's own real figures of 62 in the
+   community and 16 founding crew. V12 forbids inventing a claim, so the seed
+   is zero. There is no backend yet: the only vote this page can count is the
+   one cast in this browser, and every label now says exactly that. Replace
+   the zeros the day real figures exist. */
+const SEED  = { origin:0, rise:0, 'after-dark':0 };
 const LABEL = { origin:'Origin', rise:'Rise', 'after-dark':'After Dark' };
 /* All three stops. These were two-stop and dropped the middle bridge tone, so
    the result bars were not the locked gradients — Origin skipped Open Sky,
@@ -1533,6 +1845,10 @@ KEYS.forEach(k => { const n = Number(state.votes[k]); state.votes[k] = Number.is
 if (state.moment !== null && !KEYS.includes(state.moment)){
   state.moment = null; state.confirmed = false;
 }
+/* A stored blob that is confirmed but carries no usable member ref reached
+   odometer() as the string "null", which it then set one digit per character:
+   the pass read "Ref INVI-null" with four reels spinning behind it. */
+if (!Number.isFinite(Number(state.member)) || !state.member) state.member = null;
 const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch {} };
 const tally = k => SEED[k] + (state.votes[k] || 0);
 const total = () => KEYS.reduce((n,k) => n + tally(k), 0);
@@ -1572,16 +1888,114 @@ function markSection(){
    and the nav stopped following the page. This reads three rects per scroll,
    which is cheap enough to do straight. */
 /* THE DAY.
-   One pinned frame, three scent worlds passing through it. Progress across the
-   track drives a per-act opacity and a per-act --p that the CSS uses for the
-   travelling light and the crop drift.
+   One pinned frame, three scent worlds passing through it - and one field,
+   not three.
 
-   Each act peaks at an even point along the track and falls off either side,
-   so two worlds overlap through the handover and the field dissolves rather
-   than cutting. Reading one rect per scroll; no rAF flag, for the same reason
-   markSection() has none — a dropped frame used to wedge the old guard shut. */
+   The nine locked stops are laid end to end as a single ramp, and what the
+   screen shows is a three-stop window sliding along it. At window 0 that is
+   ORIGIN exactly, at 3 it is RISE, at 6 it is AFTER DARK; in between, every
+   whole step is also a real brand triad - Open Sky to Fresh Green to Deep
+   Brown, then Fresh Green to Deep Brown to Tangerine, and so on. So ORIGIN's
+   green resolves into RISE's brown and RISE's yellow into AFTER DARK's
+   aubergine, which is what the day actually does.
+
+   The alternative was interpolating each stop toward its opposite number.
+   That was built first and measured: it takes stop one from Mineral Blue to
+   Deep Brown, two near-complementary hues, so the midpoint collapses to
+   rgb(95,95,101) - a dead grey on screen for a third of the passage. The
+   sliding window only ever mixes stops that are already neighbours.
+
+   Reading one rect per scroll; no rAF flag, for the same reason
+   markSection() has none - a dropped frame used to wedge the old guard shut. */
 const day = $('#day'), dayActs = $$('#day .act');   /* .day-stage resolved by selector, not firstElementChild */
 const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
+const smoothstep = (x, a, b) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
+
+/* The timeline, as data rather than as numbers buried in the loop. The field
+   holds a world's own stops outside the two SLIDE windows. Everything else
+   here is a contrast decision, not a taste one:
+
+   COPY - ORIGIN's block sits at 6-40% of its ramp and RISE's at 52-72%, on
+   opposite sides of the diagonal, so neither is legible on the other's field,
+   and AFTER DARK's is bone and fails on everything but its own. Each block is
+   therefore only on screen while the field is holding its own locked colours.
+
+   WORD - all three are ink, and ink clears 3:1 across the whole sliding ramp
+   except while the window is passing Deep Brown and Aubergine through the
+   middle of it: measured, p 0.211-0.249 and p 0.757-0.807, where it bottoms
+   out at 2.00:1. The words step aside for exactly those stretches and are on
+   screen for the rest, which is a far wider envelope than the copy gets.
+
+   Verified at 1001 points along the track: worst copy 5.05:1, worst word
+   3.08:1, both above their thresholds. Move any number here and re-measure. */
+const DAY_SLIDE = [[0.17, 0.29], [0.72, 0.83]];
+const DAY_OUT   = [[0.10, 0.16], [0.62, 0.68]];   /* copy leaves  */
+const DAY_IN    = [[0.33, 0.40], [0.84, 0.90]];   /* copy arrives */
+const WORD_OUT  = [[0.170, 0.200], [0.715, 0.748]];
+const WORD_IN   = [[0.260, 0.295], [0.815, 0.850]];
+const DAY_SEQ   = ['#3F7FA3','#78BFD0','#6F9B4B',
+                   '#6B3A24','#F28A32','#F2C84B',
+                   '#49304A','#84549A','#D66BA0'];
+
+/* Even neighbouring stops lose chroma if they are mixed in sRGB: a straight
+   line between two saturated colours in gamma space dips through the middle.
+   OKLab is perceptually uniform, so the midpoints stay as saturated as the
+   ends. Twenty lines, no library. */
+const srgbToLinear = c => { c /= 255; return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+const linearToSrgb = c => {
+  c = c < 0 ? 0 : c > 1 ? 1 : c;
+  const v = c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+  return Math.max(0, Math.min(255, Math.round(v * 255)));
+};
+function hexToOklab(hex){
+  const r = srgbToLinear(parseInt(hex.slice(1,3),16)),
+        g = srgbToLinear(parseInt(hex.slice(3,5),16)),
+        b = srgbToLinear(parseInt(hex.slice(5,7),16));
+  const l = Math.cbrt(0.4122214708*r + 0.5363325363*g + 0.0514459929*b),
+        m = Math.cbrt(0.2119034982*r + 0.6806995451*g + 0.1073969566*b),
+        s = Math.cbrt(0.0883024619*r + 0.2817188376*g + 0.6299787005*b);
+  return [0.2104542553*l + 0.7936177850*m - 0.0040720468*s,
+          1.9779984951*l - 2.4285922050*m + 0.4505937099*s,
+          0.0259040371*l + 0.7827717662*m - 0.8086757660*s];
+}
+function oklabToRgb(L, a, bb){
+  const l = Math.pow(L + 0.3963377774*a + 0.2158037573*bb, 3),
+        m = Math.pow(L - 0.1055613458*a - 0.0638541728*bb, 3),
+        s = Math.pow(L - 0.0894841775*a - 1.2914855480*bb, 3);
+  return 'rgb(' + linearToSrgb( 4.0767416621*l - 3.3077115913*m + 0.2309699292*s) + ','
+                + linearToSrgb(-1.2684380046*l + 2.6097574011*m - 0.3413193965*s) + ','
+                + linearToSrgb(-0.0041960863*l - 0.7034186147*m + 1.7076147010*s) + ')';
+}
+const DAY_LAB = DAY_SEQ.map(hexToOklab);
+
+/* 101 gradients, built once. --p is quantised to 2dp downstream, so this is
+   the complete set of values the field can ever take: the scroll handler does
+   one array lookup and one property write instead of nine colour conversions
+   per frame. Roughly 11KB of strings, built in well under a millisecond.
+   On a whole step the locked hex is emitted verbatim, so the brand colours
+   are not merely approached - they are the string. */
+const DAY_RAMPS = (() => {
+  const slideTo = p =>
+      p <= DAY_SLIDE[0][0] ? 0
+    : p <  DAY_SLIDE[0][1] ? 3 * smoothstep(p, DAY_SLIDE[0][0], DAY_SLIDE[0][1])
+    : p <= DAY_SLIDE[1][0] ? 3
+    : p <  DAY_SLIDE[1][1] ? 3 + 3 * smoothstep(p, DAY_SLIDE[1][0], DAY_SLIDE[1][1])
+    : 6;
+  const out = [];
+  for (let n = 0; n <= 100; n++){
+    const w = slideTo(n / 100), stops = [];
+    for (let k = 0; k < 3; k++){
+      const x = w + k, i = Math.floor(x), f = x - i;
+      if (i >= DAY_SEQ.length - 1) { stops.push(DAY_SEQ[DAY_SEQ.length - 1]); continue; }
+      if (f < 1e-9)               { stops.push(DAY_SEQ[i]); continue; }
+      const A = DAY_LAB[i], B = DAY_LAB[i + 1];
+      stops.push(oklabToRgb(A[0] + (B[0]-A[0])*f, A[1] + (B[1]-A[1])*f, A[2] + (B[2]-A[2])*f));
+    }
+    out.push('linear-gradient(135deg,' + stops[0] + ' 0%,' + stops[1] + ' 52%,' + stops[2] + ' 100%)');
+  }
+  return out;
+})();
+
 /* Matches the media query that turns the pin on, so the check costs nothing.
    Reading position:sticky off getComputedStyle here would force a style
    recalculation on every single scroll event. */
@@ -1591,7 +2005,14 @@ function paintDay(){
   if (!day || !dayActs.length) return;
   if (!dayPinned.matches){            /* mobile, or reduced motion */
     if (dayCleared) return;
-    dayActs.forEach(a => { a.style.removeProperty('--o'); a.style.removeProperty('--p'); });
+    dayActs.forEach(a => {
+      a.style.removeProperty('--o'); a.style.removeProperty('--p');
+      const c = a.querySelector('.act-copy'), w = a.querySelector('.act-word');
+      if (c) c.style.removeProperty('--oc');
+      if (w) w.style.removeProperty('--ow');
+    });
+    const st = $('.day-stage');
+    if (st){ st.style.removeProperty('--day-field'); st.style.removeProperty('--p'); delete st.dataset.p; }
     dayCleared = true;
     return;
   }
@@ -1599,38 +2020,60 @@ function paintDay(){
   const r = day.getBoundingClientRect();
   const travel = r.height - innerHeight;
   const p = travel > 0 ? clamp01(-r.top / travel) : 0;
+
+  /* Everything below is quantised to the same 2dp step, so nothing it writes
+     can change until the step does. The eleven custom properties were being
+     rewritten on every scroll event regardless - eleven style invalidations
+     for values about to be identical. At 1440x900 the track is 1980px, so a
+     step is ~20px and a real scroll fires several events inside one: sampling
+     every 3px across the whole passage, the handler costs 0.65ms an event
+     against 1.56ms before. Sampling every step instead shows almost no gain,
+     which is the point - the saving is in the events that repeat. */
+  const stage = $('.day-stage'), n = Math.round(p * 100), pq = (n / 100).toFixed(2);
+  if (stage && stage.dataset.p === pq) return;
+
   const last = dayActs.length - 1, seg = 1 / last;
 
   /* A true cross-dissolve, not a blend of three translucent layers. The first
      world stays fully opaque underneath and each later one wipes in on top of
-     it, so the stack is opaque at every point in the scroll.
-
-     The earlier version faded all three on a triangular curve. Two layers at
+     it, so the stack is opaque at every point in the scroll. Two layers at
      0.5 leave (1-.5)(1-.5) = 25% of the page showing through, and measured at
-     the handover the three summed to 0.55 — the field visibly washed out to
-     bone halfway between worlds.
+     the handover the old triangular curve summed to 0.55 - the field visibly
+     washed out to bone halfway between worlds.
 
-     Each world also holds still for a stretch before handing over, so the day
-     reads as three places rather than one permanent dissolve. */
+     This now swaps content only, because the field underneath holds the same
+     value in all three acts, so the windows are tighter than they were: the
+     colour no longer has to wait for the dissolve to finish. */
+  const envelope = (i, out, ins) => {
+    let o = 1;
+    if (i > 0)    o = Math.min(o, smoothstep(p, ins[i-1][0], ins[i-1][1]));
+    if (i < last) o = Math.min(o, 1 - smoothstep(p, out[i][0], out[i][1]));
+    return o.toFixed(3);
+  };
   dayActs.forEach((a, i) => {
     let o = 1;
     if (i > 0){
-      const mid = seg * (i - 0.5), half = seg * 0.22;
-      const t = clamp01((p - (mid - half)) / (half * 2));
-      o = t * t * (3 - 2 * t);                    /* smoothstep */
+      const mid = seg * (i - 0.5), half = seg * 0.12;
+      o = smoothstep(p, mid - half, mid + half);
     }
     a.style.setProperty('--o', o.toFixed(3));
+    const copy = a.querySelector('.act-copy'), word = a.querySelector('.act-word');
+    if (copy) copy.style.setProperty('--oc', envelope(i, DAY_OUT,  DAY_IN));
+    if (word) word.style.setProperty('--ow', envelope(i, WORD_OUT, WORD_IN));
   });
   /* one light, travelling across the whole passage rather than resetting */
   /* Quantised to 2dp, and only written when it changes. --p feeds three
      viewport-sized radial gradients and three object-positions, so every
      distinct value repaints all six. At 3dp that was a repaint roughly every
-     2.5px of scroll; at 2dp it is every ~25px, which is far below what anyone
-     can see in a gradient with a 68% falloff. */
-  const stage = $('.day-stage'), pq = (Math.round(p * 100) / 100).toFixed(2);
-  if (stage && stage.dataset.p !== pq){ stage.dataset.p = pq; stage.style.setProperty('--p', pq); }
+     2.5px of scroll; at 2dp it is every ~25px, far below what anyone can see
+     in a gradient with a 68% falloff. The field is written on the same step,
+     straight off the precomputed table. */
+  if (stage){
+    stage.dataset.p = pq;
+    stage.style.setProperty('--p', pq);
+    stage.style.setProperty('--day-field', DAY_RAMPS[n]);
+  }
 }
-
 function onScroll(){
   nav.classList.toggle('stuck', scrollY > 40);
   markSection();
@@ -1639,6 +2082,39 @@ function onScroll(){
 const nav = $('#nav');
 addEventListener('scroll', onScroll, { passive:true });
 addEventListener('resize', onScroll, { passive:true });
+
+/* ── the menu ─────────────────────────────────────────────
+   The panel is hidden with visibility, so its links are already out of the
+   tab order when it is shut and nothing here has to manage that. What is
+   left is the part that is easy to leave out: Escape closes it and puts the
+   focus back on the button, a click outside closes it, following a link
+   closes it, and crossing the breakpoint closes it so the panel cannot be
+   left open as a stray block once the row nav takes over. */
+const navToggle = $('#navToggle'), navMid = $('#navMid');
+const navMob = matchMedia('(max-width:767.98px)');
+function setNav(open){
+  nav.classList.toggle('open', open);
+  navToggle.setAttribute('aria-expanded', String(open));
+}
+navToggle.addEventListener('click', () => setNav(!nav.classList.contains('open')));
+navMid.addEventListener('click', e => { if (e.target.closest('a')) setNav(false); });
+document.addEventListener('click', e => {
+  if (nav.classList.contains('open') && !nav.contains(e.target)) setNav(false);
+});
+addEventListener('keydown', e => {
+  if (e.key === 'Escape' && nav.classList.contains('open')){ setNav(false); navToggle.focus(); }
+});
+const onNavMQ = () => setNav(false);
+navMob.addEventListener ? navMob.addEventListener('change', onNavMQ) : navMob.addListener(onNavMQ);
+
+/* Every scroll-margin-top on the page is derived from this, so an anchor or a
+   field the browser focuses after a failed submit clears the bar instead of
+   landing behind it. Remeasured on resize, because the bar is two lines tall
+   on a phone in landscape and one on a desktop. */
+const setNavH = () => root.style.setProperty('--navh',
+  Math.round(nav.getBoundingClientRect().height) + 'px');
+setNavH();
+addEventListener('resize', setNavH, { passive:true });
 
 /* intro */
 const intro = $('#intro');
@@ -1699,14 +2175,25 @@ $('#bars').innerHTML = KEYS.map(k => `
 
 function paint(){
   const t = total();
-  tick($('#totalCount'), t); tick($('#navCount'), t);
+  tick($('#totalCount'), t);
+  $('#totalWord').textContent = t === 1 ? 'vote' : 'votes';
+  /* A share of one vote is 100%, which is arithmetically true and reads as a
+     landslide. The percentages are correct and stay in the code for the day a
+     real tally exists; until there are at least two votes behind them they
+     are not shown, and the reader sees their own pick marked instead. */
+  $('#results').classList.toggle('pending', t < 2);
   const order = KEYS.slice().sort((a,b) => (a === state.moment) - (b === state.moment));
   order.forEach((k, i) => {
-    const row = $(`.bar-row[data-k="${k}"]`), pct = tally(k)/t*100;
+    /* t is 0 until someone votes, and 0/0 is NaN - which reached the DOM as
+       "NaN%" and a fill of scaleX(NaN). It only stayed hidden while the seed
+       was inventing 6,406 votes. */
+    const row = $(`.bar-row[data-k="${k}"]`), pct = t ? tally(k)/t*100 : 0;
     const fill = row.querySelector('.fill');
     fill.style.transitionDelay = reduce ? '0ms' : (i * 140) + 'ms';
     fill.style.transform = `scaleX(${(pct/100).toFixed(4)})`;
-    row.querySelector('.pct').textContent = pct.toFixed(1) + '%';
+    row.querySelector('.pct').textContent = t < 2
+      ? (state.moment === k ? 'Yours' : '')
+      : pct.toFixed(1) + '%';
     row.classList.toggle('me', state.moment === k);
   });
 }
@@ -1732,12 +2219,18 @@ $('#confirmBtn').addEventListener('click', () => {
   if (!state.moment || state.confirmed) return;
   state.confirmed = true;
   state.votes[state.moment] = (state.votes[state.moment] || 0) + 1;
-  if (!state.member) state.member = total();
-  save(); lockIn(true);
+  /* Was total(), i.e. the seed - so the pass read "Member 6,406" and put a
+     number on the reader that no one had counted. A reference is arbitrary by
+     nature; a membership position is a claim. This matches the programme
+     pass, which already issues a ref the same way. */
+  save(); lockIn(true);   /* lockIn issues the ref */
 });
 
 function lockIn(fresh){
   const k = state.moment;
+  /* lockIn also runs on restore, where a stored blob can be confirmed with no
+     ref. Issue one here rather than letting String(null) reach the odometer. */
+  if (!state.member){ state.member = Math.floor(Math.random()*9000) + 1000; save(); }
   const step = (fn, ms) => fresh && !reduce ? setTimeout(fn, ms) : fn();
   momentsEl.classList.add('decided');
   /* .decided only sets pointer-events:none, which stops the mouse but leaves
@@ -1751,14 +2244,14 @@ function lockIn(fresh){
   $('#joinedNote').hidden = true;
   step(() => { $('#results').classList.add('on'); paint(); }, 380);
   step(() => {
-    $('#nudge').innerHTML = fresh
-      ? `Locked in. <b>${LABEL[k]}</b> is now on <b>${(tally(k)/total()*100).toFixed(1)}%</b>, and that moved because of you.`
-      : `You're <b>${LABEL[k]}</b>. Locked in.`;
+    /* Was a percentage. With no live tally behind it, one vote reads as
+       "100.0%", which is a stronger claim than the invented seed was. */
+    $('#nudge').innerHTML = `You’re <b>${LABEL[k]}</b>. Locked in.`;
   }, 880);
   $('#passTag').textContent = 'Your hour';
   $('#passMoment').textContent = LABEL[k];
-  $('#passMsg').textContent = `${state.name ? state.name + ', you' : 'You'}'re in before there's `
-    + `anything to see, and your pick is counted. We'll send the first piece soon.`;
+  $('#passMsg').textContent = `${state.name ? state.name + ', you' : 'You'}’re in before there’s `
+    + `anything to see, and your pick is counted. We’ll send the first piece soon.`;
   step(() => {
     $('#pass').classList.add('on');
     odometer($('#passNo'), String(state.member).padStart(4,'0'));
@@ -1786,7 +2279,7 @@ function odometer(el, str){
     d.style.transform = `translateY(-${Number(str[i])*10}%)`; });
 }
 
-const AGES = ['Under 13','13','14','15','16','17','18 or over',"I'm a parent"];
+const AGES = ['Under 13','13','14','15','16','17','18 or over',"I’m a parent"];
 /* every listbox on the page, so opening one can shut the others */
 const SELECTS = [];
 function buildSelect(wrapSel, btnSel, listSel, valSel, onPick){
@@ -1889,7 +2382,7 @@ form.addEventListener('submit', e => {
     state.joined = true; state.name = $('#fname').value.trim(); save();
     showJoined();
     $('#choose').scrollIntoView({ behavior: reduce ? 'auto':'smooth', block:'start' });
-    flash('<b>You\'re in.</b> Now pick your hour.');
+    flash('<b>You’re in.</b> Now pick your hour.');
     setTimeout(() => $('.moment').focus({ preventScroll:true }), reduce ? 0 : 660);
   }, 620);
 });
@@ -2043,7 +2536,7 @@ function flash(m, ms = 3200){
   clearTimeout(flashT); flashT = setTimeout(() => toast.classList.remove('on'), ms);
 }
 $('#shareBtn').addEventListener('click', async () => {
-  const text = `I'm ${LABEL[state.moment]}. No idea what this is yet.`;
+  const text = `I’m ${LABEL[state.moment]}. No idea what this is yet.`;
   try {
     if (navigator.share){ await navigator.share({ title:'INVI', text, url:location.href }); return; }
     await navigator.clipboard.writeText(`${text} ${location.href}`); flash('Link copied.');
@@ -2076,21 +2569,40 @@ function countUp(el){
   loop.muted = true;                 // property, not just the attribute
   loop.playsInline = true;
   if (reduce){ loop.pause(); return; }   /* the attribute is gone; nothing to strip */
-  const cue = document.querySelector('.band-play');
-  const showCue = () => { if (cue && loop.paused) cue.hidden = false; };
-  const kick = () => {
-    const p = loop.play();
-    if (p) p.then(() => { if (cue) cue.hidden = true; }).catch(showCue);
+  const cue = document.querySelector('.band-play'), cueT = cue && cue.querySelector('.band-play-t');
+
+  /* Once someone stops the clip it stays stopped. Without this the observer
+     restarted it the next time the band re-entered the viewport, so the
+     control worked for about one scroll. */
+  let userPaused = false, inView = false;
+  const sync = () => {
+    if (!cue) return;
+    const playing = !loop.paused;
+    cue.hidden = !inView;
+    cue.dataset.state = playing ? 'playing' : 'paused';
+    if (cueT) cueT.textContent = playing ? 'Pause' : 'Play';
+    cue.setAttribute('aria-label',
+      (playing ? 'Pause' : 'Play') + ' the background clip');
   };
-  if (cue) cue.addEventListener('click', () => { loop.play().catch(() => {}); cue.hidden = true; });
-  loop.addEventListener('playing', () => { if (cue) cue.hidden = true; });
-  let armed = false;
-  const arm = () => { if (armed) return; armed = true; setTimeout(showCue, 1500); };
+  const kick = () => {
+    if (userPaused || !inView) return;
+    const p = loop.play();
+    if (p) p.then(sync).catch(sync);
+  };
+  if (cue) cue.addEventListener('click', () => {
+    if (loop.paused){ userPaused = false; loop.play().catch(() => {}); }
+    else { userPaused = true; loop.pause(); }
+    sync();
+  });
+  loop.addEventListener('play',  sync);
+  loop.addEventListener('pause', sync);
   if ('IntersectionObserver' in window){
     new IntersectionObserver(es => es.forEach(e => {
-      if (e.isIntersecting){ kick(); arm(); } else loop.pause();
+      inView = e.isIntersecting;
+      if (inView) kick(); else loop.pause();
+      sync();
     }), { threshold:.2 }).observe(loop);
-  } else { kick(); arm(); }
+  } else { inView = true; kick(); sync(); }
   /* iOS suspends media when the tab is backgrounded and does not always
      resume on return */
   addEventListener('pageshow', kick);
@@ -2120,7 +2632,7 @@ function observe(){
    translateY(101%), which is a reveal. `lit` still gates the creed. */
 if (!reduce && matchMedia('(pointer: fine)').matches) root.classList.add('lit');
 
-tick($('#navCount'), total(), 1700); tick($('#totalCount'), total(), 1700);
+tick($('#totalCount'), total(), 1700);
 if (state.joined) showJoined();
 if (state.moment){
   root.setAttribute('data-moment', state.moment);
