@@ -142,10 +142,9 @@ a{color:inherit;text-decoration:none}
    was abandoned; the class was always set in Inter.) */
 .display{font-family:'Inter',system-ui,sans-serif;font-weight:500;text-transform:uppercase;
   letter-spacing:-.008em;line-height:1.02;margin:0}
-.t-mega,.t-xl{line-height:1}
+.t-mega{line-height:1}
 /* H1 — 44/46 at 390, 72/72 at 1440 */
 .t-mega{font-size:clamp(2.75rem,5vw,4.5rem);letter-spacing:-.032em;line-height:1.045}
-.t-xl  {font-size:clamp(2.75rem,5vw,4.5rem);letter-spacing:-.03em}
 /* H2 — 34/38 at 390, 48/52 at 1440 */
 .t-lg  {font-size:clamp(2.125rem,1.35vw + 1.79rem,3rem);line-height:1.1}
 /* H3 — 28/34 */
@@ -163,7 +162,12 @@ a{color:inherit;text-decoration:none}
   line-height:1.333;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:0}
 .tag::before{content:'';width:24px;height:1px;background:var(--accent);flex:none;
   transition:background .6s var(--ease)}
-.lede{font-size:clamp(1.0625rem,.35vw + .97rem,1.125rem);color:var(--ink-2);max-width:68ch;line-height:1.556}
+/* 52ch, not 68. `ch` is the width of a zero, which is wider than Inter's
+   average glyph, so 68ch was rendering as ~95 characters - well past the
+   65-75 the guidelines ask for. text-wrap:pretty kills the widows that were
+   landing directly under a 72px heading. */
+.lede{font-size:clamp(1.0625rem,.35vw + .97rem,1.125rem);color:var(--ink-2);
+  max-width:52ch;line-height:1.556;text-wrap:pretty}
 .accent{color:var(--accent-ink);transition:color .6s var(--ease)}
 
 main{position:relative;z-index:3}
@@ -230,8 +234,14 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .btn--solid::after{background:var(--ink)}
 .btn--solid:hover{color:var(--bone)}
 .btn:disabled{opacity:.4;pointer-events:none}
-.btn,.moment{translate:var(--mx,0px) var(--my,0px)}
-.lit .btn,.lit .moment{transition:translate .35s var(--ease),color .4s var(--ease),
+/* V12: visible keyboard focus everywhere. There was none on buttons, vote
+   cards, nav or footer links - they fell back to the UA ring, which on the
+   dusk section rendered in Dusk, the colour of its own background. */
+.btn:focus-visible,.moment:focus-visible,.nav-mid a:focus-visible,
+.foot-links a:focus-visible,.foot-links button:focus-visible,
+.pass-actions button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
+.sec-dusk .btn:focus-visible,.sec-dusk .moment:focus-visible{outline-color:var(--bone)}
+.lit .btn,.lit .moment{transition:color .4s var(--ease),
   border-color .4s var(--ease),transform .5s var(--ease),opacity .4s var(--ease)}
 
 /* ── hero ───────────────────────────────────────────────── */
@@ -632,7 +642,7 @@ video.band-media{object-position:center 66%}
 .help{margin:0 0 .3rem;font-size:.9375rem;line-height:1.55;color:var(--ink-2);max-width:34rem}
 .fsec--why textarea{min-height:9.5rem}
 .count{margin:0;font-size:.8125rem;color:var(--ink-2);min-height:1.05em}
-.terms{margin:0;padding:0;list-style:none;display:grid;gap:.55rem;
+.terms{margin:0;padding:0;list-style:none;display:grid;gap:.55rem;max-width:62ch;
   font-size:1rem;line-height:1.55;color:var(--ink-2)}
 .terms li{display:grid;grid-template-columns:auto 1fr;gap:.75rem;align-items:start}
 .terms li::before{content:'';width:12px;height:1px;background:var(--accent);margin-top:.68rem}
@@ -731,7 +741,7 @@ video.band-media{object-position:center 66%}
   font-size:clamp(2rem,3.6vw,3rem);line-height:.9;margin-bottom:.5rem;color:var(--accent);
   transition:color .6s var(--ease)}
 .stat span{font-size:.9375rem;color:var(--ink-2);line-height:1.45;display:block}
-.quote{border-top:1px solid var(--accent);padding:1.4rem 0 0;margin:2.2rem 0 0;
+.quote{border-top:1px solid var(--accent);padding:1.4rem 0 0;margin:2.2rem 0 0;max-width:34ch;
   font-size:clamp(1.05rem,1.7vw,1.3rem);line-height:1.5;transition:border-color .6s var(--ease)}
 .quote cite{display:block;margin-top:.7rem;font-size:.78rem;font-style:normal;color:var(--ink-2)}
 .creed .line{font-family:'Inter',system-ui,sans-serif;font-weight:500;text-transform:uppercase;
@@ -751,8 +761,10 @@ video.band-media{object-position:center 66%}
 .step .k{font-family:'Inter',system-ui,sans-serif;font-weight:500;font-size:1.1rem;color:var(--accent-ink);transition:color .6s var(--ease)}
 .step h3{margin:.5rem 0 .4rem;font-size:.98rem;font-weight:600}
 .step p{margin:0;font-size:1rem;color:var(--ink-2);line-height:1.55}
+/* was uncapped: the filming-and-guardian-consent message to parents ran to
+   164 characters on one line, the least readable block on the page */
 .safeguard{margin-top:2rem;padding:1.2rem 1.4rem;border:1px solid var(--hair);
-  font-size:1rem;color:var(--ink-2);line-height:1.6}
+  max-width:62ch;text-wrap:pretty;font-size:1rem;color:var(--ink-2);line-height:1.6}
 .safeguard b{color:var(--ink)}
 
 .privacy{background:var(--bone);color:var(--ink);border:1px solid var(--hair);
@@ -941,7 +953,6 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     transition-duration:.01ms!important}
   .js .rv{opacity:1;transform:none} html{scroll-behavior:auto}
   .hero h1 .l>span{transform:none}
-  .btn,.moment{translate:none!important}
 }
 </style>
 <script>document.documentElement.className+=' js'</script>
@@ -1005,7 +1016,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     </div>
     <!-- the portrait is structural: it holds the right edge of the composition
          and bleeds off the viewport, rather than sitting in a box beside it -->
-    <div class="hero-figure" aria-hidden="true">
+    <div class="hero-figure grain-on" aria-hidden="true">
       <img src="img/portrait-brand-704.webp"
            srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
            sizes="(max-width:900px) 100vw, min(44vw, 600px)" width="704" height="880" alt=""
@@ -1023,7 +1034,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
        scrolled to yet. The IntersectionObserver below already starts it, and
        preload="none" means the fetch now happens then. Trade-off: a visitor
        with JS disabled gets the poster instead of a loop. -->
-  <figure class="band">
+  <figure class="band grain-on">
     <video class="band-media" muted loop playsinline preload="none"
            poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
       <source src="img/hero-loop.mp4" type="video/mp4">
@@ -1091,7 +1102,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
        phone showing that same frame squeezed to a letterbox loses the faces,
        which are the whole point of the shot. The mobile source is a separate
        4:5 crop chosen by edge energy rather than by centring. -->
-  <figure class="band band--wide rv">
+  <figure class="band band--wide grain-on rv">
     <picture>
       <source media="(min-width:768px)"
               srcset="img/hero-crew-720.webp 720w, img/hero-crew-1080.webp 1080w, img/hero-crew-1440.webp 1440w"
@@ -1112,7 +1123,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <section id="brand" style="padding-top:6rem">
     <div class="wrap two-up">
       <div>
-                <h2 class="display t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
+                <h2 class="display t-lg rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:16ch">
           Built for the years that matter most.
         </h2>
         <p class="lede rv" style="transition-delay:.16s">
@@ -1122,7 +1133,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         </p>
       </div>
       <!-- the mark worn rather than printed: the guidelines' tonal-mark device -->
-      <figure class="act-media rv" style="transition-delay:.12s;aspect-ratio:704/880">
+      <figure class="act-media grain-on rv" style="transition-delay:.12s;aspect-ratio:704/880">
         <img src="img/portrait-brand-704.webp"
              srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
              sizes="(max-width:980px) 90vw, min(39.6vw, 563px)" width="704" height="880"
@@ -1185,7 +1196,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <!-- The 2:1 desktop frame centres on empty bowl wall; the skater sits at
        about 20% across, so a centre crop on a phone loses the subject
        entirely. The mobile source is cropped to him. -->
-  <figure class="band band--wide rv">
+  <figure class="band band--wide grain-on rv">
     <picture>
       <source media="(min-width:768px)"
               srcset="img/skate-bowl-485.webp 485w, img/skate-bowl-728.webp 728w, img/skate-bowl-970.webp 970w"
@@ -1200,7 +1211,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 
   <section id="programme" style="padding-top:9rem">
     <div class="wrap">
-            <h2 class="display t-xl rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
+            <h2 class="display t-lg rv" style="transition-delay:.08s;margin:1.2rem 0 1.6rem;max-width:15ch">
         Twelve of you will build this with us.
       </h2>
       <p class="lede rv" style="transition-delay:.16s">
@@ -1231,7 +1242,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <hr class="rule">
   <section id="apply">
     <div class="wrap">
-            <h2 class="display t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
+            <h2 class="display t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Put your name forward.</h2>
       <p class="lede rv" style="transition-delay:.12s">Applications are read by the team. We'll come back to everyone either way.</p>
       <div class="dossier rv" style="transition-delay:.15s">
         <span>Application</span><i><b id="progBar"></b></i><span>Twelve places</span>
@@ -1374,7 +1385,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     <div class="wrap">
       <div class="join-grid">
         <div id="joinForm">
-                    <h2 class="display t-md rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
+                    <h2 class="display t-lg rv" style="transition-delay:.06s;margin:1rem 0 1rem">Join, then vote.</h2>
           <p class="lede rv" style="transition-delay:.12s">
             Your name and email unlock your vote. One thing at a time, nothing else in between.
           </p>
@@ -1663,7 +1674,12 @@ document.addEventListener('click', e => {
 });
 
 function tick(el, to, ms = 1200){
-  if (reduce){ el.textContent = to.toLocaleString('en-GB'); return; }
+  /* Write the real figure first, then animate over it. The value was only ever
+     set inside a requestAnimationFrame callback, so a deferred first frame -
+     a backgrounded tab, a throttled device - left the page's only piece of
+     social proof reading 0. */
+  el.textContent = to.toLocaleString('en-GB');
+  if (reduce) return;
   const from = parseInt(el.dataset.v || '0',10); el.dataset.v = to;
   const t0 = performance.now();
   const step = now => {
@@ -2096,21 +2112,13 @@ function observe(){
   $$('.stat b, .seat b').forEach(el => io3.observe(el));
 }
 
-if (!reduce && matchMedia('(pointer: fine)').matches){
-  root.classList.add('lit');
-  const clamp = (n,lo,hi) => n<lo?lo:n>hi?hi:n;
-  const magnet = (el,ax,ay) => {
-    el.addEventListener('pointermove', ev => {
-      const r = el.getBoundingClientRect();
-      el.style.setProperty('--mx',(clamp((ev.clientX-(r.left+r.width/2))/(r.width/2),-1,1)*ax).toFixed(2)+'px');
-      el.style.setProperty('--my',(clamp((ev.clientY-(r.top+r.height/2))/(r.height/2),-1,1)*ay).toFixed(2)+'px');
-    }, { passive:true });
-    el.addEventListener('pointerleave', () => {
-      el.style.setProperty('--mx','0px'); el.style.setProperty('--my','0px'); });
-  };
-  $$('.moment').forEach(el => magnet(el,5,4));
-  $$('.btn').forEach(el => magnet(el,4,3));
-}
+/* The cursor-tracking magnet that used to live here is gone. V12's motion
+   vocabulary is reveal, drift, fade, crop and light, and its ban list names
+   app-style micro-interactions - which is exactly what translating a button
+   toward the pointer is. It also fired on the privacy dialog's Close button.
+   The buttons already have an on-system hover: the ::after wiping up from
+   translateY(101%), which is a reveal. `lit` still gates the creed. */
+if (!reduce && matchMedia('(pointer: fine)').matches) root.classList.add('lit');
 
 tick($('#navCount'), total(), 1700); tick($('#totalCount'), total(), 1700);
 if (state.joined) showJoined();
