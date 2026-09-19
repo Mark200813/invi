@@ -337,6 +337,13 @@ main[tabindex="-1"]:focus,#results:focus{outline:none}
   -webkit-mask-image:linear-gradient(100deg,transparent 0,#000 30%);
   mask-image:linear-gradient(100deg,transparent 0,#000 30%)}
 .hero-figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
+/* Masthead. Sized by height so the 900x220 artwork keeps its proportions at
+   every width - never stretched, which V12 also forbids - and given its
+   0.5x clear space below as the guidelines specify. No reveal class on it:
+   .rv starts at opacity 0 and waits for an observer, and the one element
+   that must never fail to appear is the brand name. */
+.hero-mark{margin:0 0 clamp(1.8rem,5.5vw,2.5rem);height:clamp(3.6rem,11vw,5rem)}
+.hero-mark .mark-svg{height:100%;width:auto}
 @media (max-width:900px){
   .hero{grid-template-columns:1fr;overflow:visible}
   .hero-figure{height:auto;min-height:0;aspect-ratio:4/5;margin-top:2.5rem;
@@ -421,13 +428,30 @@ video.band-media{object-position:center 66%}
    read straight through it - at the end of the passage AFTER DARK's word had
    RISE's word showing inside its letterforms, and RISE's photograph was
    visible behind AFTER DARK's copy. Each act now carries the page ground it
-   is tinting, so it composites against bone and covers the one below. */
+   is tinting, so it composites against its own ground and covers the one
+   below. That ground is the wash above, not flat bone. */
 .act{min-height:100vh;min-height:100svh;display:flex;align-items:center;position:relative;
-  overflow:hidden;isolation:isolate;color:var(--on-field);background:var(--bone)}
+  overflow:hidden;isolation:isolate;color:var(--on-field);background:var(--wash,var(--bone))}
 .act[data-act="origin"]    {--field:var(--grad-origin);--grade:#78BFD0}
 .act[data-act="rise"]      {--field:var(--grad-rise);--grade:#F28A32}
 .act[data-act="after-dark"]{--field:var(--grad-after-dark);--grade:#84549A;
   --on-field:var(--bone);--on-field-2:var(--bone)}
+
+/* ── what the field dissolves INTO ──────────────────────────
+   The feathers take the field to transparent, and behind it was the bone
+   page - so where two acts met, one world faded to white and the next faded
+   up out of white again. Up to 39vh of it on a phone, which read as a gap
+   between the scents rather than a change from one to the next.
+
+   Each act now carries a vertical wash instead: its own world at the top,
+   the NEXT world's opening colour at the foot. Act N's last stop is act
+   N+1's first, so the seam is continuous and there is no white anywhere in
+   the passage. The tints are the locked stops at 34% over bone - light
+   enough that ink measures 8.8:1 or better on every one of them, which is
+   what keeps the cropped word legible where it sits. */
+.act[data-act="origin"]    {--wash:linear-gradient(to bottom,#B8CCD4 0%,#C9D5B6 58%,#C7B4A9 100%)}
+.act[data-act="rise"]      {--wash:linear-gradient(to bottom,#C7B4A9 0%,#F5CFAD 46%,#BCB1B6 100%)}
+.act[data-act="after-dark"]{--wash:linear-gradient(to bottom,#BCB1B6 0%,#D0BDD1 46%,#ECC5D3 100%)}
 
 /* The field used to be inset:0 at full strength, so three saturated slabs met
    the page and each other at dead-straight lines. It now arrives and leaves:
@@ -1147,7 +1171,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      at 24vh that line was still on field at full strength and ink measured
      3.71:1 against 8.56 and 10.40 for the other two. It is the word that has
      to clear, not the average. */
-  .act{--feather-top:9vh;--feather-bot:30vh}
+  .act{--feather-top:9vh;--feather-bot:26vh}
   .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
   /* On a phone every photograph sat inside the gutter, so all three were
      boxes on colour. Two of them now run off the edge and the frame becomes
@@ -1334,6 +1358,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      screens, with the portrait alone taking 2.7 of them. And .hero > .wrap kept
      its 7rem top padding, so 184px of a 390px-tall viewport was empty before
      the H1 even started. */
+  /* 11vw is measured off the long edge, which on a phone held sideways is
+     the one with room: it resolved to 93px of wordmark in a 390px-tall
+     window, above a headline that had already been cut to fit. */
+  .hero-mark{height:min(11vw,8.5vh);margin-bottom:.9rem}
   .hero-figure{aspect-ratio:16/9;max-height:52svh;margin-top:1.2rem}
   .hero > .wrap{padding-top:5.5rem;padding-bottom:1rem}
   .hero .lede{margin-bottom:1.2rem}
@@ -1403,6 +1431,14 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <!-- ══════════════ 01 · HERO ══════════════ -->
   <section class="hero">
     <div class="wrap">
+      <!-- The supplied wordmark at masthead scale, from the same <symbol> the
+           nav and the footer draw from. Not type set in Inter to look like
+           it: V12 forbids retyping, redrawing or regenerating the mark
+           outright, and it is not in a container for the same reason.
+           aria-hidden, because the nav's instance already announces "INVI"
+           and the document title says it again - a third is repetition, not
+           information. -->
+      <p class="hero-mark"><svg class="mark-svg" viewBox="0 0 900 220" aria-hidden="true" focusable="false"><use href="#invi-wordmark"></use></svg></p>
       <h1 class="display t-mega" id="heroMark">
         <span class="l"><span>Where scent,</span></span>
         <span class="l"><span>skin and mood</span></span>
@@ -2234,7 +2270,10 @@ else { setTimeout(() => intro.classList.add('gone'), reduce ? 60 : 900);
        setTimeout(() => intro.remove(), reduce ? 400 : 1700); }
 
 /* wordmark handover */
-const navMark = $('.nav .mark'), heroMark = $('#heroMark');
+/* The nav mark takes over from the masthead now, not from the headline. It
+   sits above the H1, so observing the H1 meant the two were briefly on
+   screen together before the handover. */
+const navMark = $('.nav .mark'), heroMark = $('.hero-mark') || $('#heroMark');
 let markIO = null;
 function watchMark(){
   markIO && markIO.disconnect();
@@ -2684,6 +2723,24 @@ function countUp(el){
      restarted it the next time the band re-entered the viewport, so the
      control worked for about one scroll. */
   let userPaused = false, inView = false;
+
+  /* The clip does start on its own - it always has - but preload="none"
+     means not one byte is fetched until play() is called, and play() is
+     called when the band is already 20% on screen. So the poster sat there
+     while 389KB downloaded, which on a phone looks exactly like a video
+     that is not playing. Warming it two screens out fixes that without
+     putting the file back into the first visit: the autoplay attribute
+     would fetch it immediately on every load, which is the 389KB that was
+     deliberately taken off the critical path. */
+  if ('IntersectionObserver' in window){
+    const warm = new IntersectionObserver(es => es.forEach(e => {
+      if (!e.isIntersecting) return;
+      loop.preload = 'auto';
+      try { loop.load(); } catch {}
+      warm.disconnect();
+    }), { rootMargin: '0px 0px 200% 0px' });
+    warm.observe(loop);
+  }
   const sync = () => {
     if (!cue) return;
     const playing = !loop.paused;
