@@ -164,7 +164,9 @@ a{color:inherit;text-decoration:none}
 /* 12vw, not 15vw. At 15vw the longest word ("After Dark") ran far enough along
    the AFTER DARK ramp to reach Mood Pink, where bone measures 2.94:1 and misses
    the 3:1 floor for large text. 12vw lands its tail at ~86% of the ramp. */
-.t-crop{font-size:clamp(3.5rem,12vw,12rem);line-height:.82;letter-spacing:-.045em}
+/* -.04em, not -.045: below that the counters start closing up at poster
+   scale and it reads cramped rather than tight. */
+.t-crop{font-size:clamp(3.5rem,12vw,12rem);line-height:.82;letter-spacing:-.04em}
 /* eyebrow — 12/16 Medium +0.12em, per the locked scale */
 .tag{display:inline-flex;align-items:center;gap:.65rem;font-size:.75rem;font-weight:500;
   line-height:1.333;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-2);margin:0}
@@ -315,6 +317,12 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
 .foot-links a:focus-visible,.foot-links button:focus-visible,
 .pass-actions button:focus-visible{outline:2px solid var(--accent-ink);outline-offset:3px}
 .sec-dusk .btn:focus-visible,.sec-dusk .moment:focus-visible{outline-color:var(--bone)}
+/* Two containers exist only to receive focus so a change is announced and the
+   next Tab starts in the right place. Both are tabindex="-1", so no keyboard
+   user can land on them by tabbing and the ring marks nothing anyone did -
+   the UA default was drawing rgb(229,151,0) right around the results panel
+   the moment a vote locked. Interactive controls keep their rings. */
+main[tabindex="-1"]:focus,#results:focus{outline:none}
 .lit .btn,.lit .moment{transition:color .4s var(--ease),
   border-color .4s var(--ease),transform .5s var(--ease),opacity .4s var(--ease)}
 
@@ -460,11 +468,19 @@ video.band-media{object-position:center 66%}
    and left the line reading "MOO" — a crop that looks like a mistake rather
    than a decision. The bleed here is a few pixels of the outer stems: clearly
    deliberate, and no letterform is lost. */
-.shorthand p{margin:0;white-space:nowrap;color:var(--ink);
-  /* no upper bound: a ceiling made the line stop reaching the edges above
-     ~1600px, which is the one thing this treatment exists to do */
-  font-size:max(2.6rem,10.8vw);line-height:.9;letter-spacing:-.05em;
-  font-weight:500;text-transform:uppercase;margin-inline-start:-.05em}
+/* It ran past both edges on purpose. Measured, the line is 955px at 100px,
+   so at 10.8vw it overhung by 2px at 390 and about 60px at 1440 - close
+   enough to the edge to read as an accident at one size and as a crop at the
+   other, which is the worst of both. It now sits inside the page gutter at
+   every width, and on a phone it wraps to three lines instead of shrinking
+   to 36px to fit one. */
+.shorthand p{margin:0;color:var(--ink);
+  font-size:min(9vw,8.5rem);line-height:.92;letter-spacing:-.04em;
+  font-weight:500;text-transform:uppercase;
+  padding-inline:var(--edge);text-wrap:balance}
+@media (max-width:980.98px){
+  .shorthand p{font-size:min(25vw,11rem);padding-inline:var(--gutter);line-height:.88}
+}
 .shorthand .em{color:var(--accent-ink);transition:color .6s var(--ease)}
 
 /* ── the pinned day ─────────────────────────────────────────
@@ -484,7 +500,7 @@ video.band-media{object-position:center 66%}
      feather, and deliberately: at 17vh it was erasing the dark end of every
      ramp, which on RISE is the terracotta the whole world is anchored to. */
   .js .day-stage > .act{--field-mask:linear-gradient(to bottom,
-      transparent 0, #000 9vh, #000 100%)}
+      transparent 0, #000 9vh, #000 78%, transparent 100%)}
 
   /* ── one field, interpolated ────────────────────────────
      The three worlds used to be three separate fields butted together: each
@@ -572,12 +588,16 @@ video.band-media{object-position:center 66%}
    AFTER DARK's frames land at 84px and 108px, inside that zone; RISE's starts
    at 236px, well down in solid colour, so it keeps a crisp top and softens
    along the bottom instead. */
-.act[data-act="origin"]     .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 15%);
-                                       --img-mask:linear-gradient(to bottom,transparent 0,#000 15%)}
-.act[data-act="rise"]       .act-media{--fig-mask:linear-gradient(to left,transparent 0,#000 15%);
-                                       --img-mask:linear-gradient(to bottom,#000 76%,transparent 100%)}
-.act[data-act="after-dark"] .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 13%);
-                                       --img-mask:linear-gradient(to bottom,transparent 0,#000 14%)}
+/* Both horizontal edges of the frame now dissolve, not one. A single
+   gradient can soften two edges if they are on the same axis, so the image
+   handles the vertical pair and the figure around it the horizontal one - no
+   mask-composite, which is still prefixed and inconsistent across engines.
+   The edge that runs off the screen is the fourth, and it is not there to
+   fade, so this never closes into a vignette. */
+.act .act-media{--img-mask:linear-gradient(to bottom,transparent 0,#000 13%,#000 87%,transparent 100%)}
+.act[data-act="origin"]     .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 15%)}
+.act[data-act="rise"]       .act-media{--fig-mask:linear-gradient(to left,transparent 0,#000 15%)}
+.act[data-act="after-dark"] .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 13%)}
 /* A light grade pulled from the act's own ramp - its middle stop - so the
    photograph and the field share a colour temperature instead of being two
    unrelated images side by side. soft-light keeps the faces: it shifts the
@@ -712,6 +732,9 @@ video.band-media{object-position:center 66%}
 .moment{position:relative;overflow:hidden;isolation:isolate;background:transparent;
   padding:1.7rem 1.5rem 1.6rem;text-align:left;display:flex;flex-direction:column;gap:.55rem;
   min-height:264px;justify-content:flex-end;color:var(--bone);
+  /* held in one place so the mobile rule can turn the colour through 90
+     degrees without duplicating the growth states */
+  --band-clip:inset(0 0 var(--band,56%) 0);
   transition:opacity .4s var(--ease)}
 /* The copy zones keep a hairline between them; the colour above does not,
    or the spectrum would be cut into three again. It stops short of the band
@@ -724,12 +747,12 @@ video.band-media{object-position:center 66%}
    grows — clipping leaves the ramp where it is. */
 .moment::before{content:'';position:absolute;inset:0;z-index:0;
   background:linear-gradient(135deg,var(--c1) 0%,var(--c2) 52%,var(--c3) 100%);
-  clip-path:inset(0 0 var(--band,56%) 0);transition:clip-path .55s var(--ease)}
+  clip-path:var(--band-clip);transition:clip-path .55s var(--ease)}
 /* grain over the colour field, same tile as the acts */
 .moment::after{content:'';position:absolute;inset:0;z-index:1;
   pointer-events:none;background-image:var(--noise);background-size:190px 190px;
   opacity:.34;mix-blend-mode:overlay;
-  clip-path:inset(0 0 var(--band,56%) 0);transition:clip-path .55s var(--ease)}
+  clip-path:var(--band-clip);transition:clip-path .55s var(--ease)}
 /* :not(.locked) contributes its argument's specificity, so the hover rule
    outranked the pressed one and hovering your own locked-in choice shrank its
    band from 40% back to 48%. Scoping hover to the unpressed state fixes the
@@ -748,11 +771,25 @@ video.band-media{object-position:center 66%}
 .moment .m-name{display:block;margin:0;font-family:'Inter',system-ui,sans-serif;font-weight:500;text-transform:uppercase;
   font-size:clamp(1.4rem,2.4vw,2rem);line-height:.95;letter-spacing:-.01em}
 .moment .m-desc{display:block;margin:0;font-size:.9375rem;color:var(--ink-2);line-height:1.5}
-.moment .chk{position:absolute;top:1rem;right:1rem;width:22px;height:22px;border-radius:50%;
-  background:var(--accent);display:grid;place-items:center;opacity:0;transform:scale(.5);
-  transition:opacity .4s var(--ease),transform .4s var(--ease)}
-.moment[aria-pressed="true"] .chk{opacity:1;transform:scale(1)}
-.moment .chk svg{width:10px;stroke:var(--bone);stroke-width:3;fill:none}
+/* The mark used to appear only once something was chosen, so before the
+   first tap nothing on the row said it was selectable at all - three blocks
+   of text and a colour, with the affordance invisible until after the
+   decision. It is an empty ring from the start and fills on choosing.
+
+   The tick was also bone on a bone disc: --accent is remapped to --bone
+   inside .sec-dusk, and the tick inherited bone too, so the confirmation
+   mark was invisible against the very thing that was meant to show it. */
+.moment .chk{position:absolute;top:1.15rem;right:1.15rem;width:24px;height:24px;
+  /* --hair is bone at 24%, which measures about 1.9:1 on dusk - under the
+     3:1 a control boundary needs to be identifiable. 45% clears it. */
+  border-radius:50%;border:1.5px solid rgba(247,243,237,.45);background:transparent;
+  display:grid;place-items:center;
+  transition:background .35s var(--ease),border-color .35s var(--ease)}
+.moment:hover:not([aria-pressed="true"]) .chk{border-color:var(--bone)}
+.moment[aria-pressed="true"] .chk{background:var(--bone);border-color:var(--bone)}
+.moment .chk svg{width:11px;stroke:var(--dusk);stroke-width:3;fill:none;
+  opacity:0;transition:opacity .3s var(--ease)}
+.moment[aria-pressed="true"] .chk svg{opacity:1}
 
 .confirm{display:grid;grid-template-rows:0fr;opacity:0;
   transition:grid-template-rows .6s var(--ease),opacity .45s var(--ease)}
@@ -1093,24 +1130,39 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      row and the padding disagreed and the photograph overflowed .act-in by
      exactly that padding — which put it back over the word on RISE. The gap
      belongs to the word, in flow, where it cannot be overrun. */
+  /* Both feathers are retuned for what now sits in them. The top one was
+     17vh - 143px on a 844px screen - and the copy starts 98px into the act,
+     so every copy block was sitting in the part of the field that fades to
+     bone. For ORIGIN that merely washed the colour out from behind the
+     words; for AFTER DARK, whose copy is bone, it was bone on near-bone.
+     At 9vh the copy clears it and sits on saturated colour.
+
+     The bottom one goes the other way, and deliberately. The cropped word
+     begins 150px above the act's foot, so a deeper dissolve puts the word
+     inside it: the field lightens behind the letterforms and ink goes from
+     around 3.6:1 on solid colour to several times that. The word resolves
+     out of the colour instead of hiding in it, which is the point of it. */
+  /* 30, not 24. AFTER DARK's word is the only one that wraps, so its top
+     line sits 191px above the act's foot where the other two sit 105px up -
+     at 24vh that line was still on field at full strength and ink measured
+     3.71:1 against 8.56 and 10.40 for the other two. It is the word that has
+     to clear, not the average. */
+  .act{--feather-top:9vh;--feather-bot:30vh}
   .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
   /* On a phone every photograph sat inside the gutter, so all three were
      boxes on colour. Two of them now run off the edge and the frame becomes
      the screen; the third keeps its margins, so the rhythm alternates the way
      it does on desktop. */
-  .act[data-act="rise"]       .act-media{margin-right:calc(-1 * var(--gutter))}
-  .act[data-act="after-dark"] .act-media{margin-left:calc(-1 * var(--gutter))}
-  /* ORIGIN is the one that stays framed here, so neither of its vertical
-     edges runs off the screen and a feather on one of them would read as a
-     lighting accident rather than a bleed. It keeps the soft top edge only. */
-  .act[data-act="origin"]     .act-media{--fig-mask:none}
-  /* These two bleed the opposite way here to the way they do on desktop, so
-     their feathers have to swap with them. Left as they were, each frame was
-     dissolving the edge that had already left the screen while the edge
-     facing the colour field stayed a hard rectangle - the exact defect the
-     mask exists to fix, applied to the wrong side. */
-  .act[data-act="rise"]       .act-media{--fig-mask:linear-gradient(to right,transparent 0,#000 15%)}
-  .act[data-act="after-dark"] .act-media{--fig-mask:linear-gradient(to left,transparent 0,#000 13%)}
+  /* All three run off an edge now, alternating, so the frame is the screen
+     rather than a rectangle sitting on colour. The side that bleeds is off
+     screen, so the three edges you can actually see are all soft and there
+     is no vignette - the fourth edge simply is not there to fade. */
+  .act[data-act="origin"]     .act-media{margin-left:calc(-1 * var(--gutter));
+    --fig-mask:linear-gradient(to left,transparent 0,#000 15%)}
+  .act[data-act="rise"]       .act-media{margin-right:calc(-1 * var(--gutter));
+    --fig-mask:linear-gradient(to right,transparent 0,#000 15%)}
+  .act[data-act="after-dark"] .act-media{margin-left:calc(-1 * var(--gutter));
+    --fig-mask:linear-gradient(to left,transparent 0,#000 15%)}
   /* On a phone the act's height comes from its content, so reserving a band
      inside .act-in simply made the act taller and the absolutely-positioned
      word moved down with it — the overlap stayed at exactly 9px however much
@@ -1130,40 +1182,94 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      all. Uppercase at line-height .82 sits between 0.047em and 0.774em of
      its own line box, so nothing touches the edge on its own either. */
   .act .act-word{position:static;margin:clamp(3rem,12vw,4.2rem) 0 0}
-  .act .act-copy{background:var(--bone);color:var(--ink);
-    margin-inline:calc(-1 * var(--gutter));
-    padding:clamp(1.5rem,6vw,2.2rem) var(--gutter) clamp(1.7rem,6vw,2.4rem)}
-  .act .act-copy .kicker{color:var(--accent-ink);opacity:1}
-  .act .act-copy .note{color:var(--ink-2)}
+
+  /* ── the copy, back on the colour ────────────────────────
+     This was a flat bone rectangle spanning the full width, and it read as a
+     panel dropped onto the artwork rather than as part of it. What actually
+     failed before was not the gradient, it was WHERE on the gradient the
+     block sat: a 135deg ramp runs corner to corner, so at 390x900 moving a
+     block from the top of the act to the bottom shifts it about 39 points
+     along it. Position is the fix, not a panel.
+
+     Measured per world, body text at 4.5:1 against the field at 92%:
+       ORIGIN      ink clears the whole ramp, 0-100%  -> sits anywhere
+       RISE        ink clears from 26%                -> sits below its photograph
+       AFTER DARK  bone clears to 49%, ink from 69%   -> bone, above its photograph
+     Each block now lands inside its own world's safe band, on saturated
+     colour, with nothing behind it. Move one and this breaks. */
+  .act .act-copy{background:none;color:inherit;margin-inline:0;padding:0}
+  .act .act-copy .kicker{color:var(--on-field);opacity:1}
+  .act .act-copy .note{color:var(--on-field-2)}
+  /* RISE is the one that has to move: its copy cannot be legible on the
+     brown end, so the photograph goes first and the words follow it down
+     into the tangerine. The other two keep the copy above. */
+  .act[data-act="rise"] .act-copy{order:2;margin-top:clamp(1.6rem,6vw,2.4rem)}
+  .act[data-act="rise"] .act-media{order:1}
 }
 @media (max-width:980.98px){
   /* display:block so the in-flow word stacks under .act-in rather than
      becoming a second flex item beside it. No bottom padding: the word's
      negative margin has to reach past the section edge to be cropped, and a
      padding shorthand here previously reset it. */
+  /* The foot is tight on purpose: every pixel of bottom padding pushes the
+     word up out of the dissolve it is meant to resolve out of. */
   .act{min-height:auto;display:block;
-    padding:clamp(3.5rem,9vh,6rem) 0 clamp(2rem,6vh,3.2rem)}
+    padding:clamp(3.5rem,9vh,6rem) 0 clamp(1rem,3vh,1.6rem)}
   /* Poster scale, on the axis that is actually short. 12vw with a 3.5rem
      floor meant the floor won on every phone - 56px in a 390px viewport,
      with ORIGIN at 179px occupying 46% of the screen, which is not a crop of
      anything. Sized from the longest single token instead: ORIGIN measures
-     319px at 100px, so 32.6vw sets it about 4% wider than the screen and the
-     outer stems are what gets trimmed. No cap: a 10.5rem ceiling held the
-     word at 168px on a 768px tablet, which left ORIGIN 224px short of the
-     frame and still wrapped AFTER DARK - the word neither filled the screen
-     nor fitted on one line. Uncapped it tops out at 319px just below the
-     desktop breakpoint, where the layout changes completely anyway. */
-  .act .t-crop{font-size:32.6vw}
-  /* "After Dark" is 575px at 100px - 5.75 screens wide at this size - so it
-     wraps, which is what the guideline asks for where a phrase cannot fit on
-     one line. AFTER and DARK are 298 and 255, both inside the frame. */
-  .act .act-word > span{white-space:normal;padding-inline:0;text-wrap:balance}
-  .act[data-act="origin"] .act-word > span,
-  .act[data-act="after-dark"] .act-word > span{margin-inline-start:-.045em}
-  .act[data-act="rise"] .act-word > span{margin-inline-end:-.045em}
+     322px at 100px, so the size is set from that and from the gutter the word
+     has to stay inside: 25vw leaves ORIGIN 28px clear of the edge at 390 and
+     14px at 320. It used to be sized to overrun deliberately - the crop
+     device - but oversized type leaving the frame is something the
+     guidelines permit, not require, and a word touching both edges reads as
+     a layout failure rather than a decision. Capped at 11rem so the jump to
+     the desktop treatment at 981 is not absurd. */
+  .act .t-crop{font-size:min(25vw,11rem)}
+  /* "After Dark" is 580px at 100px, so it wraps; AFTER and DARK are 300 and
+     257, both well inside. The word sits on the page gutter like everything
+     else rather than hanging off it. */
+  .act .act-word > span{white-space:normal;text-wrap:balance;
+    padding-inline:var(--gutter);margin-inline:0}
+  .act[data-act="rise"] .act-word > span{padding-inline:var(--gutter)}
   .act-in{grid-template-columns:1fr;gap:1.2rem}
+  /* ── the vote on a phone ──────────────────────────────
+     Three columns collapse to one, and the colour has to collapse with
+     them. As a band across the head of a short row its lower edge landed
+     between the index and the name and cut the row in half; the divider
+     between columns became a vertical rule down the left of each row,
+     which is a side-stripe, and reads as an accident.
+
+     The colour turns through 90 degrees instead: a full-height plate down
+     the leading edge of every row, so the three stack into one vertical
+     spectrum the way they run into one horizontal band on desktop. Choosing
+     widens the plate rather than moving anything. */
   .moments{grid-template-columns:1fr}
-  .moment{min-height:0;padding:1.3rem}
+  /* The text is held clear of the plate at its WIDEST, so choosing grows the
+     colour underneath and the words do not move. Following the plate with
+     padding was the obvious version and it was wrong twice over: padding is
+     a layout property, so it relayouts the row every frame where clip-path
+     composites, and it shunted the copy sideways at the exact moment the
+     reader was reading it. */
+  .moment{--band-clip:inset(0 calc(100% - var(--plate,86px)) 0 0);
+    display:block;min-height:112px;
+    padding:1.15rem 3.4rem 1.2rem calc(118px + 1.15rem)}
+  .moment:hover:not(.locked):not([aria-pressed="true"]){--plate:100px}
+  .moment[aria-pressed="true"]{--plate:118px}
+  /* The rule between rows stops where the plate starts, for the same reason
+     the desktop one stops short of the band: run it the full width and it
+     slices the spectrum into three again. */
+  .moment + .moment{background-image:linear-gradient(var(--hair),var(--hair));
+    background-size:calc(100% - var(--plate,86px)) 1px;
+    background-position:100% 0;background-repeat:no-repeat}
+  /* One line of description wraps and the next does not, so without this the
+     three plates came out different heights and the spectrum stepped. */
+  .moments{grid-auto-rows:1fr}
+  .moment .chk{top:50%;transform:translateY(-50%)}
+  .moment .idx{display:block;margin-bottom:.3rem}
+  .moment .m-name{font-size:1.45rem}
+  .moment .m-desc{font-size:.9rem;margin-top:.2rem}
   .join-grid,.two{grid-template-columns:1fr}
   .pillars,.statgrid,.steps{grid-template-columns:1fr 1fr}
   .rail{padding-top:.5rem}
@@ -1217,7 +1323,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      on a phone held sideways is the one with room to spare. At 844x390 it
      resolved to 275px in a 390px-tall window, and AFTER DARK's two lines came
      to 451px - taller than the screen. Scaled off the short axis instead. */
-  .act .t-crop{font-size:min(32.6vw,38vh)}
+  .act .t-crop{font-size:min(25vw,38vh)}
+  /* Same reason: three lines at 176px is 464px of type in a 390px-tall
+     window. Scaled off the short axis, like the headline and the word. */
+  .shorthand p{font-size:min(25vw,30vh)}
   .hero{padding-top:0;min-height:0}
   .hero h1{margin-bottom:.9rem}
   /* The rule shrank the headline but never touched .hero-figure, which is what
