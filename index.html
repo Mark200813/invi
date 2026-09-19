@@ -19,10 +19,26 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="INVI">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Inter, self-hosted. The Google Fonts stylesheet was render-blocking and
+     on a third-party origin: DNS + TCP + TLS + request before first paint, and
+     only then did the browser learn the woff2 URL and open a second connection
+     to another host. Two serial round trips before the font fetch even began.
+     Inter v20 is a variable font, so all four weights were one file anyway —
+     self-hosting costs nothing in bytes and removes a third party from a site
+     aimed at under-18s. Latin only; anything outside that range falls back,
+     which is already true of the arrow glyphs. -->
+<link rel="preload" as="font" type="font/woff2" crossorigin href="fonts/inter-variable-latin.woff2">
 <style>
+@font-face{
+  font-family:'Inter';
+  src:url('fonts/inter-variable-latin.woff2') format('woff2');
+  font-weight:100 900;
+  font-style:normal;
+  font-display:swap;
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,
+    U+0304,U+0308,U+0329,U+2000-206F,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,
+    U+2215,U+FEFF,U+FFFD;
+}
 /* ─────────────────────────────────────────────────────────────
    INVI · pre-launch
    One continuous scroll through a single day. The three are three
@@ -32,7 +48,6 @@
 .skip{position:absolute;left:-9999px;top:0;z-index:100;padding:.9rem 1.2rem;
   background:var(--ink);color:var(--bone);font-size:.875rem;font-weight:500}
 .skip:focus{left:0}
-.root-marker{}
 :root{
   /* V12 master brand system. Foundation carries the page; colour interrupts it. */
   --bone:#F7F3ED; --stone:#EFE9DF; --concrete:#B8ADA0; --dusk:#303347;
@@ -70,8 +85,7 @@
      its own safe band. Move a block across the diagonal and this breaks. */
   --on-field:var(--ink);
   --on-field-2:var(--ink);
-  --on-field-hair:rgba(21,21,19,.26);
-
+  
   /* one grain tile, shared by every surface that opts in via .grain-on */
   --noise:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='190' height='190'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='2' stitchTiles='stitch'/></filter><rect width='190' height='190' filter='url(%23n)' opacity='.52'/></svg>");
 }
@@ -188,7 +202,12 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   background:var(--accent);transform:scaleX(0);transform-origin:right;transition:transform .4s var(--ease)}
 .nav-mid a:hover,.nav-mid a[aria-current="page"]{color:var(--ink)}
 .nav-mid a[aria-current="page"]::after,.nav-mid a:hover::after{transform:scaleX(1);transform-origin:left}
+/* #navCount animates 0 -> 6,406, i.e. one character to five, and .nav is a
+   space-between flex row — so it shunted the nav links sideways for the whole
+   1.7s count-up. Reserving the width stops that; tabular figures alone would
+   not, because it is the character COUNT that changes. */
 .count-pill{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--ink-2)}
+#navCount{display:inline-block;min-width:4.5ch;text-align:right;font-variant-numeric:tabular-nums}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex:none;animation:pulse 2.8s infinite}
 /* the halo used currentColor, which inherits .count-pill's grey, so a blue
    dot pulsed a grey ring */
@@ -230,8 +249,6 @@ section{position:relative;padding:clamp(4.5rem,10vh,8rem) 0}
   .hero{grid-template-columns:1fr;overflow:visible}
   .hero-figure{height:auto;min-height:0;aspect-ratio:4/5;margin-top:2.5rem;
     -webkit-mask-image:none;mask-image:none}
-  .hero-figure img{position:absolute}
-  .hero-figure img{position:absolute}
   .hero > .wrap{padding-inline:var(--edge)}
 }
 .hero h1{margin-bottom:1.4rem;text-wrap:balance}
@@ -301,7 +318,7 @@ video.band-media{object-position:center 66%}
 .act[data-act="origin"]    {--field:var(--grad-origin)}
 .act[data-act="rise"]      {--field:var(--grad-rise)}
 .act[data-act="after-dark"]{--field:var(--grad-after-dark);
-  --on-field:var(--bone);--on-field-2:var(--bone);--on-field-hair:rgba(247,243,237,.34)}
+  --on-field:var(--bone);--on-field-2:var(--bone)}
 .act::before{content:'';position:absolute;inset:0;z-index:-2;background:var(--field)}
 /* device 01, tactile grain — on the field, not over the whole page */
 .act::after{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;
@@ -639,10 +656,9 @@ video.band-media{object-position:center 66%}
 .sel.open .sel-list{opacity:1;visibility:visible;transform:none}
 .sel-list li{opacity:0;transform:translateY(-4px);transition:opacity .26s var(--ease),transform .26s var(--ease)}
 .sel.open .sel-list li{opacity:1;transform:none}
-.sel-list li:nth-child(1){transition-delay:.02s} .sel-list li:nth-child(2){transition-delay:.05s}
-.sel-list li:nth-child(3){transition-delay:.08s} .sel-list li:nth-child(4){transition-delay:.11s}
-.sel-list li:nth-child(5){transition-delay:.14s} .sel-list li:nth-child(6){transition-delay:.17s}
-.sel-list li:nth-child(7){transition-delay:.2s}  .sel-list li:nth-child(8){transition-delay:.23s}
+/* driven by --i from the markup: the old rule enumerated nth-child(1..8) and
+   a ninth age would have animated with no delay, silently */
+.sel-list li{transition-delay:calc(var(--i,0) * 30ms)}
 .sel-list button{width:100%;text-align:left;padding:.55rem .7rem;font-size:.92rem;color:var(--ink-2);
   transition:background .25s var(--ease),color .25s var(--ease)}
 .sel-list button:hover{background:rgba(21,21,19,.06);color:var(--ink)}
@@ -653,7 +669,7 @@ video.band-media{object-position:center 66%}
 /* the privacy link sits mid-sentence at 13px. The padding grows what a thumb
    can hit and the matching negative margin keeps it out of the line flow, so
    the tap area never creeps over the consent tick beside it. */
-.consent a{display:inline-block;padding:.45rem .35rem;margin:-.45rem -.35rem}
+.consent a,.consent .linklike{display:inline-block;padding:.45rem .35rem;margin:-.45rem -.35rem}
 .box{flex:none;width:20px;height:20px;margin-top:.12rem;border:1px solid var(--hair);
   display:grid;place-items:center;position:relative;overflow:hidden;transition:border-color .3s var(--ease)}
 .box::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scale(0);
@@ -666,7 +682,8 @@ video.band-media{object-position:center 66%}
 .consent input:checked + .box{border-color:var(--accent)}
 .consent input:checked + .box::before{transform:scale(1)}
 .consent input:checked + .box svg path{stroke-dashoffset:0}
-.consent a{color:var(--ink);text-decoration:underline;text-underline-offset:3px}
+.consent a,.consent .linklike{color:var(--ink);text-decoration:underline;text-underline-offset:3px;
+  font:inherit;background:none;border:0;cursor:pointer}
 .fr.bad .box{border-color:#A83214}
 .form-foot{display:flex;flex-wrap:wrap;gap:1rem;align-items:center;margin-top:.2rem}
 
@@ -927,6 +944,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   .btn,.moment{translate:none!important}
 }
 </style>
+<script>document.documentElement.className+=' js'</script>
 </head>
 <body>
 <a class="skip" href="#top">Skip to content</a>
@@ -963,7 +981,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   <div class="count-pill"><span class="dot"></span><strong id="navCount">0</strong><span class="lbl">in so far</span></div>
 </header>
 
-<main id="top">
+<main id="top" tabindex="-1">
 
 <!-- ══════════════ 01 · HERO ══════════════ -->
   <section class="hero">
@@ -990,16 +1008,23 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
     <div class="hero-figure" aria-hidden="true">
       <img src="img/portrait-brand-704.webp"
            srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
-           sizes="(max-width:900px) 100vw, 46vw" width="704" height="880" alt=""
+           sizes="(max-width:900px) 100vw, min(44vw, 600px)" width="704" height="880" alt=""
            fetchpriority="high" decoding="async">
     </div>
 
     <div class="scroll-cue"><span class="ln"></span><span>Scroll through the day</span></div>
   </section>
 
-  <!-- one colour interruption: bone gives way to a single moving frame -->
+  <!-- One colour interruption: bone gives way to a single moving frame.
+       No `autoplay`: a muted autoplaying video is fetched immediately whether
+       or not it is in view, and `preload` is ignored when it is present. This
+       band sits below the fold at every viewport, so it was pulling 663KB into
+       the critical path — 81% of the first visit — for something nobody had
+       scrolled to yet. The IntersectionObserver below already starts it, and
+       preload="none" means the fetch now happens then. Trade-off: a visitor
+       with JS disabled gets the poster instead of a loop. -->
   <figure class="band">
-    <video class="band-media" autoplay muted loop playsinline preload="metadata"
+    <video class="band-media" muted loop playsinline preload="none"
            poster="img/hero-poster-512.webp" aria-label="A group on the beach as the sun goes down">
       <source src="img/hero-loop.mp4" type="video/mp4">
       <img src="img/hero-poster-512.webp" width="512" height="640" alt="A group on the beach as the sun goes down">
@@ -1023,7 +1048,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
        Degrades to three ordinary stacked sections without JS, under reduced
        motion, and below 901px. -->
   <div class="day" id="day"><div class="day-stage">
-  <section class="act" data-act="origin">
+  <section class="act" data-act="origin" aria-labelledby="act-origin">
     <div class="act-in">
       <div class="act-copy rv">
         <p class="kicker">First light</p>
@@ -1032,10 +1057,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       </div>
       <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
     </div>
-    <h2 class="display t-crop act-word"><span>Origin</span></h2>
+    <h2 class="display t-crop act-word" id="act-origin"><span>Origin</span></h2>
   </section>
 
-  <section class="act" data-act="rise">
+  <section class="act" data-act="rise" aria-labelledby="act-rise">
     <div class="act-in">
       <div class="act-copy rv">
         <p class="kicker">Full sun</p>
@@ -1044,10 +1069,10 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       </div>
       <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
     </div>
-    <h2 class="display t-crop act-word"><span>Rise</span></h2>
+    <h2 class="display t-crop act-word" id="act-rise"><span>Rise</span></h2>
   </section>
 
-  <section class="act" data-act="after-dark">
+  <section class="act" data-act="after-dark" aria-labelledby="act-after-dark">
     <div class="act-in">
       <div class="act-copy rv">
         <p class="kicker">After dark</p>
@@ -1056,7 +1081,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       </div>
       <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
     </div>
-    <h2 class="display t-crop act-word"><span>After Dark</span></h2>
+    <h2 class="display t-crop act-word" id="act-after-dark"><span>After Dark</span></h2>
   </section>
   </div></div>
 
@@ -1100,7 +1125,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
       <figure class="act-media rv" style="transition-delay:.12s;aspect-ratio:704/880">
         <img src="img/portrait-brand-704.webp"
              srcset="img/portrait-brand-352.webp 352w, img/portrait-brand-528.webp 528w, img/portrait-brand-704.webp 704w"
-             sizes="(max-width:980px) 92vw, 44vw" width="704" height="880"
+             sizes="(max-width:980px) 90vw, min(39.6vw, 563px)" width="704" height="880"
              alt="A boy wearing a hoodie with the INVI wordmark embossed into the fabric"
              loading="lazy" decoding="async">
       </figure>
@@ -1273,7 +1298,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             <input type="checkbox" id="pconsent" aria-describedby="pe-consent">
             <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
             <span>I've read the three points above and I'm putting my name forward.
-              <a href="#" data-dialog>Privacy</a>.</span>
+              <button type="button" class="linklike" data-dialog>Privacy</button>.</span>
           </label>
           <p class="err" id="pe-consent" aria-live="polite"></p>
         </div>
@@ -1309,7 +1334,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         Once it's in, it's locked. Join below to unlock yours.
       </p>
 
-      <div class="moments gated" id="moments">
+      <div class="moments" id="moments">
         <button class="moment locked" data-key="origin" aria-pressed="false" style="--c1:#3F7FA3;--c2:#78BFD0;--c3:#6F9B4B">
           <span class="chk" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M2 7.5l3.4 3.4L12 4"/></svg></span>
           <span class="idx">01</span><span class="m-name">Origin</span><span class="m-desc">The moments that start it all.</span>
@@ -1369,7 +1394,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
             <div class="fr" id="r-age">
               <span id="ageLabel" class="fld-label">Age <span class="opt">Optional</span></span>
               <div class="sel" id="sel">
-                <button type="button" class="sel-btn" id="selBtn" role="combobox" aria-controls="selList" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ageLabel selVal">
+                <button type="button" class="sel-btn" id="selBtn" role="combobox" aria-controls="selList" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="ageLabel selVal" aria-describedby="ageNote">
                   <span id="selVal">Select your age</span>
                   <svg class="car" viewBox="0 0 12 8"><path d="M1 1l5 5 5-5"/></svg>
                 </button>
@@ -1382,7 +1407,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
                 <input type="checkbox" id="consent" aria-describedby="e-consent">
                 <span class="box"><svg viewBox="0 0 14 14"><path d="M2 7.4l3.3 3.3L12 3.8"/></svg></span>
                 <span>I'm happy for INVI to email me about the launch. You can leave any time.
-                  <a href="#" data-dialog>Privacy</a>.</span>
+                  <button type="button" class="linklike" data-dialog>Privacy</button>.</span>
               </label>
               <p class="err" id="e-consent" aria-live="polite"></p>
             </div>
@@ -1457,7 +1482,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
 <script>
 (() => {
 'use strict';
-document.documentElement.classList.add('js');
+/* the class is set in <head> now, before first paint */
 /* --edge aligns things to the shell's outer edge, and it is derived from
    100vw, which counts a classic scrollbar that the layout box excludes.
    Measuring the difference keeps the two in step; it is 0 for overlay
@@ -1506,6 +1531,11 @@ const root = document.documentElement;
 /* One page means the nav has to follow the reader. The current section is the
    last one whose top has passed the middle of the viewport, which keeps the
    mark stable while a long section scrolls rather than flickering at edges. */
+let atFoot = false;
+if ('IntersectionObserver' in window){
+  const foot = document.querySelector('footer');
+  if (foot) new IntersectionObserver(([e]) => { atFoot = e.isIntersecting; }).observe(foot);
+}
 const navLinks = $$('.nav-mid a');
 const navTargets = navLinks.map(a => {
   const id = a.getAttribute('href').slice(1);
@@ -1515,8 +1545,13 @@ function markSection(){
   const line = scrollY + innerHeight * 0.4;
   let current = navTargets[0];
   navTargets.forEach(t => { if (t.el.getBoundingClientRect().top + scrollY <= line) current = t; });
-  /* the foot of the page always belongs to the last link */
-  if (innerHeight + scrollY >= document.body.scrollHeight - 4) current = navTargets[navTargets.length-1];
+  /* The foot of the page always belongs to the last link. This used to read
+     document.body.scrollHeight, which forces a layout of the entire document
+     on every scroll event just to answer "am I at the bottom?". An observer on
+     the footer answers it for free, and stays correct when the page grows —
+     the results panel expanding, the textarea auto-growing — which a cached
+     height would not. */
+  if (atFoot) current = navTargets[navTargets.length-1];
   navTargets.forEach(t => t.link === current.link
     ? t.link.setAttribute('aria-current','page')
     : t.link.removeAttribute('aria-current'));
@@ -1534,7 +1569,7 @@ function markSection(){
    so two worlds overlap through the handover and the field dissolves rather
    than cutting. Reading one rect per scroll; no rAF flag, for the same reason
    markSection() has none — a dropped frame used to wedge the old guard shut. */
-const day = $('#day'), dayActs = $$('#day .act');
+const day = $('#day'), dayActs = $$('#day .act');   /* .day-stage resolved by selector, not firstElementChild */
 const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
 /* Matches the media query that turns the pin on, so the check costs nothing.
    Reading position:sticky off getComputedStyle here would force a style
@@ -1576,7 +1611,13 @@ function paintDay(){
     a.style.setProperty('--o', o.toFixed(3));
   });
   /* one light, travelling across the whole passage rather than resetting */
-  day.firstElementChild.style.setProperty('--p', p.toFixed(3));
+  /* Quantised to 2dp, and only written when it changes. --p feeds three
+     viewport-sized radial gradients and three object-positions, so every
+     distinct value repaints all six. At 3dp that was a repaint roughly every
+     2.5px of scroll; at 2dp it is every ~25px, which is far below what anyone
+     can see in a gradient with a 68% falloff. */
+  const stage = $('.day-stage'), pq = (Math.round(p * 100) / 100).toFixed(2);
+  if (stage && stage.dataset.p !== pq){ stage.dataset.p = pq; stage.style.setProperty('--p', pq); }
 }
 
 function onScroll(){
@@ -1605,7 +1646,10 @@ function watchMark(){
     { threshold:.25 });
   markIO.observe(heroMark);
 }
-addEventListener('resize', watchMark);
+/* No resize listener: nothing in this observer depends on viewport size, and
+   IntersectionObserver recomputes on resize by itself. Rebuilding it meant a
+   teardown per resize event — continuously during a window drag, and on every
+   mobile URL-bar collapse. */
 
 document.addEventListener('click', e => {
   const d = e.target.closest('[data-dialog]');
@@ -1680,6 +1724,13 @@ function lockIn(fresh){
   const k = state.moment;
   const step = (fn, ms) => fresh && !reduce ? setTimeout(fn, ms) : fn();
   momentsEl.classList.add('decided');
+  /* .decided only sets pointer-events:none, which stops the mouse but leaves
+     both losing buttons in the tab order, focusable and Enter-activatable at
+     0.3 opacity. The vote is already guarded in select(), so this is about not
+     offering a keyboard user two dead controls. */
+  $$('.moment').forEach(b => {
+    if (b.dataset.key !== k){ b.disabled = true; b.setAttribute('aria-disabled','true'); }
+  });
   step(() => confirmEl.classList.remove('on'), 200);
   $('#joinedNote').hidden = true;
   step(() => { $('#results').classList.add('on'); paint(); }, 380);
@@ -1725,7 +1776,7 @@ const SELECTS = [];
 function buildSelect(wrapSel, btnSel, listSel, valSel, onPick){
   const sel = $(wrapSel), btn = $(btnSel), list = $(listSel);
   list.innerHTML = AGES.map(a =>
-    `<li role="presentation"><button type="button" role="option" aria-selected="false" data-a="${a}">${a}</button></li>`).join('');
+    `<li role="presentation" style="--i:${AGES.indexOf(a)}"><button type="button" role="option" aria-selected="false" data-a="${a}">${a}</button></li>`).join('');
   const close = () => { sel.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
   const open  = () => {
     /* the trigger used to stopPropagation, which stopped the OTHER listbox's
@@ -1828,8 +1879,7 @@ form.addEventListener('submit', e => {
 });
 function showJoined(){
   form.style.display = 'none';
-  momentsEl.classList.remove('gated');
-  $$('.moment').forEach(b => b.classList.remove('locked'));
+    $$('.moment').forEach(b => b.classList.remove('locked'));
   if (!state.confirmed){
     $('#jnName').textContent = state.name ? ', ' + state.name : '';
     $('#joinedNote').hidden = false;
@@ -1889,7 +1939,6 @@ const CHECKS = {
           '#r-email'   : () => EMAIL_RE.test($('#email').value.trim()),
           '#r-consent' : () => $('#consent').checked }
 };
-let barT;
 /* Renamed from `paint`. There were two top-level `function paint`
    declarations in this IIFE — this one and the result-bar painter above.
    Function declarations hoist, so the later won for every call site, and
@@ -1933,8 +1982,6 @@ function paintForm(which){
   const pct = total ? Math.round(done / total * 100) : 0;
   if (bar.dataset.p === String(pct)) return;
   bar.dataset.p = pct; bar.style.transform = 'scaleX(' + (pct / 100) + ')';
-  dossier.classList.add('moving');
-  clearTimeout(barT); barT = setTimeout(() => dossier.classList.remove('moving'), 900);
 }
 ['input','change'].forEach(ev => {
   progForm.addEventListener(ev, () => { paintForm('prog'); syncInvalid(progForm); });
@@ -2012,7 +2059,7 @@ function countUp(el){
   if (!loop) return;
   loop.muted = true;                 // property, not just the attribute
   loop.playsInline = true;
-  if (reduce){ loop.removeAttribute('autoplay'); loop.pause(); return; }
+  if (reduce){ loop.pause(); return; }   /* the attribute is gone; nothing to strip */
   const cue = document.querySelector('.band-play');
   const showCue = () => { if (cue && loop.paused) cue.hidden = false; };
   const kick = () => {
@@ -2073,7 +2120,7 @@ if (state.moment){
   $('#picked').textContent = LABEL[state.moment];
   if (state.confirmed) lockIn(false); else if (state.joined) confirmEl.classList.add('on');
 }
-observe(); watchMark(); onScroll(); markSection();
+observe(); watchMark(); onScroll();   /* onScroll already calls markSection */
 addEventListener('load', onScroll);
 })();
 </script>
