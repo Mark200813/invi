@@ -329,11 +329,25 @@ main[tabindex="-1"]:focus,#results:focus{outline:none}
 /* ── hero ───────────────────────────────────────────────── */
 /* Two real columns, so type and photograph can never collide. The figure is a
    grid track that runs to the viewport edge; the type keeps the shell margin. */
+/* padding:0 overrides the generic section rule. The hero was carrying both -
+   84px from `section` and 112px from its own wrap - which left 133px of
+   nothing between the bar and the masthead. Its spacing is set here alone
+   now, from the bar's measured height rather than from a guess at it. */
 .hero{min-height:100vh;min-height:100svh;display:grid;grid-template-columns:1fr min(44vw,600px);
-  align-items:stretch;position:relative;overflow:hidden}
-.hero > .wrap{width:auto;max-width:none;margin:0;align-self:center;z-index:2;
-  padding:7rem clamp(1.5rem,3vw,3rem) 2rem var(--edge)}
-.hero-figure{position:relative;height:100%;min-height:100%;overflow:hidden;
+  align-items:stretch;position:relative;overflow:hidden;padding:0}
+/* align-self:start, not center. Centred in a 100vh hero, the block sat a
+   quarter of the way down and cutting the padding only moved it by half of
+   what was cut - the masthead still landed at 212px on a 900px screen. It
+   starts below the bar now and the photograph, which runs the full height
+   of the column, carries the bottom of the frame. */
+.hero > .wrap{width:auto;max-width:none;margin:0;align-self:start;z-index:2;
+  padding:calc(var(--navh,4rem) + clamp(1.6rem,4.5vw,3rem)) clamp(1.5rem,3vw,3rem) 2rem var(--edge)}
+/* The photograph clears the bar on its own, because at the top of the page
+   the nav has no background yet - it only gains one past 40px of scroll - so
+   running the image to the top edge would put the menu on a photograph with
+   no contrast guarantee behind it. */
+.hero-figure{margin-top:var(--navh,4rem);
+  position:relative;height:100%;min-height:100%;overflow:hidden;
   -webkit-mask-image:linear-gradient(100deg,transparent 0,#000 30%);
   mask-image:linear-gradient(100deg,transparent 0,#000 30%)}
 .hero-figure img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 20%}
@@ -1311,7 +1325,11 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
    forbid ("keep H1 large; do not miniaturise the campaign idea"). This claws
    back the padding instead, and the CTA is one short flick away. */
 @media (max-height:640px) and (max-width:900px){
-  .hero > .wrap{padding-top:4.75rem}
+  .hero > .wrap{padding-top:calc(var(--navh,4rem) + 1.25rem)}
+  /* The masthead gives up height here rather than the headline, which the
+     guidelines say to keep large. Measured at 360x640 it puts the join
+     button back above the fold, which it missed by 4px. */
+  .hero-mark{height:clamp(2.6rem,9vw,3.2rem);margin-bottom:1.1rem}
   .hero h1{margin-bottom:.9rem}
   .hero .lede{margin-bottom:1.5rem}
   .hero .proof{margin-bottom:.7rem}
@@ -1363,7 +1381,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      window, above a headline that had already been cut to fit. */
   .hero-mark{height:min(11vw,8.5vh);margin-bottom:.9rem}
   .hero-figure{aspect-ratio:16/9;max-height:52svh;margin-top:1.2rem}
-  .hero > .wrap{padding-top:5.5rem;padding-bottom:1rem}
+  .hero > .wrap{padding-top:calc(var(--navh,4rem) + 1rem);padding-bottom:1rem}
   .hero .lede{margin-bottom:1.2rem}
   .hero .proof{margin-bottom:.6rem}
   /* it anchors to the hero, not the viewport, so with min-height:0 it parked
