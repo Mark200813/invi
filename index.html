@@ -323,7 +323,9 @@ video.band-media{object-position:center 66%}
    than a decision. The bleed here is a few pixels of the outer stems: clearly
    deliberate, and no letterform is lost. */
 .shorthand p{margin:0;white-space:nowrap;color:var(--ink);
-  font-size:clamp(2.6rem,10.8vw,10.8rem);line-height:.9;letter-spacing:-.05em;
+  /* no upper bound: a ceiling made the line stop reaching the edges above
+     ~1600px, which is the one thing this treatment exists to do */
+  font-size:max(2.6rem,10.8vw);line-height:.9;letter-spacing:-.05em;
   font-weight:500;text-transform:uppercase;margin-inline-start:-.05em}
 .shorthand .em{color:var(--accent-ink);transition:color .6s var(--ease)}
 
@@ -348,10 +350,13 @@ video.band-media{object-position:center 66%}
      world is on screen. A few percent of object-position, not a parallax layer */
   .js .day-stage > .act .act-media img{object-position:50% calc(32% + var(--p,0) * 18%)}
 }
-/* a three-mark clock, so a pinned frame still tells you where you are */
-.day-rail{position:absolute;right:var(--edge);bottom:clamp(1.4rem,4vh,2.6rem);
-  z-index:3;display:none;gap:.5rem;margin:0}
-.js .day-rail{display:flex}
+/* The three-mark clock is gone. It was anchored to the shell's right edge and
+   so was RISE's cropped word, so the marks were drawn straight through the
+   final letters — measured as a 118x2px overlap at 981, 1024, 1180, 1280, 1536
+   and 1920. Every alternative position collided with one of the other two
+   words or landed on a photograph, where a 2px mark's contrast is not
+   guaranteed by anything. Three colour fields with their names set at poster
+   scale already say where you are. */
 /* Ink, declared outright rather than via var(--on-field). The rail is a sibling
    of the three acts, not a descendant, so --on-field never resolved to the
    active act's value — it fell through to the :root default. Ink happens to be
@@ -362,12 +367,6 @@ video.band-media{object-position:center 66%}
    The real defect was the opacity. At .25 the marks measured 1.51-1.66:1 and
    were invisible; non-text needs 3:1. Both states are now legible and the
    active one is distinguished by length instead, which composites. */
-.day-rail i{width:34px;height:2px;background:var(--ink);opacity:.78;
-  transform:scaleX(.45);transform-origin:left center;
-  transition:transform .45s var(--ease),opacity .45s var(--ease)}
-.day-rail i.on{opacity:1;transform:scaleX(1)}
-@media (max-width:980.98px){.day-rail{display:none!important}}
-@media (prefers-reduced-motion:reduce){.day-rail{display:none!important}}
 
 .act-in{width:var(--shell);margin-inline:auto;display:grid;
   gap:clamp(2rem,5vw,4.5rem);align-items:center;position:relative;z-index:2}
@@ -375,7 +374,7 @@ video.band-media{object-position:center 66%}
    colour field: a lazy-loaded photograph showed a pale rectangle over the
    gradient until it decoded. A dark veil reads as "image loading" on all
    three fields. */
-.act-media{position:relative;margin:0;overflow:hidden;
+.act-media{position:relative;margin:0;overflow:hidden;aspect-ratio:var(--ar,4/5);
   background:rgba(21,21,19,.14);
   background:color-mix(in srgb,var(--ink) 14%,transparent)}
 .act-media img{display:block;width:100%;height:100%;object-fit:cover}
@@ -388,7 +387,11 @@ video.band-media{object-position:center 66%}
    its top two-thirds, so the message stays legible — the condition the
    guidelines attach to this device. The photograph overlaps it, because
    .act-in sits a layer above. */
-.act-word{position:absolute;left:0;right:0;bottom:-.185em;z-index:1;
+/* margin:0 has to beat `.act h2{margin:0 0 1rem}`, which matches this element
+   too. On an absolutely positioned box with `bottom` set, that 1rem lifted the
+   border box, so the crop was only ~3% of cap height at 1024 instead of the
+   intended overhang. */
+.act .act-word{position:absolute;left:0;right:0;bottom:-.3em;z-index:1;
   margin:0;pointer-events:none;user-select:none;color:var(--on-field)}
 /* AFTER DARK's word is the one element whose safe colour changes with the
    viewport, because the stretch of ramp it covers does. Measured:
@@ -421,8 +424,14 @@ video.band-media{object-position:center 66%}
      padding and the word's band are taken out. Uncapped it overflowed both
      ends and pushed its bottom edge 102px past the top of the word. Capping
      the frame lets object-fit:cover crop the photograph instead. */
+  /* height, not max-height. The figures carry their own aspect-ratio, so a
+     max-height shrank their WIDTH to keep the ratio — which stopped the
+     photograph bleeding off the screen edge and left a hard vertical seam with
+     bare gradient beside it (262px of it at 1440 on ORIGIN). Dropping the ratio
+     here lets the figure fill its column and object-fit:cover crop the height,
+     which is what the bleed depends on. */
   .act .act-media{margin-right:calc(-1 * var(--edge));
-    max-height:calc(100vh - 23rem);max-height:calc(100svh - 23rem)}
+    aspect-ratio:auto;height:calc(100vh - 23rem);height:calc(100svh - 23rem)}
   .act[data-act="rise"] .act-in{grid-template-columns:46% 1fr}
   .act[data-act="rise"] .act-media{order:-1;margin-right:0;
     margin-left:calc(-1 * var(--edge));transform:translateY(3rem)}
@@ -676,7 +685,10 @@ video.band-media{object-position:center 66%}
 .pass-no span{color:var(--ink-2);font-weight:400}
 .pass .msg{color:var(--ink-2);max-width:42ch;margin:0 0 1.7rem;font-size:.95rem}
 .pass-actions{display:flex;flex-wrap:wrap;gap:.7rem}
+.vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;
+  clip-path:inset(50%);white-space:nowrap;border:0}
 .odo{display:inline-flex}
+.odo-d{user-select:none}
 .odo-d{display:inline-block;height:1em;line-height:1;overflow:hidden;vertical-align:bottom}
 .odo-d i{display:block;font-style:normal;transform:translateY(0);transition:transform .9s var(--ease)}
 .joined-note{margin-top:2rem;display:grid;gap:1.2rem;justify-items:start}
@@ -812,8 +824,11 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      the cropped word — measured at 390: 9px of overlap on ORIGIN and AFTER
      DARK, 35px on RISE, with the word set in ink over an arbitrary
      photograph, where contrast is not guaranteed by anything. */
-  .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter);
-    padding-bottom:clamp(1.5rem,5vw,2.5rem)}
+  /* No padding-bottom here: with the figure sized by aspect-ratio, the grid
+     row and the padding disagreed and the photograph overflowed .act-in by
+     exactly that padding — which put it back over the word on RISE. The gap
+     belongs to the word, in flow, where it cannot be overrun. */
+  .act-in{width:auto;margin-inline:0;padding-inline:var(--gutter)}
   /* On a phone the act's height comes from its content, so reserving a band
      inside .act-in simply made the act taller and the absolutely-positioned
      word moved down with it — the overlap stayed at exactly 9px however much
@@ -824,7 +839,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
      1rem}` outranks a single class. While the word was absolutely positioned
      that never showed; in flow it silently won and the margin computed to
      +16px, so changing this value had no effect at all. */
-  .act .act-word{position:static;margin:0 0 -.26em}
+  .act .act-word{position:static;margin:clamp(3.2rem,13vw,4.5rem) 0 -.26em}
   .act .act-copy{background:var(--bone);color:var(--ink);
     margin-inline:calc(-1 * var(--gutter));
     padding:clamp(1.5rem,6vw,2.2rem) var(--gutter) clamp(1.7rem,6vw,2.4rem)}
@@ -851,6 +866,23 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
   /* every age is a full tap target, not a 41px sliver */
   .sel-list button{min-height:44px;display:flex;align-items:center}
 }
+/* Short phones. The locked mobile H1 is 44/46 and the line runs to three
+   lines, so on a 568px-tall screen the join button cannot reach above the fold
+   without shrinking the headline below the brand scale — which the guidelines
+   forbid ("keep H1 large; do not miniaturise the campaign idea"). This claws
+   back the padding instead, and the CTA is one short flick away. */
+@media (max-height:640px) and (max-width:900px){
+  .hero > .wrap{padding-top:4.75rem}
+  .hero h1{margin-bottom:.9rem}
+  .hero .lede{margin-bottom:1.5rem}
+  .hero .proof{margin-bottom:.7rem}
+}
+@media (max-width:360px){
+  /* one line needs ~322px inside 320: dropping the count pill got most of the
+     way there but left it about 2px short, so "The Brand" broke mid-phrase */
+  .nav-mid{gap:.75rem}
+  .nav-mid a{font-size:.7rem}
+}
 @media (max-width:420px){
   /* At 320 the nav runs out of room: mark + three links + the live count came
      to ~307px inside 288px of usable width, and the count pushed off the right
@@ -872,9 +904,20 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
    axis instead, which is the one actually running out. */
 @media (orientation:landscape) and (max-height:560px) and (max-width:1024px){
   .t-mega{font-size:clamp(2rem,7.4vh,3.4rem)}
-  .hero{padding-top:4.5rem;min-height:0}
+  .hero{padding-top:0;min-height:0}
   .hero h1{margin-bottom:.9rem}
-  .hero .tag{margin-bottom:.5rem}
+  /* The rule shrank the headline but never touched .hero-figure, which is what
+     actually generates the height: at 844x390 the hero came to 1664px, 4.3
+     screens, with the portrait alone taking 2.7 of them. And .hero > .wrap kept
+     its 7rem top padding, so 184px of a 390px-tall viewport was empty before
+     the H1 even started. */
+  .hero-figure{aspect-ratio:16/9;max-height:52svh;margin-top:1.2rem}
+  .hero > .wrap{padding-top:5.5rem;padding-bottom:1rem}
+  .hero .lede{margin-bottom:1.2rem}
+  .hero .proof{margin-bottom:.6rem}
+  /* it anchors to the hero, not the viewport, so with min-height:0 it parked
+     below the fold at >=981px where it is not already hidden */
+  .scroll-cue{display:none}
 }
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
@@ -987,7 +1030,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Before anyone's asked anything of you. The quiet part of the day
           that belongs to you and nobody else.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;aspect-ratio:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
+      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:656/875"><img src="img/portrait-golden-656.webp" srcset="img/portrait-golden-328.webp 328w, img/portrait-golden-492.webp 492w, img/portrait-golden-656.webp 656w" sizes="(max-width:980px) 92vw, 44vw" width="656" height="875" alt="A boy alone at first light, before the day has asked anything of him" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word"><span>Origin</span></h2>
   </section>
@@ -999,7 +1042,7 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">Everything happening at once. Corridors, pitches, group chats,
           the bit where you have to show up as yourself.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;aspect-ratio:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
+      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:520/416"><img src="img/beach-football-520.webp" srcset="img/beach-football-260.webp 260w, img/beach-football-390.webp 390w, img/beach-football-520.webp 520w" sizes="(max-width:980px) 92vw, 44vw" width="520" height="416" alt="Four friends playing football on the sand as the sun goes down" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word"><span>Rise</span></h2>
   </section>
@@ -1011,14 +1054,12 @@ footer{position:relative;z-index:3;border-top:1px solid var(--hair);
         <p class="note">When it counts and nobody needs it explained. The version of you
           that only comes out once the day's done.</p>
       </div>
-      <figure class="act-media grain-on rv" style="transition-delay:.1s;aspect-ratio:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
+      <figure class="act-media grain-on rv" style="transition-delay:.1s;--ar:446/416"><img src="img/court-bluehour-446.webp" srcset="img/court-bluehour-223.webp 223w, img/court-bluehour-334.webp 334w, img/court-bluehour-446.webp 446w" sizes="(max-width:980px) 92vw, 44vw" width="446" height="416" alt="An empty court at blue hour, wet with rain and lit by street lights" loading="lazy" decoding="async"></figure>
     </div>
     <h2 class="display t-crop act-word"><span>After Dark</span></h2>
   </section>
-  <p class="day-rail" aria-hidden="true"><i></i><i></i><i></i></p>
   </div></div>
 
-<hr class="rule">
 
 <!-- ══════════════ 03 · BUILT WITH BOYS ══════════════ -->
   <!-- Art direction, not resolution switching. The desktop file is 16:9; a
@@ -1493,7 +1534,7 @@ function markSection(){
    so two worlds overlap through the handover and the field dissolves rather
    than cutting. Reading one rect per scroll; no rAF flag, for the same reason
    markSection() has none — a dropped frame used to wedge the old guard shut. */
-const day = $('#day'), dayActs = $$('#day .act'), dayRail = $$('.day-rail i');
+const day = $('#day'), dayActs = $$('#day .act');
 const clamp01 = n => n < 0 ? 0 : n > 1 ? 1 : n;
 /* Matches the media query that turns the pin on, so the check costs nothing.
    Reading position:sticky off getComputedStyle here would force a style
@@ -1525,7 +1566,6 @@ function paintDay(){
 
      Each world also holds still for a stretch before handing over, so the day
      reads as three places rather than one permanent dissolve. */
-  let lead = 0;
   dayActs.forEach((a, i) => {
     let o = 1;
     if (i > 0){
@@ -1534,11 +1574,9 @@ function paintDay(){
       o = t * t * (3 - 2 * t);                    /* smoothstep */
     }
     a.style.setProperty('--o', o.toFixed(3));
-    if (o > 0.5) lead = i;
   });
   /* one light, travelling across the whole passage rather than resetting */
   day.firstElementChild.style.setProperty('--p', p.toFixed(3));
-  dayRail.forEach((el, i) => el.classList.toggle('on', i === lead));
 }
 
 function onScroll(){
@@ -1665,8 +1703,13 @@ function lockIn(fresh){
 function odometer(el, str){
   if (reduce){ el.textContent = str; return; }
   el.classList.add('odo');
-  el.innerHTML = [...str].map(() =>
-    `<span class="odo-d"><i>${[0,1,2,3,4,5,6,7,8,9].join('<br>')}</i></span>`).join('');
+  /* The rolling strips put all ten digits in the DOM for each column, so
+     textContent read as forty digits — which is what a screen reader announced,
+     and what you got if you copied the reference the copy asks you to quote.
+     The real value now sits in a visually hidden span and the strips are
+     decorative. */
+  el.innerHTML = `<span class="vh">${str}</span>` + [...str].map(() =>
+    `<span class="odo-d" aria-hidden="true"><i>${[0,1,2,3,4,5,6,7,8,9].join('<br>')}</i></span>`).join('');
   const digits = [...el.querySelectorAll('.odo-d i')];
   void el.offsetHeight;
   /* The strip is ten digits tall inside a 1em window, and a translateY
@@ -1677,13 +1720,22 @@ function odometer(el, str){
 }
 
 const AGES = ['Under 13','13','14','15','16','17','18 or over',"I'm a parent"];
+/* every listbox on the page, so opening one can shut the others */
+const SELECTS = [];
 function buildSelect(wrapSel, btnSel, listSel, valSel, onPick){
   const sel = $(wrapSel), btn = $(btnSel), list = $(listSel);
   list.innerHTML = AGES.map(a =>
     `<li role="presentation"><button type="button" role="option" aria-selected="false" data-a="${a}">${a}</button></li>`).join('');
   const close = () => { sel.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+  const open  = () => {
+    /* the trigger used to stopPropagation, which stopped the OTHER listbox's
+       document-click closer from running, so both could be expanded at once */
+    SELECTS.forEach(o => { if (o.sel !== sel) o.close(); });
+    sel.classList.add('open'); btn.setAttribute('aria-expanded','true');
+  };
+  SELECTS.push({ sel, close });
   btn.addEventListener('click', e => { e.stopPropagation();
-    const open = sel.classList.toggle('open'); btn.setAttribute('aria-expanded', String(open)); });
+    sel.classList.contains('open') ? close() : open(); });
   list.addEventListener('click', e => {
     const b = e.target.closest('[data-a]'); if (!b) return;
     $(valSel).textContent = b.dataset.a; btn.classList.add('has');
@@ -1693,10 +1745,22 @@ function buildSelect(wrapSel, btnSel, listSel, valSel, onPick){
   sel.addEventListener('keydown', e => {
     const opts = [...list.querySelectorAll('button')], i = opts.indexOf(document.activeElement);
     if (e.key === 'ArrowDown'){ e.preventDefault();
-      if (!sel.classList.contains('open')){ btn.click(); opts[0].focus(); }
+      if (!sel.classList.contains('open')){ open(); opts[0].focus(); }
       else opts[Math.min(i+1, opts.length-1)].focus(); }
-    else if (e.key === 'ArrowUp'){ e.preventDefault(); i > 0 ? opts[i-1].focus() : btn.focus(); }
+    else if (e.key === 'ArrowUp'){ e.preventDefault(); i > 0 ? opts[i-1].focus() : (close(), btn.focus()); }
+    /* the listbox pattern expects these two, and they were missing */
+    else if (e.key === 'Home'){ e.preventDefault(); if (sel.classList.contains('open')) opts[0].focus(); }
+    else if (e.key === 'End'){ e.preventDefault(); if (sel.classList.contains('open')) opts[opts.length-1].focus(); }
     else if (e.key === 'Escape'){ close(); btn.focus(); }   /* focus was landing on <body> */
+    /* Tab out closes it too. focusout below is the general guard, but this is
+       the path that actually stranded people: the popup stayed open and the
+       control that had just taken focus was sitting underneath it. */
+    else if (e.key === 'Tab'){ close(); }
+  });
+  /* Tabbing out used to leave the popup open and floating: the control that
+     then had focus was physically covered by a stale list of ages. */
+  sel.addEventListener('focusout', () => {
+    setTimeout(() => { if (!sel.contains(document.activeElement)) close(); }, 0);
   });
   document.addEventListener('click', e => { if (!sel.contains(e.target)) close(); });
 }
@@ -1834,17 +1898,32 @@ let barT;
    then it returned early. Nothing threw and nothing painted, so after
    confirming a vote all three bars sat at 0% / scaleX(0) with the
    counters stuck on 0. */
+/* '#p-name' -> '#pe-name', '#r-name' -> '#e-name' */
+const errFor = row => document.getElementById(
+  row.id.startsWith('p-') ? 'pe-' + row.id.slice(2) : 'e-' + row.id.slice(2));
 function paintForm(which){
   const map = CHECKS[which];
   let done = 0, total = 0;
+  let form = null;
   for (const sel in map){
     const row = $(sel);
     if (!row || row.hidden) continue;          // the guardian row only counts once it's asked for
+    form = form || row.closest('form');
     total++;
     const ok = map[sel]();
     if (ok) done++;
     row.classList.toggle('ok', ok);
+    /* Clearing only happened inside validate(), which runs on submit, so a row
+       could carry .bad and .ok at once and keep showing an error the user had
+       already fixed. */
+    if (ok && row.classList.contains('bad')){
+      row.classList.remove('bad');
+      const er = errFor(row); if (er) er.textContent = '';
+    }
   }
+  /* also clears aria-invalid — picking from the age listbox fires no
+     input/change event, so the form-level listener never ran for it */
+  if (form) syncInvalid(form);
   if (which !== 'prog') return;
   $$('#progForm .fsec').forEach(sec => {
     const rows = [...sec.querySelectorAll('.fr')].filter(r => !r.hidden);
