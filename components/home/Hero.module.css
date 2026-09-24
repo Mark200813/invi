@@ -1,0 +1,69 @@
+.hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 100svh;
+  padding: calc(var(--nav-h) + 1.75rem) 0 2rem;
+}
+.glow {
+  position: absolute; z-index: -1; inset: 0;
+  background:
+    radial-gradient(38% 34% at 50% 58%, rgba(120, 191, 208, 0.20), transparent 70%),
+    radial-gradient(60% 50% at 50% 70%, rgba(63, 127, 163, 0.14), transparent 75%),
+    radial-gradient(40% 30% at 50% 96%, rgba(111, 155, 75, 0.10), transparent 70%);
+}
+.grid { position: relative; display: flex; flex-direction: column; }
+.eyebrow { color: var(--on-stage-2); }
+.title {
+  position: relative; z-index: 2;
+  margin-top: 1.1rem;
+  font-size: clamp(3rem, 13.4vw, 11rem);
+  display: flex; flex-direction: column;
+}
+.line { display: block; }
+.title em { margin-left: 0.02em; }
+
+.can {
+  position: relative; z-index: 1;
+  width: min(64vw, 420px);
+  align-self: center;
+  margin: -6vw 0 -12vw;
+  pointer-events: none;
+}
+.can img { width: 100%; height: auto; }
+
+.bottom { position: relative; z-index: 2; display: grid; gap: 1.75rem; }
+.proof { display: flex; flex-direction: column; gap: 0.2rem; color: var(--on-stage); }
+.aside { display: grid; gap: 1.5rem; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 2rem; }
+.cue {
+  display: inline-flex; align-items: center; gap: 0.8rem; min-height: 44px;
+  font-size: 0.8125rem; letter-spacing: 0.04em; color: var(--on-stage-2); text-decoration: none;
+  transition: color 0.3s;
+}
+.cue:hover { color: var(--on-stage); }
+.cueLine { width: 28px; height: 1px; background: currentColor; }
+.foot { position: relative; z-index: 2; margin-top: 2.5rem; max-width: 60ch; }
+.foot b { color: var(--on-stage); font-weight: 600; }
+
+@media (min-width: 900px) {
+  .hero { display: flex; padding-bottom: 2.25rem; }
+  .grid { min-height: calc(100svh - var(--nav-h) - 4rem); }
+  .title { font-size: clamp(4.5rem, 10.4vw, 11.5rem); margin-top: 1.4rem; max-width: 12ch; }
+  .can {
+    position: absolute; top: calc(-1 * var(--nav-h)); bottom: -2.25rem;
+    left: 63%; width: auto; margin: 0; transform: translateX(-50%);
+    height: calc(100% + var(--nav-h) + 2.25rem);
+    display: flex; align-items: flex-end;
+  }
+  .can img { height: 100%; width: auto; max-width: none; }
+  .bottom {
+    margin-top: auto; padding-top: 3rem;
+    gap: 1.75rem;
+    max-width: 30rem;
+  }
+  .foot {
+    position: absolute; right: 0; bottom: 0; margin: 0; max-width: 30ch; text-align: right;
+    padding-right: var(--pad);
+  }
+}

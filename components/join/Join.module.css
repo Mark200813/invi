@@ -1,0 +1,180 @@
+.eyebrow { color: var(--text-2); }
+
+/* ── join section ──────────────────────────────────────────────────────── */
+.join { padding-block: clamp(6rem, 13vw, 10rem) clamp(4rem, 9vw, 7rem); }
+.joinGrid { display: grid; gap: 3rem; padding-bottom: clamp(4rem, 9vw, 7rem); }
+.joinIntro { display: grid; gap: 1.25rem; align-content: start; }
+.joinIntro :global(.small) { max-width: 52ch; margin-top: 0.5rem; }
+.gift {
+  justify-self: start; display: inline-flex; gap: 0.5rem;
+  padding: 0.55rem 0.8rem; border: 1px solid currentColor; margin-bottom: 1rem;
+}
+
+/* ── the panel: one question at a time ─────────────────────────────────── */
+.panel {
+  position: relative;
+  display: grid; gap: 1.75rem; align-content: start;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  border: 1px solid var(--line);
+  min-height: 26rem;
+}
+:global(.ground-bone) .panel { background: rgba(255, 255, 255, 0.35); }
+.progress { display: grid; gap: 0.9rem; }
+.stepCount { color: inherit; }
+.of { color: var(--text-3); }
+.bar { display: block; height: 1px; background: var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; background: currentColor; transform-origin: left; transition: transform 0.6s var(--ease); }
+
+.form { display: grid; gap: 2rem; animation: stepIn 0.55s var(--ease) both; }
+@keyframes stepIn { from { opacity: 0; transform: translateY(14px); } }
+
+.group { display: grid; gap: 1.5rem; }
+.field { display: grid; gap: 0.6rem; }
+.fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 1.25rem; min-width: 0; }
+.fieldLabel { display: flex; gap: 0.75rem; align-items: baseline; color: inherit; padding: 0; }
+.optional { color: var(--text-3); letter-spacing: 0.12em; }
+.ask { font-size: var(--fs-md); font-weight: 600; font-variation-settings: 'wdth' 88; line-height: 1.1; }
+
+.input {
+  width: 100%; min-height: 52px;
+  padding: 0.6rem 0;
+  background: transparent; border: 0; border-bottom: 1px solid var(--text-3); border-radius: 0;
+  font-size: 1.125rem; color: inherit;
+  transition: border-color 0.3s;
+}
+.input::placeholder { color: var(--text-3); opacity: 1; }
+.input:hover { border-bottom-color: var(--text-2); }
+.input:focus-visible { outline: none; border-bottom-color: currentColor; box-shadow: 0 1px 0 currentColor; }
+.inputBig {
+  font-size: clamp(1.75rem, 5.4vw, 3rem);
+  font-weight: 620; font-variation-settings: 'wdth' 88; letter-spacing: -0.015em;
+  min-height: 72px;
+}
+select.input { appearance: none; cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 12px) 55%, calc(100% - 7px) 55%; background-size: 5px 5px; background-repeat: no-repeat; }
+select.input option { color: #0c0c0d; }
+.textarea { min-height: 9.5rem; resize: vertical; border: 1px solid var(--text-3); padding: 0.9rem 1rem; line-height: 1.5; }
+.textarea:focus-visible { border-color: currentColor; box-shadow: inset 0 0 0 1px currentColor; }
+
+.help { font-size: var(--fs-small); color: var(--text-2); max-width: 54ch; }
+.err { font-size: var(--fs-small); font-weight: 560; color: var(--err); min-height: 0; }
+.err:empty { display: none; }
+.bad .input { border-bottom-color: var(--err); }
+.bad .textarea { border-color: var(--err); }
+
+/* age as three large choices */
+.options { display: grid; gap: 0.6rem; }
+.option {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  min-height: 64px; padding: 0.75rem 1.1rem;
+  background: transparent; border: 1px solid var(--line); text-align: left; color: inherit;
+  transition: border-color 0.3s, background-color 0.3s;
+}
+.option:hover { border-color: var(--text-2); }
+.optionOn { border-color: currentColor; background: rgba(12, 12, 13, 0.04); }
+.optionText { font-size: clamp(1.5rem, 4vw, 2.2rem); }
+.radio { width: 20px; height: 20px; border-radius: 50%; border: 1px solid currentColor; display: grid; place-items: center; flex: none; }
+.optionOn .radio::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }
+.bad .option { border-color: var(--err); }
+
+/* checkbox */
+.checkRow { display: grid; gap: 0.5rem; }
+.check { display: grid; grid-template-columns: 24px 1fr; gap: 0.9rem; align-items: start; cursor: pointer; }
+.check input { position: absolute; opacity: 0; width: 24px; height: 24px; margin: 0; }
+.box {
+  width: 24px; height: 24px; border: 1px solid currentColor; display: grid; place-items: center;
+  transition: background-color 0.25s;
+}
+.box svg { width: 14px; height: 14px; fill: none; stroke: var(--btn-fg); stroke-width: 2; stroke-dasharray: 16; stroke-dashoffset: 16; transition: stroke-dashoffset 0.35s var(--ease); }
+.check input:checked + .box { background: currentColor; }
+.check input:checked + .box svg { stroke-dashoffset: 0; }
+.check input:focus-visible + .box { outline: 2px solid currentColor; outline-offset: 3px; }
+.bad .box { border-color: var(--err); }
+.checkText { font-size: var(--fs-small); line-height: 1.5; color: var(--text-2); padding-top: 1px; }
+
+.notes { display: grid; gap: 0.6rem; padding-top: 0.5rem; border-top: 1px solid var(--line); }
+.notes li { font-size: 0.875rem; line-height: 1.5; color: var(--text-3); padding-top: 0.6rem; }
+.terms { display: grid; gap: 0.5rem; }
+.terms li { padding-left: 1.1rem; position: relative; color: var(--text-2); font-size: var(--fs-small); }
+.terms li::before { content: ''; position: absolute; left: 0; top: 0.7em; width: 6px; height: 1px; background: currentColor; }
+
+.nav { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+.navRight { display: flex; align-items: center; gap: 1.25rem; margin-left: auto; }
+.back {
+  min-height: 44px; padding: 0 0.25rem; background: none; border: 0;
+  font-size: 0.8125rem; font-weight: 560; letter-spacing: 0.1em; text-transform: uppercase;
+  font-variation-settings: 'wdth' 118; color: var(--text-2);
+}
+.back:hover { color: inherit; }
+
+/* ── the pass ──────────────────────────────────────────────────────────── */
+.pass { align-content: center; }
+.passTag { color: var(--text-2); }
+.passName { font-size: clamp(3rem, 9vw, 6.5rem); overflow-wrap: anywhere; }
+.passRef { display: flex; align-items: center; gap: 0.1rem; }
+.passActions { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.5rem; }
+.odo { display: inline-flex; }
+.odoDigits { display: inline-flex; }
+.odoD { display: inline-block; height: 1.3em; overflow: hidden; line-height: 1.3; }
+.odoD i { display: flex; flex-direction: column; font-style: normal; transition: transform 1.1s var(--ease); }
+.odoD b { font-weight: inherit; height: 1.3em; }
+
+/* ── waitlist ──────────────────────────────────────────────────────────── */
+.waitlist { display: grid; gap: 2.5rem; padding-top: clamp(3.5rem, 8vw, 6rem); }
+.waitlistCopy { display: grid; gap: 1rem; align-content: start; }
+.waitlistTitle { font-size: var(--fs-lg); line-height: 0.9; }
+.waitlistForm { display: grid; gap: 1.5rem; }
+.waitlistDone { align-self: center; }
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ── roadmap ───────────────────────────────────────────────────────────── */
+.roadmap { padding-block: clamp(6rem, 13vw, 10rem); }
+.roadmapHead { display: grid; gap: 2rem; padding-bottom: clamp(3rem, 7vw, 5rem); }
+.roadmapTitle { display: grid; gap: 1.25rem; }
+.roadmapTitle h2 { max-width: 12ch; }
+.roadmapAside { display: grid; gap: 1.25rem; align-content: end; }
+.roadmapPhoto { margin: 0; width: 60%; justify-self: end; }
+.roadmapPhoto img { width: 100%; height: auto; }
+.votes { display: grid; gap: 0.75rem; }
+.vote {
+  width: 100%; height: 100%;
+  display: grid; gap: 0.9rem; align-content: start; text-align: left;
+  padding: 1.5rem 1.4rem 1.4rem;
+  background: transparent; color: inherit;
+  border: 1px solid var(--line);
+  transition: border-color 0.35s, background-color 0.35s, opacity 0.35s;
+  min-height: 15rem;
+}
+.vote:hover { border-color: var(--text-2); }
+.voteOn { border-color: currentColor; background: rgba(244, 241, 236, 0.05); }
+.voteOff { opacity: 0.4; cursor: not-allowed; }
+.voteOff:hover { border-color: var(--line); }
+.voteTitle { font-size: var(--fs-md); }
+.voteDesc { color: var(--text-2); font-size: var(--fs-small); line-height: 1.5; }
+.voteCta { margin-top: auto; padding-top: 1rem; color: inherit; min-height: 1.3em; }
+.confirm {
+  display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1.25rem;
+  margin-top: 1.5rem; padding: 1.4rem; border: 1px solid currentColor;
+  animation: stepIn 0.5s var(--ease) both;
+}
+.confirmPick { font-size: var(--fs-sm); }
+.closing { margin-top: 2.5rem; max-width: 22ch; }
+
+.appForm { gap: 2.25rem; }
+
+@media (min-width: 900px) {
+  .joinGrid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 4rem; align-items: start; }
+  .joinIntro { position: sticky; top: calc(var(--nav-h) + 2rem); }
+  .panel { min-height: 32rem; }
+  .options { grid-template-columns: repeat(3, 1fr); }
+  .option { flex-direction: column; align-items: flex-start; min-height: 132px; }
+  .waitlist { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 4rem; }
+  .waitlistForm { grid-template-columns: 1fr 1fr; column-gap: 2rem; }
+  .waitlistForm > :nth-child(n + 4) { grid-column: 1 / -1; }
+  .roadmapHead { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
+  .roadmapTitle { grid-column: 1 / 8; }
+  .roadmapAside { grid-column: 1 / 7; }
+  .roadmapPhoto { grid-column: 9 / 13; grid-row: 1 / span 2; width: 100%; align-self: end; }
+  .votes { grid-template-columns: repeat(4, 1fr); }
+}

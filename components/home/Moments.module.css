@@ -1,0 +1,89 @@
+.moments { position: relative; }
+.intro { padding-block: clamp(6rem, 16vw, 12rem) clamp(3rem, 8vw, 6rem); }
+.introLine { max-width: 16ch; color: var(--on-stage); }
+
+.act {
+  position: relative; isolation: isolate; overflow: clip;
+  min-height: 100svh;
+  display: flex;
+}
+/* The scent field: the locked three-stop gradient, darkened toward the edges
+   so every line of copy on it stays above AA while the centre, behind the
+   can, carries the colour at full voice. */
+.field {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(135deg, var(--c1) 0%, var(--c2) 52%, var(--c3) 100%);
+}
+.field::after {
+  content: ''; position: absolute; inset: 0;
+  background:
+    linear-gradient(to bottom, rgba(7, 7, 8, 0.4), transparent 28%, transparent 58%, rgba(7, 7, 8, 0.78)),
+    radial-gradient(46% 44% at 50% 48%, rgba(7, 7, 8, 0.18), rgba(7, 7, 8, 0.64) 72%);
+}
+
+.stage {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto 1fr auto;
+  gap: 1.5rem;
+  padding-top: calc(var(--nav-h) + 1.5rem);
+  padding-bottom: 1rem;
+  min-height: 100svh;
+}
+.head { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1rem; }
+.index { color: var(--on-stage-2); }
+.kicker { color: var(--on-stage); }
+.copy { grid-column: 1 / -1; display: grid; gap: 1rem; }
+.line { font-size: var(--fs-sm); line-height: 1.45; max-width: 30ch; color: var(--on-stage); text-wrap: pretty; }
+.desc { color: var(--on-stage-2); }
+
+.can {
+  grid-column: 1 / -1; grid-row: 3;
+  justify-self: center; align-self: end;
+  width: min(92vw, 460px);
+  margin-bottom: -16vw;
+  position: relative; z-index: 1;
+  pointer-events: none;
+}
+.can img { width: 100%; height: auto; }
+
+.photo {
+  grid-column: 2; grid-row: 2; justify-self: end;
+  width: 42vw; max-width: 220px;
+  outline: 1px solid rgba(244, 241, 236, 0.25); outline-offset: 6px;
+}
+.photo img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
+
+.word {
+  grid-column: 1 / -1; grid-row: 4;
+  position: relative; z-index: 0;
+  font-size: min(24vw, calc(150vw / var(--len, 6)));
+  line-height: 0.78;
+  text-align: center;
+  color: var(--on-stage);
+  white-space: nowrap;
+}
+.act:nth-of-type(1) .word { --len: 6; }
+.act:nth-of-type(2) .word { --len: 4; }
+.act:nth-of-type(3) .word { --len: 10; }
+
+@media (min-width: 900px) {
+  .stage {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    grid-template-rows: auto 1fr auto;
+    column-gap: 1.5rem;
+  }
+  .head { grid-column: 1 / 5; grid-row: 1; flex-direction: column; justify-content: flex-start; gap: 0.6rem; }
+  .copy { grid-column: 9 / 13; grid-row: 1; }
+  .can {
+    position: absolute; left: 50%; bottom: 7vw; transform: translateX(-50%);
+    width: auto; height: min(86svh, 62vw); margin: 0;
+  }
+  .can img { height: 100%; width: auto; }
+  .photo {
+    grid-column: 1 / 4; grid-row: 2; align-self: center; justify-self: start;
+    width: 100%; max-width: 260px;
+  }
+  .word { grid-row: 3; font-size: min(22vw, calc(150vw / var(--len, 6))); }
+}

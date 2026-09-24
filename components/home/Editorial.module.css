@@ -1,0 +1,81 @@
+.editorial { position: relative; }
+.block { display: block; }
+.eyebrow { color: var(--text-2); }
+
+/* ── belief ────────────────────────────────────────────────────────────── */
+.belief {
+  display: grid; gap: 3rem;
+  padding-block: clamp(6rem, 14vw, 11rem) clamp(4rem, 9vw, 7rem);
+}
+.beliefCopy { display: grid; gap: 1.5rem; align-content: start; }
+.beliefBody { display: grid; gap: 1rem; margin-top: 0.5rem; }
+.beliefPhoto { margin: 0; }
+.beliefPhoto img { width: 100%; height: auto; aspect-ratio: 900 / 880; object-fit: cover; }
+
+/* ── creed ─────────────────────────────────────────────────────────────── */
+.creed { padding-bottom: clamp(5rem, 12vw, 9rem); }
+.creedList { display: grid; }
+.creedLine {
+  font-size: var(--fs-md);
+  font-weight: 560;
+  font-variation-settings: 'wdth' 88;
+  letter-spacing: -0.015em;
+  line-height: 1.12;
+  padding-block: clamp(1.1rem, 2.4vw, 1.9rem);
+  border-bottom: 1px solid var(--line);
+  text-wrap: balance;
+}
+.creedLine em { font-size: 1.12em; }
+
+/* ── the shorthand ─────────────────────────────────────────────────────── */
+.shorthand { overflow: clip; padding-bottom: clamp(5rem, 12vw, 9rem); }
+.shorthandLine {
+  font-size: clamp(4rem, 19vw, 20rem);
+  line-height: 0.8;
+  text-align: center;
+  display: flex; flex-wrap: wrap; justify-content: center; column-gap: 0.18em;
+}
+.first {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic; font-weight: 400; text-transform: none;
+  font-variation-settings: normal; letter-spacing: -0.03em;
+}
+
+/* ── proof ─────────────────────────────────────────────────────────────── */
+.proof { display: grid; gap: clamp(2.5rem, 5vw, 4rem); padding-bottom: clamp(5rem, 12vw, 9rem); }
+.proofHead { display: grid; gap: 1.25rem; max-width: 20ch; }
+.proofHead h2 { max-width: 18ch; }
+.quote { margin: 0; display: grid; gap: 1rem; max-width: 34ch; }
+.quote p { font-size: clamp(1.9rem, 3.4vw, 3rem); line-height: 1.08; text-wrap: balance; }
+.quote cite { font-style: normal; color: var(--text-2); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--line); }
+.stat {
+  display: grid; gap: 0.75rem; align-content: start;
+  padding: 1.5rem 1.25rem 1.75rem 0;
+  border-bottom: 1px solid var(--line);
+}
+.statN { font-size: clamp(3.6rem, 9vw, 8rem); line-height: 0.85; }
+.statT { font-size: var(--fs-small); color: var(--text-2); max-width: 22ch; }
+
+/* ── building ──────────────────────────────────────────────────────────── */
+.building { display: grid; gap: clamp(2.5rem, 5vw, 4rem); padding-bottom: clamp(6rem, 14vw, 11rem); }
+.buildingHead { display: grid; gap: 1.25rem; padding-top: clamp(3rem, 7vw, 5rem); }
+.buildingHead h2 { max-width: 16ch; }
+.soon { color: var(--text-2); max-width: 40ch; }
+.soon b { color: var(--ink); font-weight: 600; }
+.pillars { display: grid; gap: 0; border-top: 1px solid var(--line); }
+.pillar { display: grid; gap: 0.75rem; padding: 1.75rem 0 2rem; border-bottom: 1px solid var(--line); }
+.pillarTitle { font-size: var(--fs-md); }
+
+@media (min-width: 900px) {
+  .belief { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 4rem; align-items: end; }
+  .beliefBody { grid-template-columns: 1fr 1fr; gap: 2rem; max-width: 52rem; }
+  .proof { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
+  .proofHead { grid-column: 1 / 7; max-width: none; }
+  .quote { grid-column: 8 / 13; align-self: end; }
+  .stats { grid-column: 1 / -1; grid-template-columns: repeat(4, 1fr); }
+  .stat { padding-right: 2rem; }
+  .proof > :global(.small) { grid-column: 1 / 8; }
+  .pillars { grid-template-columns: repeat(3, 1fr); column-gap: 2.5rem; border-top: 0; }
+  .pillar { border-top: 1px solid var(--line); border-bottom: 0; }
+}

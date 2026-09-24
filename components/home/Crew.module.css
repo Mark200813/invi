@@ -1,0 +1,83 @@
+.crew { position: relative; }
+.block { display: block; }
+.eyebrow { color: var(--text-2); }
+
+/* ── crew hero photo ───────────────────────────────────────────────────── */
+.hero { position: relative; margin: 0; min-height: 88svh; display: flex; align-items: flex-end; overflow: clip; }
+.hero img {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 62% 40%;
+}
+.hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(7, 7, 8, 0.92) 0%, rgba(7, 7, 8, 0.55) 38%, rgba(7, 7, 8, 0.05) 70%);
+}
+.heroCopy { position: relative; z-index: 1; display: grid; gap: 1.25rem; padding-bottom: clamp(2.5rem, 6vw, 4.5rem); }
+
+/* ── closer ────────────────────────────────────────────────────────────── */
+.closer { display: grid; gap: 3rem; padding-block: clamp(4rem, 9vw, 7rem); }
+.sub { max-width: 18ch; }
+.closerCopy { display: grid; gap: 1rem; align-content: start; }
+.closerTitle { font-size: var(--fs-md); }
+
+/* ── benefits / steps ──────────────────────────────────────────────────── */
+.benefits, .steps { display: grid; }
+.benefit, .step {
+  display: grid; gap: 0.75rem; align-content: start;
+  padding: 1.75rem 0 2rem; border-top: 1px solid var(--line);
+}
+.benefitTitle { font-size: var(--fs-md); }
+
+/* ── founding 100 ──────────────────────────────────────────────────────── */
+.founding { display: grid; gap: 3.5rem; padding-block: clamp(6rem, 13vw, 10rem); }
+.foundingCopy { display: grid; gap: 1.25rem; align-content: start; justify-items: start; }
+.foundingCopy :global(.btn) { margin-top: 1rem; }
+.card {
+  position: relative; overflow: hidden;
+  width: min(86%, 420px); aspect-ratio: 85.6 / 54;
+  justify-self: center; align-self: center;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+  display: flex; flex-direction: column; justify-content: space-between;
+  color: var(--on-stage);
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(120, 191, 208, 0.16), transparent 55%),
+    radial-gradient(90% 90% at 0% 100%, rgba(214, 107, 160, 0.14), transparent 60%),
+    linear-gradient(160deg, #1a1a1d, #0b0b0c 70%);
+  border: 1px solid rgba(244, 241, 236, 0.16);
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transform: rotate(-4deg);
+}
+.cardTop { display: flex; justify-content: space-between; align-items: center; color: var(--on-stage-2); }
+.cardMark { width: 64px; color: var(--on-stage); }
+.cardNum { display: flex; align-items: baseline; gap: 0.6rem; color: var(--on-stage-2); }
+.cardDigits { font-size: clamp(2rem, 6vw, 3rem); color: var(--on-stage); }
+
+/* ── build ─────────────────────────────────────────────────────────────── */
+.build { padding-block: clamp(4rem, 9vw, 7rem) clamp(6rem, 13vw, 10rem); border-top: 1px solid var(--line); }
+.buildGrid { display: grid; gap: 2.5rem; padding-bottom: clamp(3rem, 7vw, 5rem); }
+.buildHead { display: grid; gap: 1.25rem; }
+.buildPhoto { margin: 0; width: 70%; justify-self: end; }
+.buildPhoto img { width: 100%; height: auto; }
+.buildCopy { display: grid; gap: 2rem; align-content: end; }
+.buildCopy :global(.lede) { max-width: 42ch; }
+.liveTitle { font-size: var(--fs-md); margin-bottom: 0.75rem; }
+
+.status { display: grid; gap: 3rem; padding-top: clamp(3rem, 7vw, 5rem); }
+.safeguard {
+  color: var(--on-stage-2); max-width: 52ch; padding-left: 1.25rem; border-left: 1px solid var(--on-stage-3);
+}
+.safeguard b { color: var(--on-stage); font-weight: 600; }
+.closed { display: grid; gap: 1.5rem; justify-items: start; padding: clamp(1.75rem, 4vw, 3rem); border: 1px solid var(--line); }
+.closedTag { display: inline-flex; align-items: center; gap: 0.6rem; color: var(--on-stage-2); }
+.dot { width: 7px; height: 7px; border-radius: 50%; border: 1px solid currentColor; }
+.closedText { max-width: 24ch; }
+
+@media (min-width: 900px) {
+  .closer { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 4rem; }
+  .benefits, .steps { grid-template-columns: repeat(4, 1fr); column-gap: 2rem; }
+  .founding { grid-template-columns: minmax(0, 6fr) minmax(0, 6fr); align-items: center; gap: 4rem; }
+  .buildGrid { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
+  .buildHead { grid-column: 1 / 8; }
+  .buildPhoto { grid-column: 9 / 13; grid-row: 1 / span 2; width: 100%; align-self: start; }
+  .buildCopy { grid-column: 1 / 8; }
+  .status { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); align-items: start; gap: 4rem; }
+}

@@ -1,0 +1,43 @@
+.page { padding-top: calc(var(--nav-h) + clamp(3rem, 8vw, 6rem)); padding-bottom: clamp(5rem, 12vw, 9rem); }
+.block { display: block; }
+.eyebrow { color: var(--text-2); }
+.head { display: grid; gap: 1.5rem; padding-bottom: clamp(4rem, 9vw, 7rem); }
+.lede { max-width: 44ch; }
+
+.intern { display: grid; gap: 2.5rem; padding-bottom: clamp(5rem, 11vw, 8rem); }
+.internPhoto { margin: 0; }
+.internPhoto img { width: 100%; height: auto; }
+.internCopy { display: grid; gap: 1.25rem; align-content: center; justify-items: start; }
+.tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.tags li { padding: 0.5rem 0.75rem; border: 1px solid var(--line); color: var(--on-stage-2); }
+
+.topics { display: grid; gap: 2.5rem; border-top: 1px solid var(--line); padding-top: clamp(4rem, 9vw, 7rem); }
+.topicsHead { display: grid; gap: 1.25rem; }
+.topicsHead h2 { max-width: 16ch; }
+.filters { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.5rem; scrollbar-width: thin; }
+.filter {
+  flex: none; min-height: 44px; padding: 0 1rem;
+  background: transparent; border: 1px solid var(--line); color: var(--on-stage-2);
+  font-size: 0.75rem; font-weight: 560; letter-spacing: 0.1em; text-transform: uppercase; font-variation-settings: 'wdth' 118;
+  transition: color 0.3s, border-color 0.3s, background-color 0.3s;
+}
+.filter:hover { color: var(--on-stage); border-color: var(--on-stage-3); }
+.filterOn { background: var(--on-stage); color: var(--stage); border-color: var(--on-stage); }
+.filterOn:hover { color: var(--stage); }
+.list { display: grid; border-top: 1px solid var(--line); }
+.topic {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1.25rem; align-items: baseline;
+  padding: 1.5rem 0; border-bottom: 1px solid var(--line);
+}
+.cats { grid-column: 2; color: var(--on-stage-3); }
+.topicTitle { grid-column: 2; font-size: var(--fs-md); max-width: 24ch; }
+.soon { grid-column: 2; color: var(--on-stage-2); }
+
+@media (min-width: 900px) {
+  .intern { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 4rem; }
+  .topicsHead { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); gap: 4rem; align-items: end; }
+  .filters { flex-wrap: wrap; overflow: visible; }
+  .topic { grid-template-columns: 4rem minmax(0, 3fr) minmax(0, 7fr) auto; }
+  .topic > * { grid-column: auto; grid-row: 1; }
+  .soon { text-align: right; }
+}
