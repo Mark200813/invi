@@ -148,7 +148,20 @@ select.input option { color: #0c0c0d; }
 }
 .vote:hover { border-color: var(--text-2); }
 .voteOn { border-color: currentColor; background: rgba(244, 241, 236, 0.05); }
-.voteOff { opacity: 0.4; cursor: not-allowed; }
+.voteOff { opacity: 0.4; cursor: not-allowed; transition-duration: 0.8s; }
+.votes li:nth-child(2) .voteOff { transition-delay: 0.08s; }
+.votes li:nth-child(3) .voteOff { transition-delay: 0.16s; }
+.votes li:nth-child(4) .voteOff { transition-delay: 0.24s; }
+/* the lock: a pressed-in frame, then the verdict slides up into place */
+.voteLocked { animation: lockIn 0.9s var(--ease) both; }
+@keyframes lockIn {
+  0% { box-shadow: inset 0 0 0 0 currentColor; }
+  35% { box-shadow: inset 0 0 0 4px currentColor; transform: scale(0.985); }
+  100% { box-shadow: inset 0 0 0 1px currentColor; transform: none; }
+}
+.voteLocked .voteCta { overflow: clip; }
+.voteLocked .voteCta { animation: verdict 0.8s var(--ease) 0.25s both; }
+@keyframes verdict { from { opacity: 0; transform: translateY(100%); } }
 .voteOff:hover { border-color: var(--line); }
 .voteTitle { font-size: var(--fs-md); }
 .voteDesc { color: var(--text-2); font-size: var(--fs-small); line-height: 1.5; }

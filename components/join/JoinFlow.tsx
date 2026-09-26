@@ -132,7 +132,7 @@ export default function JoinFlow() {
   if (crew.joined) {
     const ref = String(crew.ref ?? 0).padStart(4, '0');
     return (
-      <div className={`${s.panel} ${s.pass}`} tabIndex={-1} ref={passRef}>
+      <div className={`${s.panel} ${s.pass}`} tabIndex={-1} ref={passRef} data-motion-skip>
         <p className={`label ${s.passTag}`}>{fresh ? join.done.tag : join.already}</p>
         <p className={`display ${s.passName}`}>{crew.name || join.done.tag}</p>
         <p className={`label ${s.passRef}`}>{join.done.ref} INVI-<Odometer value={ref} /></p>
@@ -150,7 +150,7 @@ export default function JoinFlow() {
   // ── the questions ─────────────────────────────────────────────────────
   const n = steps.indexOf(step) + 1;
   return (
-    <div className={s.panel} ref={panel}>
+    <div className={s.panel} ref={panel} data-motion-skip>
       <div className={s.progress}>
         <p className={`label ${s.stepCount}`} aria-live="polite">
           <span className="num">{String(n).padStart(2, '0')}</span>

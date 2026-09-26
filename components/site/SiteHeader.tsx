@@ -11,11 +11,18 @@ import s from './SiteHeader.module.css';
 export default function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [stuck, setStuck] = useState(false);
+  const [away, setAway] = useState(false);
   const btn = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
   useEffect(() => {
-    const on = () => setStuck(scrollY > 24);
+    let last = scrollY;
+    const on = () => {
+      const y = scrollY;
+      setStuck(y > 24);
+      // tuck away while reading down, come back the moment you scroll up
+      if (Math.abs(y - last) > 6) { setAway(y > last && y > innerHeight * 0.6); last = y; }
+    };
     on();
     addEventListener('scroll', on, { passive: true });
     return () => removeEventListener('scroll', on);
@@ -32,7 +39,7 @@ export default function SiteHeader() {
   }, [open]);
 
   return (
-    <header className={`${s.bar} ${stuck || pathname !== '/' ? s.stuck : ''} ${open ? s.open : ''}`}>
+    <header className={`${s.bar} ${stuck || pathname !== '/' ? s.stuck : ''} ${open ? s.open : ''} ${away && !open ? s.away : ''}`}>
       <div className={s.inner}>
         <Link href="/" className={s.mark} aria-label="INVI, home">
           <Wordmark label={false} className={s.wm} />

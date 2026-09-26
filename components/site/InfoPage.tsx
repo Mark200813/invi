@@ -17,7 +17,7 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
       </header>
 
       {photo && (
-        <figure className={`wrap ${s.photo}`}>
+        <figure className={`wrap ${s.photo}`} data-parallax="10">
           <Image src={photo.src} alt={photo.alt} width={photo.w} height={photo.h} sizes="(max-width: 899px) 100vw, 40vw" priority />
         </figure>
       )}

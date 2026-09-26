@@ -38,11 +38,11 @@ export default function Waitlist() {
     <section className={s.waitlist} aria-labelledby="wl-title">
       <div className={s.waitlistCopy}>
         <p className={`label ${s.eyebrow}`}>{waitlist.eyebrow}</p>
-        <h2 id="wl-title" className={`display ${s.waitlistTitle}`}>{waitlist.title}</h2>
+        <h2 id="wl-title" className={`display ${s.waitlistTitle}`} data-no-split>{waitlist.title}</h2>
         <p className="body">{waitlist.body}</p>
       </div>
       {crew.waitlisted ? (
-        <p className={`display t-md ${s.waitlistDone}`} role="status">{waitlist.done}</p>
+        <p className={`display t-md ${s.waitlistDone}`} role="status" data-no-split>{waitlist.done}</p>
       ) : (
         <form className={s.waitlistForm} onSubmit={submit} noValidate>
           <div className={s.trap} aria-hidden>

@@ -10,7 +10,7 @@ export default function Crew() {
   return (
     <div className={`ground-stage ${s.crew}`}>
       <section id="crew" aria-labelledby="crew-title">
-        <figure className={s.hero}>
+        <figure className={s.hero} data-parallax="16">
           <Image src="/img/crew-wall.webp" alt={crew.photoAlt} width={1586} height={992} sizes="100vw" />
           <figcaption className={`wrap ${s.heroCopy}`}>
             <p className="label">{crew.eyebrow}</p>
@@ -53,16 +53,16 @@ export default function Crew() {
           </div>
           {/* The Founder Card: an object, not a claim. No number is printed
               on it because none has been issued yet. */}
-          <div className={s.card} aria-hidden>
+          <div className={s.cardWrap} data-speed="0.6" aria-hidden><div className={s.card}>
             <div className={s.cardTop}>
               <Wordmark label={false} className={s.cardMark} />
               <span className="label">{crew.founding.cardLabel}</span>
             </div>
             <div className={s.cardNum}>
               <span className="label">Nº</span>
-              <span className={`display ${s.cardDigits}`}>— / 100</span>
+              <span className={`display ${s.cardDigits}`} data-no-split>— / 100</span>
             </div>
-          </div>
+          </div></div>
         </div>
       </section>
 
@@ -74,7 +74,7 @@ export default function Crew() {
               {build.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
             </h2>
           </div>
-          <figure className={s.buildPhoto}>
+          <figure className={s.buildPhoto} data-parallax="14">
             <Image src="/img/city-sunset.webp" alt="A boy walking down a city street at sunset" width={736} height={981}
               sizes="(max-width: 899px) 70vw, 28vw" />
           </figure>

@@ -32,7 +32,7 @@ npm run build
 ## Phases
 
 1. **Foundation** (this build): type system, all content, join + vote + waitlist working in demo mode.
-2. **Motion**: masked text reveals, parallax, the pinned three-moments chapter.
+2. **Motion** (done): masked line reveals, parallax, pinned three-moments scene, count-ups, marquee. All in `components/site/Motion.tsx`.
 3. **3D**: the live can (from `INVI Can Studio`), scroll-driven rotation, cursor physics, loader.
 4. **Polish**: performance, accessibility audit, fallbacks.
 

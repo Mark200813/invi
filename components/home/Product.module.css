@@ -22,7 +22,7 @@
 .lineupCan { position: relative; z-index: 1; margin: 0 -9%; text-align: center; }
 .lineupCan img { width: 100%; height: auto; }
 .lineupCan figcaption { margin-top: -1.5rem; color: var(--on-stage-2); position: relative; }
-.lineupCan:nth-child(2) { transform: translateY(-4%); }
+.lineupCan:nth-child(2) { margin-bottom: 4%; }
 
 /* ── spec ──────────────────────────────────────────────────────────────── */
 .spec { display: grid; gap: 3.5rem; padding-block: clamp(5rem, 12vw, 9rem); }

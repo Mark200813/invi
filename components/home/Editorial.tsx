@@ -1,13 +1,14 @@
 import Image from 'next/image';
-import { belief, proof, building } from '@/lib/content';
+import { belief, proof, building, proofLine } from '@/lib/content';
 import { Rich } from '@/lib/rich';
+import Marquee from '@/components/site/Marquee';
 import s from './Editorial.module.css';
 
 /** Belief, proof and how we're building it: the part of the page that is
  *  words first. Bone ground, one idea per screen. */
 export default function Editorial() {
   return (
-    <div className={`ground-bone ${s.editorial}`}>
+    <div className={`ground-bone ${s.editorial}`} data-clip>
       <section id="about" className={`wrap ${s.belief}`} aria-labelledby="belief-title">
         <div className={s.beliefCopy}>
           <p className={`label ${s.eyebrow}`}>{belief.eyebrow}</p>
@@ -18,7 +19,7 @@ export default function Editorial() {
             {belief.body.map((p) => <p key={p} className="body"><Rich text={p} /></p>)}
           </div>
         </div>
-        <figure className={s.beliefPhoto}>
+        <figure className={s.beliefPhoto} data-parallax="12">
           <Image src="/img/portrait-hoodie.webp" alt={belief.photoAlt} width={900} height={880}
             sizes="(max-width: 899px) 100vw, 40vw" />
         </figure>
@@ -32,9 +33,8 @@ export default function Editorial() {
       </section>
 
       <section className={s.shorthand} aria-label={belief.shorthand.join(' ')}>
-        <p className={`display ${s.shorthandLine}`} aria-hidden>
-          {belief.shorthand.map((w, i) => <span key={w} className={i === 0 ? s.first : undefined}>{w}</span>)}
-        </p>
+        <Marquee label={[...belief.shorthand, ...proofLine].join(' ')}
+          items={[...belief.shorthand.map((t, i) => ({ text: t, serif: i === 0 })), ...proofLine.map((t) => ({ text: t }))]} />
       </section>
 
       <section className={`wrap ${s.proof}`} aria-labelledby="proof-title">
@@ -49,7 +49,10 @@ export default function Editorial() {
         <ul className={s.stats}>
           {proof.stats.map((st) => (
             <li key={st.t} className={s.stat}>
-              <p className={`display num ${s.statN}`} data-count={st.v}>{st.v}{st.s}</p>
+              <p className={`display num ${s.statN}`} data-no-split>
+                <span aria-hidden data-count={st.v} data-suffix={st.s}>{st.v}{st.s}</span>
+                <span className="vh">{st.v}{st.s}</span>
+              </p>
               <p className={s.statT}>{st.t}</p>
             </li>
           ))}

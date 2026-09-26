@@ -50,13 +50,13 @@ export default function Roadmap() {
       <div className={`wrap ${s.roadmapHead}`}>
         <div className={s.roadmapTitle}>
           <p className={`label ${s.eyebrow}`}>{roadmap.eyebrow}</p>
-          <h2 id="roadmap-title" className="display t-xl">{roadmap.title}</h2>
+          <h2 id="roadmap-title" className="display t-xl" data-no-split>{roadmap.title}</h2>
         </div>
         <div className={s.roadmapAside}>
           <p className="lede">{roadmap.body}</p>
           <p className={`label ${s.eyebrow}`}>{roadmap.oneVote}</p>
         </div>
-        <figure className={s.roadmapPhoto}>
+        <figure className={s.roadmapPhoto} data-parallax="14">
           <Image src="/img/go-try.webp" alt="A boy crossing a city street holding a hand-written sign that reads GO TRY INVI"
             width={1122} height={1402} sizes="(max-width: 899px) 60vw, 22vw" />
         </figure>
@@ -69,13 +69,13 @@ export default function Roadmap() {
           return (
             <li key={r.key}>
               <button type="button"
-                className={`${s.vote} ${mine ? s.voteOn : ''} ${locked ? s.voteOff : ''}`}
+                className={`${s.vote} ${mine ? s.voteOn : ''} ${locked ? s.voteOff : ''} ${crew.confirmed && mine ? s.voteLocked : ''}`}
                 aria-pressed={crew.joined ? mine : undefined}
                 aria-disabled={locked || undefined}
                 disabled={locked}
                 onClick={() => choose(r.key)}>
                 <span className="index-n num">{r.n}</span>
-                <span className={`display ${s.voteTitle}`}>{r.t}</span>
+                <span className={`display ${s.voteTitle}`} data-no-split>{r.t}</span>
                 <span className={s.voteDesc}>{r.d}</span>
                 <span className={`label ${s.voteCta}`}>
                   {crew.confirmed
@@ -103,7 +103,7 @@ export default function Roadmap() {
           </div>
         )}
         {crew.confirmed && crew.vote && (
-          <p className={`display t-md ${s.closing}`} role="status">
+          <p className={`display t-md ${s.closing}`} role="status" data-no-split>
             {roadmap.closing}
           </p>
         )}

@@ -62,7 +62,7 @@ export default function ApplicationForm() {
   }
 
   return (
-    <form className={`${s.panel} ${s.appForm}`} onSubmit={submit} noValidate aria-labelledby="app-title">
+    <form data-motion-skip className={`${s.panel} ${s.appForm}`} onSubmit={submit} noValidate aria-labelledby="app-title">
       <h3 id="app-title" className="display t-md">{a.title}</h3>
       <p className="body">{a.lede}</p>
 

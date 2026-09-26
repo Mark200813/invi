@@ -18,7 +18,7 @@ export default function LetsTalk() {
       </header>
 
       <section className={`wrap ${s.intern}`} aria-labelledby="intern-title">
-        <figure className={s.internPhoto}>
+        <figure className={s.internPhoto} data-parallax="12">
           <Image src="/img/crew-court.webp" alt="Four friends on a coastal basketball court at sunset" width={1440} height={810}
             sizes="(max-width: 899px) 100vw, 55vw" priority />
         </figure>

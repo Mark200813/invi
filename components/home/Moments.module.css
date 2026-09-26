@@ -2,6 +2,9 @@
 .intro { padding-block: clamp(6rem, 16vw, 12rem) clamp(3rem, 8vw, 6rem); }
 .introLine { max-width: 16ch; color: var(--on-stage); }
 
+.track { position: relative; }
+.pin { position: relative; }
+
 .act {
   position: relative; isolation: isolate; overflow: clip;
   min-height: 100svh;
@@ -25,48 +28,74 @@
   position: relative;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: auto auto 1fr auto;
+  grid-template-rows: auto auto auto 1fr auto;
   gap: 1.5rem;
   padding-top: calc(var(--nav-h) + 1.5rem);
   padding-bottom: 1rem;
   min-height: 100svh;
+  width: 100%;
 }
-.head { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 1rem; }
+.head { grid-column: 1 / -1; grid-row: 1; display: flex; justify-content: space-between; gap: 1rem; }
 .index { color: var(--on-stage-2); }
 .kicker { color: var(--on-stage); }
-.copy { grid-column: 1 / -1; display: grid; gap: 1rem; }
+.copy { grid-column: 1 / -1; grid-row: 2; display: grid; gap: 1rem; }
 .line { font-size: var(--fs-sm); line-height: 1.45; max-width: 30ch; color: var(--on-stage); text-wrap: pretty; }
 .desc { color: var(--on-stage-2); }
 
 .can {
-  grid-column: 1 / -1; grid-row: 3;
+  grid-column: 1 / -1; grid-row: 4;
   justify-self: center; align-self: end;
-  width: min(92vw, 460px);
-  margin-bottom: -16vw;
+  width: min(80vw, 420px);
+  margin-bottom: -14vw;
   position: relative; z-index: 1;
   pointer-events: none;
 }
+.canInner { will-change: transform; }
 .can img { width: 100%; height: auto; }
 
 .photo {
-  grid-column: 2; grid-row: 2; justify-self: end;
-  width: 42vw; max-width: 220px;
+  grid-column: 2; grid-row: 3; justify-self: end;
+  width: 42vw; max-width: 220px; margin: 0;
   outline: 1px solid rgba(244, 241, 236, 0.25); outline-offset: 6px;
 }
 .photo img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; }
 
 .word {
-  grid-column: 1 / -1; grid-row: 4;
+  grid-column: 1 / -1; grid-row: 5;
   position: relative; z-index: 0;
   font-size: min(24vw, calc(150vw / var(--len, 6)));
   line-height: 0.78;
   text-align: center;
   color: var(--on-stage);
   white-space: nowrap;
+  overflow: clip;
+  padding-top: 0.06em;
 }
+.wordIn { display: block; }
 .act:nth-of-type(1) .word { --len: 6; }
 .act:nth-of-type(2) .word { --len: 4; }
 .act:nth-of-type(3) .word { --len: 10; }
+
+.progress { display: none; }
+
+/* ── pinned: one frame the three worlds pass through ───────────────────── */
+.moments[data-pinned] .track { height: 400svh; }
+.moments[data-pinned] .pin { position: sticky; top: 0; height: 100svh; overflow: clip; }
+.moments[data-pinned] .act { position: absolute; inset: 0; min-height: 0; }
+.moments[data-pinned] .stage { height: 100svh; min-height: 0; grid-template-rows: auto auto 1fr auto; padding-bottom: 1.75rem; }
+.moments[data-pinned] .photo { display: none; }
+.moments[data-pinned] .word { grid-row: 4; }
+.moments[data-pinned] .can {
+  position: absolute; left: 50%; bottom: 17vw; transform: translateX(-50%);
+  width: auto; height: 50svh; margin: 0;
+}
+.moments[data-pinned] .canInner { height: 100%; }
+.moments[data-pinned] .can img { height: 100%; width: auto; max-width: none; }
+.moments[data-pinned] .progress {
+  display: block; position: absolute; z-index: 5; left: 0; right: 0; bottom: 0; height: 2px;
+  background: rgba(244, 241, 236, 0.12);
+}
+.progress i { display: block; height: 100%; background: var(--on-stage); transform-origin: left; transform: scaleX(0); }
 
 @media (min-width: 900px) {
   .stage {
@@ -80,10 +109,17 @@
     position: absolute; left: 50%; bottom: 7vw; transform: translateX(-50%);
     width: auto; height: min(86svh, 62vw); margin: 0;
   }
+  .canInner { height: 100%; }
   .can img { height: 100%; width: auto; }
   .photo {
     grid-column: 1 / 4; grid-row: 2; align-self: center; justify-self: start;
     width: 100%; max-width: 260px;
   }
   .word { grid-row: 3; font-size: min(22vw, calc(150vw / var(--len, 6))); }
+
+  .moments[data-pinned] .track { height: 420svh; }
+  .moments[data-pinned] .stage { grid-template-rows: auto 1fr auto; padding-bottom: 2.5rem; }
+  .moments[data-pinned] .photo { display: block; }
+  .moments[data-pinned] .word { grid-row: 3; }
+  .moments[data-pinned] .can { bottom: 8.5vw; height: min(78svh, 56vw); }
 }

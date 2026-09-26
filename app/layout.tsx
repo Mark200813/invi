@@ -6,6 +6,7 @@ import SmoothScroll from '@/components/site/SmoothScroll';
 import SiteHeader from '@/components/site/SiteHeader';
 import SiteFooter from '@/components/site/SiteFooter';
 import Toast from '@/components/site/Toast';
+import Motion from '@/components/site/Motion';
 
 // Mona Sans: a variable grotesk with a width axis, so one 98KB file covers
 // the condensed display cuts, the text face and the expanded labels.
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main" tabIndex={-1}>{children}</main>
         <SiteFooter />
         <Toast />
+        <Motion />
       </body>
     </html>
   );

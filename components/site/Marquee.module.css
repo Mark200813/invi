@@ -1,0 +1,24 @@
+.marquee { overflow: clip; padding-block: clamp(1rem, 3vw, 2rem); }
+.track {
+  display: flex; width: max-content;
+  font-size: clamp(4rem, 15vw, 16rem);
+  line-height: 0.86;
+  will-change: transform;
+}
+.run { display: flex; flex: none; }
+.item { display: inline-flex; align-items: center; white-space: nowrap; }
+.serif {
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic; font-weight: 400; text-transform: none;
+  font-variation-settings: normal; letter-spacing: -0.03em;
+}
+.sep {
+  display: inline-block; width: 0.22em; height: 0.22em; border-radius: 50%;
+  background: currentColor; margin: 0 0.45em; transform: translateY(-0.05em);
+}
+
+/* still, when motion is off: one centred line that wraps */
+.marquee:not([data-moving]) .track { width: auto; flex-wrap: wrap; justify-content: center; }
+.marquee:not([data-moving]) .run + .run { display: none; }
+.marquee:not([data-moving]) .run { flex-wrap: wrap; justify-content: center; }
+.marquee:not([data-moving]) .item:last-child .sep { display: none; }

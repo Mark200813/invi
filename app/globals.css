@@ -198,6 +198,11 @@ ul, ol { padding: 0; list-style: none; }
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
 }
 
+/* ── motion helpers ──────────────────────────────────────────────────── */
+[data-parallax] { overflow: hidden; }
+/* SplitText line masks: room for italic overhang and descenders */
+.split-line-mask { padding: 0.06em 0.08em 0.12em 0; margin: -0.06em -0.08em -0.12em 0; }
+
 /* ── the wordmark (supplied raster used as a mask) ───────────────────────── */
 .wordmark {
   display: inline-block;

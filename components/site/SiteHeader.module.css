@@ -1,9 +1,11 @@
 .bar {
   position: fixed; inset: 0 0 auto 0; z-index: 50;
   color: var(--on-stage);
-  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease);
+  transition: background-color 0.5s var(--ease), border-color 0.5s var(--ease), transform 0.6s var(--ease);
   border-bottom: 1px solid transparent;
 }
+.away { transform: translateY(-101%); }
+.away:focus-within { transform: none; }
 .stuck { background: rgba(7, 7, 8, 0.94); border-bottom-color: var(--stage-line); }
 .open { background: var(--stage); }
 .inner {

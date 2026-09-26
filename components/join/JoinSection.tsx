@@ -5,7 +5,7 @@ import s from './Join.module.css';
 
 export default function JoinSection() {
   return (
-    <section id="join" className={`ground-bone ${s.join}`} aria-labelledby="join-title">
+    <section id="join" className={`ground-bone ${s.join}`} aria-labelledby="join-title" data-clip>
       <div className={`wrap ${s.joinGrid}`}>
         <div className={s.joinIntro}>
           <p className={`label ${s.gift}`}>{join.gift} <span aria-hidden>↘</span></p>
