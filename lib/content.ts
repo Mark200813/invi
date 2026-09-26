@@ -24,7 +24,7 @@ export const proofLine = ['Built with boys.', 'Backed by science.', 'Inspired by
 export const nav = [
   { label: 'The Product', href: '/#product' },
   { label: 'The Crew', href: '/#crew' },
-  { label: "Let's Talk", href: '/lets-talk' },
+  { label: 'Let’s Talk', href: '/lets-talk' },
   { label: 'For Parents', href: '/parents' },
 ];
 
@@ -313,6 +313,7 @@ export const join = {
     guardianEmail: 'Under 18s need a parent or guardian’s email.', // [site]
     mobile: 'That number doesn’t look right. Include your country code.',
     whatsapp: 'Add your mobile number to get a WhatsApp invite.',
+    guardianSame: 'Use your parent or guardian’s own email, not yours.',
     consent: 'Tick the box to join the crew.',
   },
   done: {
@@ -368,7 +369,7 @@ export const letsTalk = {
   internship: {
     eyebrow: 'Internships', // [mark] time-sensitive details removed
     title: ['Make content.', 'Get paid.'],
-    body: 'Paid internships are coming up for sign up. Go behind the scenes, bring your ideas and help create content for a brand being built with you.',
+    body: 'Paid internships are coming up, with sign-up opening soon. Go behind the scenes, bring your ideas and help create content for a brand being built with you.',
     tags: ['Paid internships'],
     cta: 'Coming Soon', // [mark]
   },

@@ -21,9 +21,15 @@ export default function Roadmap() {
   const [pick, setPick] = useState<RoadmapKey | null>(null);
   const [locking, setLocking] = useState(false);
   const confirmBtn = useRef<HTMLButtonElement>(null);
+  const closingRef = useRef<HTMLParagraphElement>(null);
+  const justLocked = useRef(false);
   const chosen = crew.confirmed ? crew.vote : pick;
 
   useEffect(() => { if (pick) confirmBtn.current?.focus({ preventScroll: true }); }, [pick]);
+  // the Confirm button goes away once the vote locks: focus moves to the result
+  useEffect(() => {
+    if (crew.confirmed && justLocked.current) { justLocked.current = false; closingRef.current?.focus({ preventScroll: true }); }
+  }, [crew.confirmed]);
 
   function choose(k: RoadmapKey) {
     if (crew.confirmed) return;
@@ -40,6 +46,7 @@ export default function Roadmap() {
     if (!pick || crew.confirmed) return;
     setLocking(true);
     await submitVote({ vote: pick, ref: crew.ref });
+    justLocked.current = true;
     setCrew({ vote: pick, confirmed: true });
     setLocking(false);
     flash(`${LABEL[pick]}. ${roadmap.lockedIn}`);
@@ -62,6 +69,9 @@ export default function Roadmap() {
         </figure>
       </div>
 
+      {/* one box for the cards and the confirm bar, so the bar can stick
+          to the bottom of the screen for as long as the cards are in view */}
+      <div className={s.voteArea}>
       <ol className={`wrap ${s.votes}`} aria-label={roadmap.title}>
         {roadmap.items.map((r) => {
           const mine = chosen === r.key;
@@ -90,7 +100,7 @@ export default function Roadmap() {
         })}
       </ol>
 
-      <div className="wrap">
+      <div className={s.after}>
         {pick && !crew.confirmed && (
           <div className={s.confirm} role="group" aria-label={roadmap.confirm}>
             <div>
@@ -103,10 +113,11 @@ export default function Roadmap() {
           </div>
         )}
         {crew.confirmed && crew.vote && (
-          <p className={`display t-md ${s.closing}`} role="status" data-no-split>
+          <p ref={closingRef} tabIndex={-1} className={`display t-md ${s.closing}`} role="status" data-no-split>
             {roadmap.closing}
           </p>
         )}
+      </div>
       </div>
     </section>
   );

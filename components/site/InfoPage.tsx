@@ -8,19 +8,20 @@ import s from './InfoPage.module.css';
 export default function InfoPage({ page, photo }: { page: Info; photo?: { src: string; w: number; h: number; alt: string } }) {
   return (
     <div className={`ground-bone ${s.page}`}>
-      <header className={`wrap ${s.head}`}>
+      <header className={`wrap ${s.head} ${photo ? s.withPhoto : ''}`}>
+        <div className={s.headText}>
         <p className={`label ${s.eyebrow}`}>{page.eyebrow}</p>
         <h1 className={`display t-xl ${s.title}`}>
           {page.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
         </h1>
         {page.intro.map((p) => <p key={p} className={`lede ${s.intro}`}>{p}</p>)}
+        </div>
+        {photo && (
+          <figure className={s.photo} data-parallax="10">
+            <Image src={photo.src} alt={photo.alt} width={photo.w} height={photo.h} sizes="(max-width: 899px) 100vw, 36vw" priority />
+          </figure>
+        )}
       </header>
-
-      {photo && (
-        <figure className={`wrap ${s.photo}`} data-parallax="10">
-          <Image src={photo.src} alt={photo.alt} width={photo.w} height={photo.h} sizes="(max-width: 899px) 100vw, 40vw" priority />
-        </figure>
-      )}
 
       <div className={`wrap ${s.sections}`}>
         {page.sections.map((sec) => (

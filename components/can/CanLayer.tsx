@@ -29,7 +29,10 @@ export default function CanLayer() {
     }
     // Behind the intro curtain nobody is scrolling yet, and preparing the can
     // is exactly what the intro is for: start straight away.
-    if (document.documentElement.classList.contains('intro-on')) { setGo(true); return; }
+    // (Phones and modest machines excepted: there the curtain lifts without
+    // waiting, and the 3D takes the usual path below.)
+    const d = document.documentElement;
+    if (d.classList.contains('intro-on') && !d.dataset.introLite) { setGo(true); return; }
     const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
     // The one-off start-up (parsing three.js, first upload to the GPU) is the
     // only heavy moment, so it waits for the page to be idle and for the
@@ -38,8 +41,10 @@ export default function CanLayer() {
     const onScroll = () => { lastScroll = performance.now(); };
     addEventListener('scroll', onScroll, { passive: true });
     const settled = () => {
+      // Lenis's own flag only counts when it is animating a smooth scroll: it
+      // can stick at "native" after the browser restores a scroll position
       const lenis = (window as Window & { __lenis?: { isScrolling: boolean | string } }).__lenis;
-      if (!lenis?.isScrolling && performance.now() - lastScroll > 350) setGo(true);
+      if (lenis?.isScrolling !== 'smooth' && performance.now() - lastScroll > 350) setGo(true);
       else poll = window.setTimeout(settled, 200);
     };
     // ...and only once someone is actually there: a pointer, a touch, a key,

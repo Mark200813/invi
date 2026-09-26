@@ -16,7 +16,7 @@ export default function SiteFooter() {
             <nav aria-label="Site">
               <ul className={s.list}>
                 <li><Link href="/">Home</Link></li>
-                {nav.map((n) => <li key={n.href}><Link href={n.href}>{n.label}</Link></li>)}
+                {nav.filter((n) => !footer.links.some((l) => l.href === n.href)).map((n) => <li key={n.href}><Link href={n.href}>{n.label}</Link></li>)}
               </ul>
             </nav>
             <nav aria-label="Legal and contact">

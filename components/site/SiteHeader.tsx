@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { nav, joinCta } from '@/lib/content';
 import Wordmark from './Wordmark';
 import CrewCounter from './CrewCounter';
+import { getLenis } from './SmoothScroll';
 import s from './SiteHeader.module.css';
 
 export default function SiteHeader() {
@@ -51,8 +52,20 @@ export default function SiteHeader() {
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
     };
     addEventListener('keydown', esc);
+    // overflow:hidden stops native scrolling, but Lenis scrolls by script:
+    // it has to be stopped too, or the wheel moves the page behind the menu
     document.documentElement.style.overflow = 'hidden';
-    return () => { removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; };
+    getLenis()?.stop();
+    // widening past the breakpoint hides the menu: close it properly
+    const wide = matchMedia('(min-width: 900px)');
+    const onWide = () => { if (wide.matches) setOpen(false); };
+    wide.addEventListener('change', onWide);
+    return () => {
+      removeEventListener('keydown', esc);
+      wide.removeEventListener('change', onWide);
+      document.documentElement.style.overflow = '';
+      getLenis()?.start();
+    };
   }, [open]);
 
   return (

@@ -26,6 +26,8 @@
 .count { display: none; }
 .cta { --h: 40px; gap: 0.9rem; padding: 0 0.85rem 0 1rem; font-size: 0.75rem; }
 .cta { white-space: nowrap; }
+/* under 360px there is room for the wordmark and Menu, not all three */
+@media (max-width: 359px) { .cta { display: none; } }
 .cta :global(.arrow) { display: none; }
 .toggle {
   display: inline-flex; align-items: center; gap: 0.6rem; min-height: 44px; padding: 0 2px;

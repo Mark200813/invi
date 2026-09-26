@@ -74,6 +74,7 @@ export default function JoinFlow() {
     if (st === 'guardian') {
       if (!v.gName.trim()) out.gName = e.guardianName;
       if (!EMAIL_RE.test(v.gEmail.trim())) out.gEmail = e.guardianEmail;
+      else if (v.gEmail.trim().toLowerCase() === v.email.trim().toLowerCase()) out.gEmail = e.guardianSame;
     }
     if (st === 'mobile') {
       const m = normaliseMobile(v.mobile);
@@ -182,6 +183,14 @@ export default function JoinFlow() {
                   className={`${s.option} ${v.age === o ? s.optionOn : ''}`}
                   onClick={() => set('age', o)}
                   onKeyDown={(ev) => {
+                    // Enter picks this range and moves on, like every other step
+                    if (ev.key === 'Enter') {
+                      ev.preventDefault();
+                      set('age', o);
+                      const form = ev.currentTarget.form;
+                      setTimeout(() => form?.requestSubmit(), 30);
+                      return;
+                    }
                     const dir = ev.key === 'ArrowDown' || ev.key === 'ArrowRight' ? 1 : ev.key === 'ArrowUp' || ev.key === 'ArrowLeft' ? -1 : 0;
                     if (!dir) return;
                     ev.preventDefault();

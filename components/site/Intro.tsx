@@ -23,22 +23,21 @@ export default function Intro() {
   useEffect(() => {
     const html = document.documentElement;
     if (!html.classList.contains('intro-on')) return;
-    const t0 = performance.now();
     let done = false;
 
+    // the curtain lifts through the one idempotent routine in the inline
+    // script (app/layout.tsx), so a skip, the failsafe and this can never
+    // lift it twice
     const finish = () => {
       if (done) return;
       done = true;
-      // intro-out keeps the curtain on screen while it lifts
-      html.classList.add('intro-out');
-      html.classList.remove('intro-on');
-      window.dispatchEvent(new Event('invi:intro-done'));
-      setTimeout(() => html.classList.remove('intro-out'), 1300);
+      (window as Window & { __inviIntroEnd?: () => void }).__inviIntroEnd?.();
     };
 
     // the live can: ready, or known not to be coming
     const can = new Promise<void>((resolve) => {
-      if (html.dataset.can3d || html.dataset.canSkip) return resolve();
+      // phones and modest machines don't wait for the 3D (see layout.tsx)
+      if (html.dataset.can3d || html.dataset.canSkip || html.dataset.introLite) return resolve();
       const mo = new MutationObserver(() => { if (html.dataset.can3d) { mo.disconnect(); resolve(); } });
       mo.observe(html, { attributes: true, attributeFilter: ['data-can3d'] });
       addEventListener('invi:can-skip', () => { mo.disconnect(); resolve(); }, { once: true });
@@ -49,15 +48,15 @@ export default function Intro() {
       poster?.decode ? poster.decode().catch(() => {}) : null,
       can,
     ]);
-    const least = new Promise((r) => setTimeout(r, MIN));
+    // both limits count from arrival (navigation start), not from when this
+    // script happened to run: a slow page must not make the intro longer
+    const since = performance.now();
+    const least = new Promise((r) => setTimeout(r, Math.max(0, MIN - since)));
     Promise.all([ready, least]).then(finish);
-    const most = setTimeout(finish, MAX);
+    const most = setTimeout(finish, Math.max(0, MAX - since));
 
-    // anyone who wants in now, gets in now
-    const skip = () => { if (performance.now() - t0 > 350) finish(); };
-    const intents = ['pointerdown', 'keydown', 'wheel', 'touchstart'] as const;
-    intents.forEach((ev) => addEventListener(ev, skip, { passive: true }));
-    return () => { clearTimeout(most); intents.forEach((ev) => removeEventListener(ev, skip)); };
+    // skipping is handled by the inline script, from the very first paint
+    return () => clearTimeout(most);
   }, []);
 
   return (

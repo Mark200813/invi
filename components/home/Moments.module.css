@@ -79,6 +79,7 @@
 
 .progress { display: none; }
 
+
 /* ── pinned: one frame the three worlds pass through ───────────────────── */
 .moments[data-pinned] .track { height: 400svh; }
 .moments[data-pinned] .pin { position: sticky; top: 0; height: 100svh; overflow: clip; }
@@ -116,11 +117,24 @@
     grid-column: 1 / 4; grid-row: 2; align-self: center; justify-self: start;
     width: 100%; max-width: 260px;
   }
-  .word { grid-row: 3; font-size: min(22vw, calc(150vw / var(--len, 6))); }
+  /* capped by height too: on 768-800px-tall laptops the width-based size
+     ran the word off the bottom of the pinned frame */
+  .word { grid-row: 3; font-size: min(22vw, calc(150vw / var(--len, 6)), 27svh); }
 
   .moments[data-pinned] .track { height: 420svh; }
   .moments[data-pinned] .stage { grid-template-rows: auto 1fr auto; padding-bottom: 2.5rem; }
   .moments[data-pinned] .photo { display: block; }
   .moments[data-pinned] .word { grid-row: 3; }
-  .moments[data-pinned] .can { bottom: 8.5vw; height: min(78svh, 56vw); }
+  .moments[data-pinned] .can { bottom: min(8.5vw, 16svh); height: min(78svh, 56vw); }
+}
+
+/* short phones (and phone landscape): the can and the word give the copy room */
+@media (max-width: 899px) and (max-height: 700px) {
+  .moments[data-pinned] .can { height: 36svh; bottom: 13vw; }
+  .moments[data-pinned] .line { font-size: 1rem; }
+  .word { font-size: min(20vw, calc(130vw / var(--len, 6)), 24svh); }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .moments[data-pinned] .can { height: 44svh; bottom: 18svh; }
+  .word { font-size: min(20vw, calc(130vw / var(--len, 6)), 22svh); }
 }

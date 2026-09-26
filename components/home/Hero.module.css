@@ -81,7 +81,9 @@
   .can {
     position: absolute; top: calc(-1 * var(--nav-h)); bottom: -2.25rem;
     left: 71%; width: auto; margin: 0; transform: translateX(-50%);
-    height: calc(100% + var(--nav-h) + 2.25rem);
+    /* capped by width as well, so on tall narrow screens (an iPad upright)
+       the can does not grow across the copy */
+    height: min(calc(100% + var(--nav-h) + 2.25rem), 72vw);
     display: flex; align-items: flex-end;
   }
   .can img { height: 100%; width: auto; max-width: none; }

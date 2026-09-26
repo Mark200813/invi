@@ -17,8 +17,78 @@ import { getLenis } from './SmoothScroll';
  * Scrubbed effects are scroll-driven, never time-based: scrolling back
  * reverses them exactly.
  */
+/* ── keeping the reader's place ─────────────────────────────────────────
+ * Two things change the page's height under the reader: crossing the 900px
+ * breakpoint (the whole motion setup is rebuilt) and a reload (the browser
+ * restores the scroll before the moments pin has stretched the page). In
+ * both cases we put them back in the same chapter, the same way through it.
+ */
+type Place = { key: string; frac: number };
+let lastPlace: Place | null = null;
+let firstLoad = true;   // a reload's restore applies to the first page only
+let freezeUntil = 0;    // while a rebuild settles, its own scroll resets are not the reader's place
+/** Re-apply a place a few times while the layout settles: ScrollTrigger's
+ *  refresh scrolls to the top to measure, and Lenis can briefly chase that. */
+function settleAt(p: Place | null, stillWanted: () => boolean = () => true) {
+  if (!p) return;
+  freezeUntil = performance.now() + 1400;
+  [0, 120, 350, 700, 1100].forEach((ms) => setTimeout(() => { if (stillWanted()) goToPlace(p); }, ms));
+}
+const PLACE_KEY = 'invi.place';
+
+function placeNow(): Place | null {
+  const all = [...document.querySelectorAll<HTMLElement>('main [id], main [data-track], main > *')];
+  let best: HTMLElement | null = null, bestH = Infinity;
+  for (const el of all) {
+    // fixed layers (the intro, the 3D stage) always cover the top: not a place
+    if (getComputedStyle(el).position === 'fixed' || el.querySelector(':scope > .can-stage')) continue;
+    const r = el.getBoundingClientRect();
+    if (r.top <= 1 && r.bottom > 1 && r.height < bestH) { best = el; bestH = r.height; }
+  }
+  if (!best) return null;
+  const r = best.getBoundingClientRect();
+  const key = best.id ? '#' + best.id : best.hasAttribute('data-track') ? '[data-track]' : 'main>' + [...best.parentElement!.children].indexOf(best);
+  return { key, frac: -r.top / Math.max(1, r.height) };
+}
+function findPlace(key: string): HTMLElement | null {
+  if (key.startsWith('main>')) return (document.querySelector('main')?.children[Number(key.slice(5))] as HTMLElement) ?? null;
+  return document.querySelector<HTMLElement>(key);
+}
+function goToPlace(p: Place | null) {
+  const el = p && findPlace(p.key);
+  if (!el) return;
+  const r = el.getBoundingClientRect();
+  const y = r.top + scrollY + p!.frac * r.height;
+  const l = getLenis();
+  if (l) l.scrollTo(y, { immediate: true, force: true }); else scrollTo(0, y);
+}
+
 export default function Motion() {
   const pathname = usePathname();
+
+  useEffect(() => {
+    // remember where the reader is, a beat after they stop scrolling
+    let t = 0;
+    const note = () => {
+      if (performance.now() < freezeUntil) return;
+      clearTimeout(t); t = window.setTimeout(() => { if (performance.now() >= freezeUntil) lastPlace = placeNow(); }, 250);
+    };
+    addEventListener('scroll', note, { passive: true });
+    // a resize can rebuild the layout (and briefly scroll to the top to
+    // measure): hold on to the place from before it
+    const hold = () => { freezeUntil = performance.now() + 1500; clearTimeout(t); };
+    addEventListener('resize', hold);
+    const save = () => {
+      try {
+        sessionStorage.setItem(PLACE_KEY, JSON.stringify({ path: location.pathname, ...(placeNow() ?? {}) }));
+        // we restore it ourselves once the page is laid out; the browser's own
+        // restore would land first, too high, and fight ours
+        history.scrollRestoration = 'manual';
+      } catch {}
+    };
+    addEventListener('pagehide', save);
+    return () => { clearTimeout(t); removeEventListener('scroll', note); removeEventListener('resize', hold); removeEventListener('pagehide', save); };
+  }, []);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger, SplitText);
@@ -28,10 +98,14 @@ export default function Motion() {
     getLenis()?.resize();
 
     const mm = gsap.matchMedia();
+    let built = false;
     mm.add(
       { motion: '(prefers-reduced-motion: no-preference)', desktop: '(min-width: 900px)' },
       (ctx) => {
         const { motion, desktop } = ctx.conditions as { motion: boolean; desktop: boolean };
+        // a rebuild (breakpoint crossed) keeps the reader where they were
+        if (built) settleAt(lastPlace);
+        built = true;
         if (!motion) return;
         const undo: (() => void)[] = [];
         // what is on screen at load, now; everything further down, when the
@@ -68,7 +142,22 @@ export default function Motion() {
       if (l) l.scrollTo(y, { immediate: true, force: true }); else scrollTo(0, y);
     };
     requestAnimationFrame(toHash);
-    const refresh = () => { ScrollTrigger.refresh(); toHash(); };
+
+    // A reload restores the scroll before the pin lengthens the page: put
+    // the reader back in their chapter once it has (unless they have moved).
+    let restore: Place | null = null;
+    try {
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const saved = JSON.parse(sessionStorage.getItem(PLACE_KEY) || 'null');
+      if (firstLoad && !hash && (nav?.type === 'reload' || nav?.type === 'back_forward') && saved?.path === location.pathname && saved.key) restore = saved;
+    } catch {}
+    firstLoad = false;
+    const toSaved = () => { if (restore && !userMoved) goToPlace(restore); };
+    requestAnimationFrame(() => settleAt(restore, () => !userMoved));
+    // back to the browser's own restoring for in-site Back and Forward
+    setTimeout(() => { try { history.scrollRestoration = 'auto'; } catch {} }, 1500);
+
+    const refresh = () => { ScrollTrigger.refresh(); toHash(); toSaved(); };
     document.fonts?.ready.then(refresh);
     addEventListener('load', refresh);
     return () => {
@@ -185,6 +274,7 @@ function reveals() {
   // opacity only: text waiting to fade in is still read out and still labels
   // its form field; visibility:hidden would take it out of the page for
   // screen readers until it scrolled into view
+  if (!fades.length) return;
   gsap.set(fades, { opacity: 0, y: 30 });
   ScrollTrigger.batch(fades, {
     start: 'top 92%',

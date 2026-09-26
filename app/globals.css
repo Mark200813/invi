@@ -184,6 +184,9 @@ main:focus-visible, section[tabindex='-1']:focus-visible { outline: none; }
 .btn[disabled]::before, .btn[aria-disabled='true']::before { display: none; }
 .btn[disabled]:hover, .btn[aria-disabled='true']:hover { color: inherit; border-color: currentColor; }
 .btn--solid[disabled]:hover { color: var(--btn-fg); border-color: var(--btn-bg); }
+/* A solid button's text colour is the page colour, so a currentColor ring
+   vanished against the page. It rings in its own fill colour instead. */
+.btn--solid:focus-visible { outline-color: var(--btn-bg); outline-offset: 3px; }
 
 .link {
   background: none; border: 0; padding: 0;
@@ -213,6 +216,10 @@ main:focus-visible, section[tabindex='-1']:focus-visible { outline: none; }
   background: var(--stage);
 }
 html.intro-on .intro, html.intro-out .intro { display: flex; }
+/* Last resort, on the compositor: if the page is too busy even for the
+   6s timer to fire, the curtain still fades out on its own. */
+html.intro-on .intro { will-change: opacity; animation: introFailsafe 0.8s ease 6.4s forwards; }
+@keyframes introFailsafe { to { opacity: 0; } }
 html.intro-on, html.intro-on body { overflow: hidden; }
 .intro-glow {
   position: absolute; inset: 0; opacity: 0;
@@ -272,6 +279,9 @@ html[data-can3d] [data-can-poster] { opacity: 0; }
   transition: transform 0.5s var(--ease), visibility 0s linear 0.5s;
 }
 .toast.is-on { transform: translate(-50%, 0); visibility: visible; transition: transform 0.5s var(--ease); }
+@media (max-width: 899px) {
+  .toast { top: calc(var(--nav-h) + 0.75rem); bottom: auto; transform: translate(-50%, calc(-100% - var(--nav-h) - 2rem)); }
+}
 
 /* ── crew counter ──────────────────────────────────────────────────────── */
 .crew-count { display: flex; align-items: baseline; gap: 0.55rem; font-size: 0.8125rem; color: var(--text-2); }

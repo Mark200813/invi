@@ -49,12 +49,33 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Runs before first paint. Decides whether the intro plays (home, first visit
+ * this session, no #anchor, motion allowed) and owns everything that must
+ * work even if the app is slow to start: skipping on the first tap, click,
+ * key or wheel, the 6s failsafe, and the one idempotent way the curtain lifts
+ * (window.__inviIntroEnd), which Intro.tsx calls when the site is ready.
+ * `data-intro-lite` marks phones and modest machines: there the curtain does
+ * not wait for the live 3D, which starts later, on the reader's first pause.
+ */
 const INTRO_SCRIPT = `(function(){try{
 var d=document.documentElement;
 if(location.pathname!=='/'||location.hash||sessionStorage.getItem('invi.intro')||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
 sessionStorage.setItem('invi.intro','1');
 d.classList.add('intro-on');
-setTimeout(function(){if(d.classList.contains('intro-on')){d.classList.remove('intro-on');dispatchEvent(new Event('invi:intro-done'));}},6000);
+var n=navigator,c=n.connection||{};
+if(matchMedia('(pointer: coarse)').matches||(n.hardwareConcurrency||8)<=4||(n.deviceMemory||8)<=4||c.saveData)d.dataset.introLite='1';
+var ended=false;
+window.__inviIntroEnd=function(){
+  if(ended||!d.classList.contains('intro-on'))return;ended=true;
+  d.classList.add('intro-out');d.classList.remove('intro-on');
+  dispatchEvent(new Event('invi:intro-done'));
+  setTimeout(function(){d.classList.remove('intro-out');},1300);
+};
+var skip=function(){if(performance.now()>350)window.__inviIntroEnd();};
+['pointerdown','keydown','touchstart','wheel'].forEach(function(e){addEventListener(e,skip,{passive:true,capture:true});});
+addEventListener('invi:intro-done',function(){['pointerdown','keydown','touchstart','wheel'].forEach(function(e){removeEventListener(e,skip,{capture:true});});},{once:true});
+setTimeout(window.__inviIntroEnd,6000);
 }catch(e){}})();`;
 
 export const viewport: Viewport = {
