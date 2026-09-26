@@ -10,7 +10,7 @@ export default function SiteFooter() {
       <div className="wrap">
         <div className={s.top}>
           <p className={`display ${s.proof}`}>
-            {proofLine.map((l) => <span key={l}>{l}</span>)}
+            {proofLine.map((l) => <span key={l}>{l} </span>)}
           </p>
           <div className={s.cols}>
             <nav aria-label="Site">

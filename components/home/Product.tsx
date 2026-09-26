@@ -9,7 +9,7 @@ export default function Product() {
       <div className={`wrap ${s.intro}`}>
         <p className={`label ${s.eyebrow}`}>{product.eyebrow}</p>
         <h2 id="product-title" className="display t-xl">
-          {product.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+          {product.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
         </h2>
         <p className={`lede ${s.introBody}`}>{product.body}</p>
       </div>
@@ -29,7 +29,7 @@ export default function Product() {
         <div className={s.specHead}>
           <p className={`label ${s.eyebrow}`}>{product.subEyebrow}</p>
           <h3 className="display t-lg">
-            {product.subTitle.map((l) => <span key={l} className={s.block}>{l}</span>)}
+            {product.subTitle.map((l) => <span key={l} className={s.block}>{l} </span>)}
           </h3>
           {product.subBody.map((p) => <p key={p} className="body">{p}</p>)}
         </div>
@@ -48,7 +48,7 @@ export default function Product() {
         <div className={s.airCopy}>
           <p className={`label ${s.eyebrow}`}>{product.air.eyebrow}</p>
           <h3 className="display t-lg">
-            {product.air.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+            {product.air.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
           </h3>
           {product.air.body.map((p) => <p key={p} className="body">{p}</p>)}
         </div>

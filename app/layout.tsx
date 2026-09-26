@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     description: meta.ogDescription,
     type: 'website',
     siteName: 'INVI',
-    images: [{ url: '/img/crew-wall.webp', width: 1586, height: 992, alt: 'Join the INVI crew' }],
+    images: [{ url: '/og.jpg', width: 1200, height: 630, alt: 'INVI: where scent, skin and mood meet. The three INVI cans.' }],
   },
-  twitter: { card: 'summary_large_image', title: meta.ogTitle, description: meta.ogDescription },
+  twitter: { card: 'summary_large_image', title: meta.ogTitle, description: meta.ogDescription, images: ['/og.jpg'] },
   icons: {
     icon: [{ url: '/favicon.ico', sizes: 'any' }, { url: '/favicon-32.png', type: 'image/png', sizes: '32x32' }],
     apple: '/apple-touch-icon.png',

@@ -12,7 +12,7 @@ export default function LetsTalk() {
       <header className={`wrap ${s.head}`}>
         <p className={`label ${s.eyebrow}`}>{t.eyebrow}</p>
         <h1 className="display t-mega">
-          {t.title.map((l, i) => <span key={l} className={s.block}>{i === 1 ? <em>{l}</em> : l}</span>)}
+          {t.title.map((l, i) => <span key={l} className={s.block}>{i === 1 ? <em>{l}</em> : l}{" "}</span>)}
         </h1>
         <p className={`lede ${s.lede}`}>{t.body}</p>
       </header>
@@ -25,7 +25,7 @@ export default function LetsTalk() {
         <div className={s.internCopy}>
           <p className={`label ${s.eyebrow}`}>{t.internship.eyebrow}</p>
           <h2 id="intern-title" className="display t-lg">
-            {t.internship.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+            {t.internship.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
           </h2>
           <p className="body">{t.internship.body}</p>
           <ul className={s.tags}>{t.internship.tags.map((x) => <li key={x} className="label">{x}</li>)}</ul>

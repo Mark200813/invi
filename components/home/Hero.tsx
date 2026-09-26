@@ -21,7 +21,7 @@ export default function Hero() {
 
         <h1 id="hero-title" className={`display ${s.title}`} data-hero-title>
           {lines.map((l, i) => (
-            <span key={l} className={s.line}><span className={s.lineIn} style={{ ['--i' as string]: i }}>{l}</span></span>
+            <span key={l} className={s.line}><span className={s.lineIn} style={{ ['--i' as string]: i }}>{l} </span></span>
           ))}
           <span className={s.line}><span className={s.lineIn} style={{ ['--i' as string]: lines.length }}><em>{hero.titleAccent}</em></span></span>
         </h1>
@@ -35,7 +35,7 @@ export default function Hero() {
 
         <div className={s.bottom} data-hero-bottom>
           <p className={`label ${s.proof}`}>
-            {proofLine.map((l) => <span key={l}>{l}</span>)}
+            {proofLine.map((l) => <span key={l}>{l} </span>)}
           </p>
           <div className={s.aside}>
             <p className="lede">{hero.lede}</p>

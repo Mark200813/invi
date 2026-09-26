@@ -15,7 +15,7 @@ export default function Crew() {
           <figcaption className={`wrap ${s.heroCopy}`}>
             <p className="label">{crew.eyebrow}</p>
             <h2 id="crew-title" className="display t-xl">
-              {crew.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+              {crew.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
             </h2>
           </figcaption>
         </figure>
@@ -43,7 +43,7 @@ export default function Crew() {
           <div className={s.foundingCopy}>
             <p className={`label ${s.eyebrow}`}>{crew.founding.eyebrow}</p>
             <h3 className="display t-lg">
-              {crew.founding.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+              {crew.founding.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
             </h3>
             <p className="body">{crew.founding.body}</p>
             <p className="body">{crew.founding.hoodie}</p>
@@ -71,7 +71,7 @@ export default function Crew() {
           <div className={s.buildHead}>
             <p className={`label ${s.eyebrow}`}>{build.eyebrow}</p>
             <h2 id="build-title" className="display t-xl">
-              {build.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+              {build.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
             </h2>
           </div>
           <figure className={s.buildPhoto} data-parallax="14">

@@ -337,8 +337,13 @@ function useLabels() {
   useEffect(() => {
     let alive = true;
     // ImageBitmap decodes off the main thread; plain images are the fallback
+    // WebKit (every iOS browser, and Safari) has shipped createImageBitmap
+    // without honouring imageOrientation, which would hang the labels upside
+    // down; it gets the plain loader.
+    const ua = navigator.userAgent;
+    const webkit = /iPad|iPhone|iPod/.test(ua) || (/Safari/.test(ua) && !/Chrome|Chromium|Edg|Android/.test(ua));
     const load = async (u: string): Promise<THREE.Texture> => {
-      if (typeof createImageBitmap === 'function') {
+      if (!webkit && typeof createImageBitmap === 'function') {
         try {
           const l = new THREE.ImageBitmapLoader();
           l.setOptions({ imageOrientation: 'flipY', premultiplyAlpha: 'none' });

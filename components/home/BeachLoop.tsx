@@ -51,7 +51,7 @@ export default function BeachLoop({ lines, label }: { lines: string[]; label: st
         <source src="/img/beach-loop.mp4" type="video/mp4" />
       </video>
       <figcaption className={`display t-xl ${s.loopLine}`}>
-        {lines.map((l) => <span key={l} className={s.block}>{l}</span>)}
+        {lines.map((l) => <span key={l} className={s.block}>{l} </span>)}
       </figcaption>
       {!reduced && (
         <button type="button" className={s.loopBtn} onClick={toggle}

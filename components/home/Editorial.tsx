@@ -13,7 +13,7 @@ export default function Editorial() {
         <div className={s.beliefCopy}>
           <p className={`label ${s.eyebrow}`}>{belief.eyebrow}</p>
           <h2 id="belief-title" className="display t-xl">
-            {belief.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+            {belief.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
           </h2>
           <div className={s.beliefBody}>
             {belief.body.map((p) => <p key={p} className="body"><Rich text={p} /></p>)}

@@ -11,7 +11,7 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
       <header className={`wrap ${s.head}`}>
         <p className={`label ${s.eyebrow}`}>{page.eyebrow}</p>
         <h1 className={`display t-xl ${s.title}`}>
-          {page.title.map((l) => <span key={l} className={s.block}>{l}</span>)}
+          {page.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
         </h1>
         {page.intro.map((p) => <p key={p} className={`lede ${s.intro}`}>{p}</p>)}
       </header>

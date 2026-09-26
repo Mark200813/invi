@@ -39,7 +39,17 @@ export default function SiteHeader() {
 
   useEffect(() => {
     if (!open) return;
-    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') { setOpen(false); btn.current?.focus(); } };
+    const menu = document.getElementById('menu');
+    const focusables = () => [btn.current, ...(menu?.querySelectorAll<HTMLElement>('a, button') ?? [])].filter(Boolean) as HTMLElement[];
+    requestAnimationFrame(() => menu?.querySelector<HTMLElement>('a')?.focus());
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { setOpen(false); btn.current?.focus(); return; }
+      // keep Tab inside the open menu (the toggle included, so it can be closed)
+      if (e.key !== 'Tab') return;
+      const f = focusables(), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
     addEventListener('keydown', esc);
     document.documentElement.style.overflow = 'hidden';
     return () => { removeEventListener('keydown', esc); document.documentElement.style.overflow = ''; };
