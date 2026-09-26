@@ -7,6 +7,9 @@
 }
 .run { display: flex; flex: none; }
 .item { display: inline-flex; align-items: center; white-space: nowrap; }
+/* The words are drawn by CSS: the marquee as a whole is one labelled image
+   for assistive tech, and the moving copies are decoration. */
+.item::before { content: attr(data-text); }
 .serif {
   font-family: var(--font-serif), Georgia, serif;
   font-style: italic; font-weight: 400; text-transform: none;

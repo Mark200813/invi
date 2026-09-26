@@ -34,9 +34,20 @@ export default function CanLayer() {
       if (!lenis?.isScrolling && performance.now() - lastScroll > 350) setGo(true);
       else poll = window.setTimeout(settled, 200);
     };
-    if (w.requestIdleCallback) idleId = w.requestIdleCallback(settled, { timeout: 1200 });
-    else poll = window.setTimeout(settled, 400);
+    // ...and only once someone is actually there: a pointer, a touch, a key,
+    // a scroll. A page load alone never pays for it.
+    const intents = ['pointermove', 'pointerdown', 'touchstart', 'wheel', 'keydown', 'scroll'] as const;
+    let armed = false;
+    const arm = () => {
+      if (armed) return;
+      armed = true;
+      intents.forEach((ev) => removeEventListener(ev, arm));
+      if (w.requestIdleCallback) idleId = w.requestIdleCallback(settled, { timeout: 1200 });
+      else poll = window.setTimeout(settled, 400);
+    };
+    intents.forEach((ev) => addEventListener(ev, arm, { passive: true }));
     return () => {
+      intents.forEach((ev) => removeEventListener(ev, arm));
       removeEventListener('scroll', onScroll);
       clearTimeout(poll);
       if (idleId) w.cancelIdleCallback?.(idleId);

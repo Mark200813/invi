@@ -15,6 +15,7 @@
    can, carries the colour at full voice. */
 .field {
   position: absolute; inset: 0; z-index: -1;
+  will-change: opacity;  /* its own layer: crossfades composite, never repaint */
   background: linear-gradient(135deg, var(--c1) 0%, var(--c2) 52%, var(--c3) 100%);
 }
 .field::after {

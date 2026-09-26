@@ -12,6 +12,7 @@
     radial-gradient(60% 50% at 50% 70%, rgba(63, 127, 163, 0.14), transparent 75%),
     radial-gradient(40% 30% at 50% 96%, rgba(111, 155, 75, 0.10), transparent 70%);
   opacity: 0.8;
+  will-change: opacity, transform;
   animation: glowIn 2.4s var(--ease) 0.2s backwards;
 }
 @keyframes glowIn { from { opacity: 0; } }
@@ -42,10 +43,13 @@
 .canInner { height: 100%; will-change: transform; }
 .can img { width: 100%; height: auto; }
 /* the can surfaces out of the dark: light first, then form */
-.canImg { animation: canIn 2s var(--ease) 0.1s backwards; }
+.canImg { animation: canIn 1.8s var(--ease) backwards; }
+/* transform only: it rises and settles while the glow comes up behind it.
+   Never transparent, so it counts as painted the moment it arrives (it is
+   the page's largest image), and it runs on the compositor even while the
+   page is still starting up. */
 @keyframes canIn {
-  from { opacity: 0; filter: brightness(0.15) blur(8px); transform: translateY(3%) scale(0.97); }
-  60% { filter: brightness(0.9) blur(0); }
+  from { transform: translateY(5%) scale(0.95); }
 }
 
 .bottom { position: relative; z-index: 2; display: grid; gap: 1.75rem; animation: fadeUp 1.1s var(--ease) 0.7s backwards; }

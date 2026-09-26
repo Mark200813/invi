@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { View, PerspectiveCamera, PerformanceMonitor } from '@react-three/drei';
 import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { buildCan, buildStudioEnvironment, COLOURWAYS, MODES, CAN } from '@/lib/can/invi-can';
 
 /**
@@ -13,14 +14,20 @@ import { buildCan, buildStudioEnvironment, COLOURWAYS, MODES, CAN } from '@/lib/
  * scene, camera and light rig. Geometry, materials and studio lighting come
  * straight from the INVI Can Studio model (lib/can/invi-can.js).
  *
- * The DOM stays in charge: every can mirrors the poster image it replaces:
- * the poster's box sets where it stands and how big it is, and the motion
- * Phase 2 put on that poster (lift, tilt, scale, fade) drives the 3D can
- * frame by frame. So the scroll choreography lives in one place, and the
- * poster stays underneath as the instant first paint and the fallback.
+ * The DOM stays in charge: every can mirrors the poster image it replaces.
+ * The poster's box sets where it stands and how big it is, and the motion
+ * Phase 2 put on that poster (lift, tilt, scale, fade) drives the 3D can.
+ *
+ * Built to be cheap on phones:
+ * - it draws on demand: while the page scrolls, a finger or cursor moves, or
+ *   something is still settling, plus a slow idle drift; never flat out;
+ * - no layout is read per frame: boxes are measured on resize and refresh,
+ *   and positions follow from the scroll offset;
+ * - phones get half-resolution label art and a lower pixel ratio.
  */
 
-const LABELS = ['/textures/label-origin.webp', '/textures/label-rise.webp', '/textures/label-after-dark.webp'];
+const SMALL = typeof window !== 'undefined' && matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+const LABELS = ['origin', 'rise', 'after-dark'].map((k) => `/textures/label-${k}${SMALL ? '-1k' : ''}.webp`);
 const VARIANT: Record<string, number> = { origin: 0, rise: 1, 'after-dark': 2 };
 const FOV = 24, DIST = 1;
 const VIS_H = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(FOV / 2));
@@ -32,26 +39,70 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const smooth = (x: number, a: number, b: number) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 const easeOut = (t: number) => 1 - Math.pow(1 - clamp(t, 0, 1), 3);
 
+/* ── on-demand frames ──────────────────────────────────────────────────── */
+let busyUntil = 0;
+/** Ask for frames for the next `ms` milliseconds. */
+const want = (ms: number) => { busyUntil = Math.max(busyUntil, performance.now() + ms); };
+
+function Driver({ active }: { active: boolean }) {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    if (!active) return;
+    let raf = 0;
+    const loop = () => { if (performance.now() < busyUntil) invalidate(); raf = requestAnimationFrame(loop); };
+    raf = requestAnimationFrame(loop);
+    // scrubbed motion keeps easing a little after the scroll itself stops
+    const onScroll = () => { invalidate(); want(700); };
+    const onPointer = () => { invalidate(); want(300); };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('pointermove', onPointer, { passive: true });
+    addEventListener('resize', onScroll);
+    const drift = setInterval(invalidate, 50); // idle float at 20fps
+    want(1500);
+    return () => {
+      cancelAnimationFrame(raf); clearInterval(drift);
+      removeEventListener('scroll', onScroll); removeEventListener('pointermove', onPointer); removeEventListener('resize', onScroll);
+    };
+  }, [active, invalidate]);
+  return null;
+}
+
+/* ── geometry, measured rarely ─────────────────────────────────────────── */
+type Box = { top: number; left: number; w: number; h: number };
+type Frame = {
+  /** the container's box in the viewport right now, from cached offsets */
+  box: () => Box;
+  /** the poster slot's box relative to the container */
+  slot: { x: number; y: number; w: number; h: number };
+  /** radians of turn contributed by scroll */
+  spin: () => number;
+};
+
 type Mirror = { el: HTMLElement; variant: number };
 type RigProps = {
+  frame: Frame;
   container: HTMLElement;
-  slot: HTMLElement;
+  slotEl: HTMLElement;
   mirrors: Mirror[];
   fit: 'full' | 'cap';
-  /** radians of turn contributed by scroll, from the container's position */
-  spin: (container: HTMLElement) => number;
   labels: THREE.Texture[];
   env: THREE.Texture;
   intro?: boolean;
   onFirstFrame?: () => void;
 };
 
-function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFirstFrame }: RigProps) {
+const inlineOpacity = (el: HTMLElement) => {
+  if (el.style.visibility === 'hidden') return 0;
+  const o = el.style.opacity;
+  return o === '' ? 1 : Number(o);
+};
+
+function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, onFirstFrame }: RigProps) {
   const scene = useThree((s) => s.scene);
   const gl = useThree((s) => s.gl);
   const camera = useThree((s) => s.camera);
   const compiled = useRef(false);
-  const can = useMemo(() => buildCan(THREE, { segments: 96 }), []);
+  const can = useMemo(() => buildCan(THREE, { segments: SMALL ? 64 : 96 }), []);
   const outer = useRef<THREE.Group>(null);
   const turn = useRef<THREE.Group>(null);
   const key = useRef<THREE.DirectionalLight>(null);
@@ -63,6 +114,7 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     variant: -1, drag: null as null | { x: number; t: number; v: number }, dragAngle: 0, vel: 0,
     lean: { x: 0, z: 0, vx: 0, vz: 0 }, target: { x: 0, z: 0 }, t0: -1, first: true,
   });
+  const mats = useMemo(() => [can.materials.body, can.materials.shell, can.materials.cap, can.materials.nozzle, can.materials.valve], [can]);
 
   // Environment and materials. Every surface can fade, because the moments
   // hand the can over by lifting it away; depthWrite stays on so the can
@@ -71,9 +123,7 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     scene.environment = env;
     scene.environmentIntensity = MODES.reveal.env;
     can.materials.veil.visible = false;
-    for (const m of [can.materials.body, can.materials.shell, can.materials.cap, can.materials.nozzle, can.materials.valve]) {
-      m.transparent = true; m.depthWrite = true; m.needsUpdate = true;
-    }
+    for (const m of mats) { m.transparent = true; m.depthWrite = true; m.needsUpdate = true; }
     // Build the shader programs in the background (parallel compile where the
     // GPU supports it) with the real map and environment bound, so the first
     // frame that draws the can does not freeze the page doing it.
@@ -81,7 +131,7 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     let alive = true;
     const g = outer.current;
     if (g) g.visible = true;
-    gl.compileAsync(scene, camera).catch(() => {}).finally(() => { if (alive) compiled.current = true; });
+    gl.compileAsync(scene, camera).catch(() => {}).finally(() => { if (alive) { compiled.current = true; want(2600); } });
     if (g) g.visible = false;
     return () => { alive = false; scene.environment = null; };
   // eslint-disable-next-line react-hooks/exhaustive-deps -- first colourway only
@@ -95,21 +145,22 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     const s = st.current;
     const prevTouch = container.style.touchAction;
     container.style.touchAction = 'pan-y';
-    slot.style.pointerEvents = 'auto';
-    slot.style.cursor = 'grab';
+    slotEl.style.pointerEvents = 'auto';
+    slotEl.style.cursor = 'grab';
     const inSlot = (e: PointerEvent) => {
-      const r = slot.getBoundingClientRect();
+      const r = slotEl.getBoundingClientRect();
       return e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
     };
     const down = (e: PointerEvent) => {
       if (!inSlot(e) || e.button > 0) return;
       if (e.pointerType === 'mouse') e.preventDefault();
       s.drag = { x: e.clientX, t: performance.now(), v: 0 };
-      slot.style.cursor = 'grabbing';
+      slotEl.style.cursor = 'grabbing';
+      want(400);
     };
     const move = (e: PointerEvent) => {
-      const r = slot.getBoundingClientRect();
       if (e.pointerType === 'mouse' || s.drag) {
+        const r = slotEl.getBoundingClientRect();
         const nx = clamp((e.clientX - (r.left + r.width / 2)) / (r.width * 1.6), -1, 1);
         const ny = clamp((e.clientY - (r.top + r.height / 2)) / (r.height * 0.9), -1, 1);
         s.target.z = -nx * 0.16;
@@ -127,9 +178,10 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
       if (!s.drag) return;
       s.vel = clamp(s.drag.v, -16, 16);
       s.drag = null;
-      slot.style.cursor = 'grab';
+      slotEl.style.cursor = 'grab';
+      want(1500);
     };
-    const leave = () => { s.target.x = 0; s.target.z = 0; };
+    const leave = () => { s.target.x = 0; s.target.z = 0; want(1200); };
     container.addEventListener('pointerdown', down);
     addEventListener('pointermove', move, { passive: true });
     addEventListener('pointerup', up);
@@ -137,32 +189,30 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     container.addEventListener('pointerleave', leave);
     return () => {
       container.style.touchAction = prevTouch;
-      slot.style.pointerEvents = ''; slot.style.cursor = '';
+      slotEl.style.pointerEvents = ''; slotEl.style.cursor = '';
       container.removeEventListener('pointerdown', down);
       removeEventListener('pointermove', move);
       removeEventListener('pointerup', up);
       removeEventListener('pointercancel', up);
       container.removeEventListener('pointerleave', leave);
     };
-  }, [container, slot]);
+  }, [container, slotEl]);
 
   useFrame((state, delta) => {
     const s = st.current, g = outer.current, tg = turn.current;
     if (!g || !tg) return;
     if (!compiled.current) { g.visible = false; return; }
+    const cb = frame.box(), sl = frame.slot;
+    const vh = innerHeight;
+    // off screen: nothing to do (the View will not draw it either)
+    if (cb.h < 1 || sl.h < 1 || cb.top > vh + 40 || cb.top + cb.h < -40) { g.visible = false; return; }
     const dt = Math.min(0.05, delta);
-    const cr = container.getBoundingClientRect();
-    const sr = slot.getBoundingClientRect();
-    if (cr.height < 1 || sr.height < 1) { g.visible = false; return; }
-    const u = VIS_H / cr.height;
+    const u = VIS_H / cb.h;
 
-    // which poster is live, and how it is moving
+    // which poster is live, and how it is moving (GSAP's cached values and
+    // inline styles only: nothing here makes the browser recalculate)
     let m = mirrors[0], op = -1;
-    for (const x of mirrors) {
-      const o = Number(gsap.getProperty(x.el, 'opacity'));
-      const v = getComputedStyle(x.el).visibility === 'hidden' ? 0 : o;
-      if (v > op) { op = v; m = x; }
-    }
+    for (const x of mirrors) { const o = inlineOpacity(x.el); if (o > op) { op = o; m = x; } }
     const yP = Number(gsap.getProperty(m.el, 'yPercent')) || 0;
     const rot = Number(gsap.getProperty(m.el, 'rotation')) || 0;
     const sc = Number(gsap.getProperty(m.el, 'scale')) || 1;
@@ -178,10 +228,10 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     }
 
     // placement: stand exactly where the poster's can stands
-    const canPx = fit === 'cap' ? sr.height * 2.3 : sr.height * POSTER_FILL;
-    const cx = sr.left + sr.width / 2 - (cr.left + cr.width / 2);
-    const cyTop = fit === 'cap' ? sr.top + sr.height * 0.12 + canPx / 2 : sr.top + sr.height / 2;
-    const cy = cyTop - (cr.top + cr.height / 2) + (yP / 100) * sr.height;
+    const canPx = fit === 'cap' ? sl.h * 2.3 : sl.h * POSTER_FILL;
+    const cx = sl.x + sl.w / 2 - cb.w / 2;
+    const cyTop = fit === 'cap' ? sl.y + sl.h * 0.12 + canPx / 2 : sl.y + sl.h / 2;
+    const cy = cyTop - cb.h / 2 + (yP / 100) * sl.h;
     const scale = ((canPx * u) / CAN.height) * sc;
     g.position.set(cx * u, -cy * u, 0);
     g.scale.setScalar(scale);
@@ -198,7 +248,7 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
     const age = state.clock.elapsedTime - s.t0;
     const introTwist = intro ? (1 - easeOut(age / 2.2)) * -1.1 : 0;
     const float = Math.sin(state.clock.elapsedTime * 0.62) * 0.0028;
-    tg.rotation.y = spin(container) + s.dragAngle + introTwist;
+    tg.rotation.y = frame.spin() + s.dragAngle + introTwist;
     tg.position.y = float - CAN.height / 2;
 
     // the intro: a rim-lit silhouette first, then the light comes on
@@ -215,8 +265,13 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
 
     const a = clamp(op, 0, 1);
     g.visible = a > 0.01;
-    for (const mat of [can.materials.body, can.materials.shell, can.materials.cap, can.materials.nozzle, can.materials.valve]) mat.opacity = a;
+    for (const mat of mats) mat.opacity = a;
     (can.shadow.material as THREE.MeshBasicMaterial).opacity = R.shadow * a * mainK;
+
+    // keep frames coming while anything is still in motion
+    const moving = s.drag || Math.abs(s.vel) > 0.02 || Math.abs(L.vx) + Math.abs(L.vz) > 0.002
+      || Math.abs(s.target.x - L.x) + Math.abs(s.target.z - L.z) > 0.002 || (intro && age < 2.4) || (a > 0.01 && a < 0.99);
+    if (moving) want(120);
 
     if (s.first) { s.first = false; onFirstFrame?.(); }
   });
@@ -224,7 +279,7 @@ function CanRig({ container, slot, mirrors, fit, spin, labels, env, intro, onFir
   return (
     <>
       <PerspectiveCamera makeDefault fov={FOV} position={[0, 0, DIST]} near={0.05} far={10} />
-      <group ref={outer}>
+      <group ref={outer} visible={false}>
         <group ref={turn}>
           <primitive object={can.group} />
         </group>
@@ -299,7 +354,7 @@ function useLabels() {
       if (!alive) return;
       ts.forEach((t) => {
         t.colorSpace = THREE.SRGBColorSpace;
-        t.anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+        t.anisotropy = Math.min(SMALL ? 4 : 8, gl.capabilities.getMaxAnisotropy());
         t.needsUpdate = true;
       });
       setTex(ts);
@@ -320,15 +375,87 @@ type Els = {
 
 const markReady = () => { document.documentElement.dataset.can3d = 'ready'; };
 
+/** Cached document geometry, refreshed on resize, ScrollTrigger refresh and
+ *  font load; everything per frame is arithmetic on scrollY. */
+function useFrames(els: Els) {
+  return useMemo(() => {
+    const g = {
+      hero: { docTop: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
+      moments: { trackTop: 0, trackH: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
+      closeup: { docTop: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
+    };
+    const rel = (s: DOMRect, c: DOMRect) => ({ x: s.left - c.left, y: s.top - c.top, w: s.width, h: s.height });
+    const measure = () => {
+      const y = scrollY;
+      if (els.hero) {
+        const c = els.hero.container.getBoundingClientRect();
+        Object.assign(g.hero, { docTop: c.top + y, left: c.left, w: c.width, h: c.height });
+        Object.assign(g.hero.slot, rel(els.hero.slot.getBoundingClientRect(), c));
+      }
+      if (els.moments) {
+        const t = els.moments.track.getBoundingClientRect(), c = els.moments.container.getBoundingClientRect();
+        Object.assign(g.moments, { trackTop: t.top + y, trackH: t.height, left: c.left, w: c.width, h: c.height });
+        Object.assign(g.moments.slot, rel(els.moments.slot.getBoundingClientRect(), c));
+      }
+      if (els.closeup) {
+        const c = els.closeup.container.getBoundingClientRect();
+        Object.assign(g.closeup, { docTop: c.top + y, left: c.left, w: c.width, h: c.height });
+        Object.assign(g.closeup.slot, { x: 0, y: 0, w: c.width, h: c.height });
+      }
+      want(300);
+    };
+    measure();
+
+    const heroBox = (): Box => ({ top: g.hero.docTop - scrollY, left: g.hero.left, w: g.hero.w, h: g.hero.h });
+    // the pin is sticky: in its track it holds at the top of the viewport
+    const pinTop = () => {
+      const t = g.moments.trackTop - scrollY;
+      return t > 0 ? t : Math.min(0, t + g.moments.trackH - g.moments.h);
+    };
+    const momentsBox = (): Box => ({ top: pinTop(), left: g.moments.left, w: g.moments.w, h: g.moments.h });
+    const closeBox = (): Box => ({ top: g.closeup.docTop - scrollY, left: g.closeup.left, w: g.closeup.w, h: g.closeup.h });
+
+    const frames = {
+      hero: { box: heroBox, slot: g.hero.slot, spin: () => -0.18 + clamp(-heroBox().top / innerHeight, -1, 2) * 1.5 } as Frame,
+      moments: {
+        box: momentsBox, slot: g.moments.slot,
+        spin: () => {
+          const p = clamp((scrollY - g.moments.trackTop) / Math.max(1, g.moments.trackH - g.moments.h), 0, 1);
+          return Math.sin(p * Math.PI * 2.5) * 0.5;
+        },
+      } as Frame,
+      closeup: {
+        box: closeBox, slot: g.closeup.slot,
+        spin: () => { const b = closeBox(); return -0.4 + clamp((innerHeight - b.top) / (innerHeight + b.h), 0, 1) * 1.4; },
+      } as Frame,
+    };
+    return { frames, measure };
+  }, [els]);
+}
+
 function Views({ els, intro }: { els: Els; intro: boolean }) {
   const gl = useThree((s) => s.gl);
   const labels = useLabels();
   const [env, setEnv] = useState<THREE.Texture | null>(null);
+  const { frames, measure } = useFrames(els);
   useEffect(() => {
     let alive = true, made: THREE.Texture | null = null;
     buildEnvAsync(gl).then((e) => { made = e; if (alive) setEnv(e); else e.dispose(); });
     return () => { alive = false; made?.dispose(); };
   }, [gl]);
+  useEffect(() => {
+    addEventListener('resize', measure);
+    ScrollTrigger.addEventListener('refresh', measure);
+    document.fonts?.ready.then(measure);
+    const late = setTimeout(measure, 1200);
+    const ro = new ResizeObserver(() => measure());
+    ro.observe(document.body);
+    return () => {
+      removeEventListener('resize', measure);
+      ScrollTrigger.removeEventListener('refresh', measure);
+      clearTimeout(late); ro.disconnect();
+    };
+  }, [measure]);
   const refs = {
     hero: useRef<HTMLElement>(els.hero?.container ?? null),
     moments: useRef<HTMLElement>(els.moments?.container ?? null),
@@ -336,35 +463,24 @@ function Views({ els, intro }: { els: Els; intro: boolean }) {
   };
   if (!labels || !env) return null;
 
-  const heroSpin = (c: HTMLElement) => -0.18 + clamp(-c.getBoundingClientRect().top / innerHeight, -1, 2) * 1.5;
-  const momentsSpin = () => {
-    const t = els.moments!.track.getBoundingClientRect();
-    const p = clamp(-t.top / Math.max(1, t.height - innerHeight), 0, 1);
-    return Math.sin(p * Math.PI * 2.5) * 0.5;
-  };
-  const closeSpin = (c: HTMLElement) => {
-    const r = c.getBoundingClientRect();
-    return -0.4 + clamp((innerHeight - r.top) / (innerHeight + r.height), 0, 1) * 1.4;
-  };
-
   return (
     <>
       {els.hero && (
         <View track={refs.hero as RefObject<HTMLElement>} index={1}>
-          <CanRig container={els.hero.container} slot={els.hero.slot} mirrors={[{ el: els.hero.mirror, variant: 0 }]}
-            fit="full" spin={heroSpin} labels={labels} env={env} intro={intro} onFirstFrame={markReady} />
+          <CanRig frame={frames.hero} container={els.hero.container} slotEl={els.hero.slot}
+            mirrors={[{ el: els.hero.mirror, variant: 0 }]} fit="full" labels={labels} env={env} intro={intro} onFirstFrame={markReady} />
         </View>
       )}
       {els.moments && (
         <View track={refs.moments as RefObject<HTMLElement>} index={2}>
-          <CanRig container={els.moments.container} slot={els.moments.slot} mirrors={els.moments.mirrors}
-            fit="full" spin={momentsSpin} labels={labels} env={env} onFirstFrame={markReady} />
+          <CanRig frame={frames.moments} container={els.moments.container} slotEl={els.moments.slot}
+            mirrors={els.moments.mirrors} fit="full" labels={labels} env={env} onFirstFrame={markReady} />
         </View>
       )}
       {els.closeup && (
         <View track={refs.closeup as RefObject<HTMLElement>} index={3}>
-          <CanRig container={els.closeup.container} slot={els.closeup.slot} mirrors={[{ el: els.closeup.slot, variant: 2 }]}
-            fit="cap" spin={closeSpin} labels={labels} env={env} onFirstFrame={markReady} />
+          <CanRig frame={frames.closeup} container={els.closeup.container} slotEl={els.closeup.slot}
+            mirrors={[{ el: els.closeup.slot, variant: 2 }]} fit="cap" labels={labels} env={env} onFirstFrame={markReady} />
         </View>
       )}
     </>
@@ -392,7 +508,6 @@ export default function CanStage() {
   const [els, setEls] = useState<Els | null>(null);
   const [dpr, setDpr] = useState(1);
   const [active, setActive] = useState(true);
-  const wrap = useRef<HTMLDivElement>(null);
   // the materialise intro only plays if we are in time for it: if the poster
   // has long since finished its own entrance, the 3D simply takes over
   const intro = useMemo(() => typeof performance !== 'undefined' && performance.now() < 2600 && scrollY < innerHeight * 0.3, []);
@@ -400,8 +515,7 @@ export default function CanStage() {
   useEffect(() => {
     // wait a frame so Motion has pinned the moments before we measure
     const id = requestAnimationFrame(() => setEls(findEls()));
-    const coarse = matchMedia('(pointer: coarse)').matches;
-    setDpr(Math.min(devicePixelRatio || 1, coarse ? 1.5 : 2));
+    setDpr(Math.min(devicePixelRatio || 1, SMALL ? 1.25 : 2));
     return () => { cancelAnimationFrame(id); delete document.documentElement.dataset.can3d; };
   }, []);
 
@@ -420,11 +534,11 @@ export default function CanStage() {
 
   if (!els) return null;
   return (
-    <div ref={wrap} className="can-stage" aria-hidden style={{ visibility: active ? 'visible' : 'hidden' }}>
+    <div className="can-stage" aria-hidden style={{ visibility: active ? 'visible' : 'hidden' }}>
       <Canvas
-        frameloop={active ? 'always' : 'never'}
+        frameloop="demand"
         dpr={dpr}
-        gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
+        gl={{ antialias: !SMALL || dpr < 1.5, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => {
           gl.toneMapping = THREE.NeutralToneMapping;
           gl.toneMappingExposure = 1.12;
@@ -436,6 +550,7 @@ export default function CanStage() {
         style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}
       >
         <PerformanceMonitor onDecline={() => setDpr(1)} />
+        <Driver active={active} />
         <ClearLayer />
         <Views els={els} intro={intro} />
       </Canvas>

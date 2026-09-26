@@ -15,7 +15,7 @@ export default function Product() {
       </div>
 
       {/* The line-up: all three, the first time they stand together. */}
-      <div className={s.lineup} aria-label="The three INVI colourways">
+      <div className={s.lineup} role="group" aria-label="The three INVI colourways">
         {moments.items.map((m, i) => (
           <figure key={m.key} className={s.lineupCan} data-speed={[0.25, 0.55, 0.35][i]}>
             <Image src={m.canAngle} alt={`INVI ${m.name.toUpperCase()}`} width={1100} height={1600}
@@ -54,7 +54,7 @@ export default function Product() {
         </div>
         {/* Close-up of the cap and shoulder, rendered from the can model.
             Phase 3 replaces it with the camera moving in on the live can. */}
-        <figure className={s.airDetail} data-can-slot="closeup">
+        <figure className={s.airDetail} data-can-slot="closeup" data-motion-skip>
           <Image data-can-poster src="/cans/closeup-after-dark.webp" alt="Close-up of the INVI can’s cap and shoulder" width={1500} height={1200}
             sizes="(max-width: 899px) 100vw, 50vw" />
         </figure>

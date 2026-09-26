@@ -18,29 +18,31 @@ export default function Marquee({ items, label }: { items: { text: string; serif
     const el = track.current, box = root.current;
     if (!el || !box || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     box.dataset.moving = 'true';
-    let x = 0, dir = -1, visible = false;
+    let x = 0, dir = -1, visible = false, half = el.scrollWidth / 2;
     const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; });
     io.observe(box);
+    // measured on resize only; reading it per frame would force a layout
+    const ro = new ResizeObserver(() => { half = el.scrollWidth / 2; });
+    ro.observe(el);
     const tick = (_t: number, dt: number) => {
       if (!visible) return;
       const v = getLenis()?.velocity ?? 0;
       if (Math.abs(v) > 0.2) dir = v > 0 ? -1 : 1;
       const speed = 0.7 + Math.min(Math.abs(v) * 0.4, 14);
       x += dir * speed * (dt / 16.67);
-      const half = el.scrollWidth / 2;
       if (x <= -half) x += half;
       if (x > 0) x -= half;
       el.style.transform = `translate3d(${x}px,0,0)`;
     };
     gsap.ticker.add(tick);
-    return () => { gsap.ticker.remove(tick); io.disconnect(); delete box.dataset.moving; el.style.transform = ''; };
+    return () => { gsap.ticker.remove(tick); io.disconnect(); ro.disconnect(); delete box.dataset.moving; el.style.transform = ''; };
   }, []);
 
   const run = (key: string) => (
     <span className={s.run} key={key}>
       {items.map((it, i) => (
-        <span key={i} className={`${s.item} ${it.serif ? s.serif : ''}`}>
-          {it.text}<span className={s.sep} aria-hidden />
+        <span key={i} className={`${s.item} ${it.serif ? s.serif : ''}`} data-text={it.text}>
+          <span className={s.sep} aria-hidden />
         </span>
       ))}
     </span>

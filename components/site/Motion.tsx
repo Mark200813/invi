@@ -22,6 +22,9 @@ export default function Motion() {
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger, SplitText);
+    // phones: the address bar showing or hiding is not a real resize, and
+    // re-measuring every trigger mid-scroll is a classic source of hitches
+    ScrollTrigger.config({ ignoreMobileResize: true });
     getLenis()?.resize();
 
     const mm = gsap.matchMedia();
@@ -31,13 +34,23 @@ export default function Motion() {
         const { motion, desktop } = ctx.conditions as { motion: boolean; desktop: boolean };
         if (!motion) return;
         const undo: (() => void)[] = [];
+        // what is on screen at load, now; everything further down, when the
+        // browser is idle, so none of it competes with the first paint
         undo.push(moments(desktop));
         hero();
-        reveals();
-        parallax();
-        undo.push(counts());
-        if (desktop) clips();
-        return () => undo.forEach((f) => f());
+        const rest = () => ctx.add(() => {
+          reveals();
+          parallax();
+          undo.push(counts());
+          if (desktop) clips();
+          ScrollTrigger.refresh();
+        });
+        const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
+        const id = w.requestIdleCallback ? w.requestIdleCallback(rest, { timeout: 1500 }) : window.setTimeout(rest, 300);
+        return () => {
+          if (w.cancelIdleCallback) w.cancelIdleCallback(id); else clearTimeout(id);
+          undo.forEach((f) => f());
+        };
       },
     );
 
@@ -81,9 +94,9 @@ function hero() {
     defaults: { ease: 'none' },
     scrollTrigger: { trigger: h, start: 'top top', end: 'bottom top', scrub: true },
   });
-  tl.to($('[data-hero-title]', h), { yPercent: -22, autoAlpha: 0.1 }, 0)
+  tl.to($('[data-hero-title]', h), { yPercent: -22, opacity: 0.1 }, 0)
     .to($('[data-hero-can]', h), { yPercent: -9, scale: 1.07 }, 0)
-    .to($('[data-hero-bottom]', h), { y: -60, autoAlpha: 0 }, 0)
+    .to($('[data-hero-bottom]', h), { y: -60, opacity: 0 }, 0)
     .to($('[data-hero-glow]', h), { opacity: 1, scale: 1.2 }, 0);
 }
 
@@ -102,17 +115,21 @@ function moments(desktop: boolean) {
     photo: $('[data-photo]', a),
   }));
 
+  // opacity, not visibility: every world's words stay in the accessibility
+  // tree, so a screen reader hears all three, not just the one on screen
   parts.slice(1).forEach((p) => {
-    gsap.set(p.field, { autoAlpha: 0 });
-    gsap.set(p.can, { autoAlpha: 0, yPercent: 22, rotation: 8 });
+    gsap.set(p.field, { opacity: 0 });
+    gsap.set(p.can, { opacity: 0, yPercent: 22, rotation: 8 });
     gsap.set(p.word, { yPercent: 115 });
-    gsap.set(p.copy, { autoAlpha: 0, y: 28 });
-    gsap.set(p.photo, { autoAlpha: 0, y: 60 });
+    gsap.set(p.copy, { opacity: 0, y: 28 });
+    gsap.set(p.photo, { opacity: 0, y: 60 });
   });
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
-    scrollTrigger: { trigger: $('[data-track]', sec), start: 'top top', end: 'bottom bottom', scrub: 0.5 },
+    // under a finger, easing behind the scroll reads as lag; with the mouse
+    // wheel (already smoothed by Lenis) a little weight feels right
+    scrollTrigger: { trigger: $('[data-track]', sec), start: 'top top', end: 'bottom bottom', scrub: matchMedia('(pointer: coarse)').matches ? 0.15 : 0.5 },
   });
   const HOLD = 1, T = 0.7;
   let t = 0;
@@ -123,15 +140,15 @@ function moments(desktop: boolean) {
     t += HOLD;
     const n = parts[i + 1];
     if (!n) return;
-    tl.to(n.field, { autoAlpha: 1, duration: T, ease: 'power1.inOut' }, t)
-      .to(p.can, { autoAlpha: 0, yPercent: -22, rotation: -8, duration: T * 0.45, ease: 'power2.in' }, t)
-      .to(n.can, { autoAlpha: 1, yPercent: 0, rotation: 0, duration: T * 0.55, ease: 'power3.out' }, t + T * 0.45)
+    tl.to(n.field, { opacity: 1, duration: T, ease: 'power1.inOut' }, t)
+      .to(p.can, { opacity: 0, yPercent: -22, rotation: -8, duration: T * 0.45, ease: 'power2.in' }, t)
+      .to(n.can, { opacity: 1, yPercent: 0, rotation: 0, duration: T * 0.55, ease: 'power3.out' }, t + T * 0.45)
       .to(p.word, { yPercent: -115, duration: T * 0.6, ease: 'power2.in' }, t)
       .to(n.word, { yPercent: 0, duration: T * 0.6, ease: 'power3.out' }, t + T * 0.4)
-      .to(p.copy, { autoAlpha: 0, y: -28, duration: T * 0.45, ease: 'power1.in' }, t)
-      .to(n.copy, { autoAlpha: 1, y: 0, duration: T * 0.5, ease: 'power2.out', stagger: 0.05 }, t + T * 0.5)
-      .to(p.photo, { autoAlpha: 0, duration: T * 0.4 }, t)
-      .to(n.photo, { autoAlpha: 1, y: 0, duration: T * 0.6, ease: 'power2.out' }, t + T * 0.4);
+      .to(p.copy, { opacity: 0, y: -28, duration: T * 0.45, ease: 'power1.in' }, t)
+      .to(n.copy, { opacity: 1, y: 0, duration: T * 0.5, ease: 'power2.out', stagger: 0.05 }, t + T * 0.5)
+      .to(p.photo, { opacity: 0, duration: T * 0.4 }, t)
+      .to(n.photo, { opacity: 1, y: 0, duration: T * 0.6, ease: 'power2.out' }, t + T * 0.4);
     t += T;
   });
   const bar = $('[data-progress]', sec);
@@ -149,6 +166,9 @@ function reveals() {
       mask: 'lines',
       linesClass: 'split-line',
       autoSplit: true,
+      // the heading keeps its own text for assistive tech; the line wrappers
+      // are presentational, so no aria-label is added to a <p> or <h2>
+      aria: 'none',
       onSplit: (self) => gsap.from(self.lines, {
         yPercent: 110,
         duration: 1.1,
@@ -162,11 +182,14 @@ function reveals() {
   const candidates = $$('main :is(.lede, .body, .small, .label, .index-n, .btn, .rule, figure, blockquote, [data-reveal])')
     .filter((el) => !el.closest('[data-motion-skip]') && !el.closest('.display') && !onScreen(el));
   const fades = candidates.filter((el) => !candidates.some((p) => p !== el && p.contains(el)));
-  gsap.set(fades, { autoAlpha: 0, y: 30 });
+  // opacity only: text waiting to fade in is still read out and still labels
+  // its form field; visibility:hidden would take it out of the page for
+  // screen readers until it scrolled into view
+  gsap.set(fades, { opacity: 0, y: 30 });
   ScrollTrigger.batch(fades, {
     start: 'top 92%',
     once: true,
-    onEnter: (batch) => gsap.to(batch, { autoAlpha: 1, y: 0, duration: 1, ease: 'expo.out', stagger: 0.07, overwrite: true }),
+    onEnter: (batch) => gsap.to(batch, { opacity: 1, y: 0, duration: 1, ease: 'expo.out', stagger: 0.07, overwrite: true }),
   });
 }
 
