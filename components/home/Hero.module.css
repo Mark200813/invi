@@ -55,6 +55,12 @@
 .bottom { position: relative; z-index: 2; display: grid; gap: 1.75rem; animation: fadeUp 1.1s var(--ease) 0.7s backwards; }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } }
 .eyebrow { animation: fadeUp 1s var(--ease) 0.05s backwards; }
+/* behind the intro curtain the entrance holds at its first frame, and plays
+   as the curtain lifts */
+:global(html.intro-on) .lineIn, :global(html.intro-on) .canImg, :global(html.intro-on) .bottom,
+:global(html.intro-on) .eyebrow, :global(html.intro-on) .foot, :global(html.intro-on) .glow {
+  animation-play-state: paused;
+}
 .proof { display: flex; flex-direction: column; gap: 0.2rem; color: var(--on-stage); }
 .aside { display: grid; gap: 1.5rem; }
 .actions { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 2rem; }

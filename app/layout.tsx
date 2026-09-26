@@ -49,6 +49,14 @@ export const metadata: Metadata = {
   },
 };
 
+const INTRO_SCRIPT = `(function(){try{
+var d=document.documentElement;
+if(location.pathname!=='/'||location.hash||sessionStorage.getItem('invi.intro')||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+sessionStorage.setItem('invi.intro','1');
+d.classList.add('intro-on');
+setTimeout(function(){if(d.classList.contains('intro-on')){d.classList.remove('intro-on');dispatchEvent(new Event('invi:intro-done'));}},6000);
+}catch(e){}})();`;
+
 export const viewport: Viewport = {
   themeColor: '#070708',
   width: 'device-width',
@@ -58,7 +66,12 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={`${sans.variable} ${serif.variable}`}>
+    <html lang="en-GB" className={`${sans.variable} ${serif.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Decides the intro before first paint (see components/site/Intro.tsx),
+            and guarantees it can never keep anyone out for more than 6s. */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SCRIPT }} />
+      </head>
       <body>
         <a className="skip" href="#main">Skip to content</a>
         <SmoothScroll />

@@ -1,17 +1,17 @@
 'use client';
 
 import * as THREE from 'three';
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { View, PerspectiveCamera, PerformanceMonitor } from '@react-three/drei';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { Canvas, createPortal, useFrame, useThree } from '@react-three/fiber';
+import { PerformanceMonitor } from '@react-three/drei';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { buildCan, buildStudioEnvironment, COLOURWAYS, MODES, CAN } from '@/lib/can/invi-can';
 
 /**
  * The live INVI can. One transparent canvas fixed over the page; each chapter
- * that shows the can gets a View, scissored to that chapter, with its own
- * scene, camera and light rig. Geometry, materials and studio lighting come
+ * that shows the can gets its own scene, camera and light rig, drawn by the
+ * Compositor below into just the part of that chapter that is on screen. Geometry, materials and studio lighting come
  * straight from the INVI Can Studio model (lib/can/invi-can.js).
  *
  * The DOM stays in charge: every can mirrors the poster image it replaces.
@@ -47,7 +47,8 @@ const want = (ms: number) => { busyUntil = Math.max(busyUntil, performance.now()
 function Driver({ active }: { active: boolean }) {
   const invalidate = useThree((s) => s.invalidate);
   useEffect(() => {
-    if (!active) return;
+    // going idle: draw one last (empty) frame so nothing stale stays on screen
+    if (!active) { invalidate(); return; }
     let raf = 0;
     const loop = () => { if (performance.now() < busyUntil) invalidate(); raf = requestAnimationFrame(loop); };
     raf = requestAnimationFrame(loop);
@@ -204,7 +205,7 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
     if (!compiled.current) { g.visible = false; return; }
     const cb = frame.box(), sl = frame.slot;
     const vh = innerHeight;
-    // off screen: nothing to do (the View will not draw it either)
+    // off screen: nothing to do (the Compositor will not draw it either)
     if (cb.h < 1 || sl.h < 1 || cb.top > vh + 40 || cb.top + cb.h < -40) { g.visible = false; return; }
     const dt = Math.min(0.05, delta);
     const u = VIS_H / cb.h;
@@ -244,7 +245,9 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
 
     // spin: scroll turns it; a drag adds momentum that friction wears off
     if (!s.drag) { s.dragAngle += s.vel * dt; s.vel *= Math.exp(-dt * 2.2); }
-    if (s.t0 < 0) s.t0 = state.clock.elapsedTime;
+    // while the intro curtain is down the clock stands still, so the light
+    // comes on as the curtain lifts, not unseen behind it
+    if (s.t0 < 0 || (intro && document.documentElement.classList.contains('intro-on'))) s.t0 = state.clock.elapsedTime;
     const age = state.clock.elapsedTime - s.t0;
     const introTwist = intro ? (1 - easeOut(age / 2.2)) * -1.1 : 0;
     const float = Math.sin(state.clock.elapsedTime * 0.62) * 0.0028;
@@ -278,7 +281,6 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
 
   return (
     <>
-      <PerspectiveCamera makeDefault fov={FOV} position={[0, 0, DIST]} near={0.05} far={10} />
       <group ref={outer} visible={false}>
         <group ref={turn}>
           <primitive object={can.group} />
@@ -294,11 +296,57 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
   );
 }
 
-/** Views each clear only their own box; this wipes the whole layer first,
- *  so a can that has scrolled on never leaves a trace behind. */
-function ClearLayer() {
-  useFrame(({ gl }) => { gl.setScissorTest(false); gl.clear(true, true, true); }, 0.5);
-  return null;
+/* ── the compositor ────────────────────────────────────────────────────
+ * Draws each chapter's scene into the part of that chapter that is actually
+ * on screen. The viewport and scissor are always clipped to the drawing
+ * surface; the camera's view offset keeps a half-visible chapter rendering
+ * exactly as if it were whole. (A general-purpose multi-view helper set its
+ * boxes wherever the element sat, off the edges included, and at 2x pixel
+ * density that took the GPU process down as a chapter scrolled into view.)
+ */
+type Port = { scene: THREE.Scene; camera: THREE.PerspectiveCamera; box: () => Box };
+const Ports = createContext<{ add: (p: Port) => () => void } | null>(null);
+
+function Compositor({ children }: { children: ReactNode }) {
+  const ports = useRef<Port[]>([]);
+  const api = useMemo(() => ({
+    add: (p: Port) => { ports.current.push(p); return () => { ports.current = ports.current.filter((x) => x !== p); }; },
+  }), []);
+  useFrame(({ gl, size }) => {
+    gl.autoClear = false;
+    gl.setScissorTest(false);
+    gl.clear(true, true, true);
+    gl.setScissorTest(true);
+    for (const p of ports.current) {
+      const b = p.box();
+      const x0 = Math.max(0, b.left), y0 = Math.max(0, b.top);
+      const x1 = Math.min(size.width, b.left + b.w), y1 = Math.min(size.height, b.top + b.h);
+      const w = x1 - x0, h = y1 - y0;
+      if (w < 1 || h < 1 || b.w < 1 || b.h < 1) continue;
+      const yGL = size.height - y1;                 // GL counts from the bottom
+      gl.setViewport(x0, yGL, w, h);
+      gl.setScissor(x0, yGL, w, h);
+      p.camera.aspect = b.w / b.h;
+      p.camera.setViewOffset(b.w, b.h, x0 - b.left, y0 - b.top, w, h);
+      p.camera.updateProjectionMatrix();
+      gl.render(p.scene, p.camera);
+    }
+    gl.setScissorTest(false);
+  }, 1);
+  return <Ports.Provider value={api}>{children}</Ports.Provider>;
+}
+
+/** One chapter: its own scene and camera, drawn by the Compositor. */
+function Port({ box, children }: { box: () => Box; children: ReactNode }) {
+  const ctx = useContext(Ports)!;
+  const scene = useMemo(() => new THREE.Scene(), []);
+  const camera = useMemo(() => {
+    const c = new THREE.PerspectiveCamera(FOV, 1, 0.05, 10);
+    c.position.set(0, 0, DIST);
+    return c;
+  }, []);
+  useEffect(() => ctx.add({ scene, camera, box }), [ctx, scene, camera, box]);
+  return <>{createPortal(children, scene, { camera })}</>;
 }
 
 /**
@@ -461,32 +509,27 @@ function Views({ els, intro }: { els: Els; intro: boolean }) {
       clearTimeout(late); ro.disconnect();
     };
   }, [measure]);
-  const refs = {
-    hero: useRef<HTMLElement>(els.hero?.container ?? null),
-    moments: useRef<HTMLElement>(els.moments?.container ?? null),
-    closeup: useRef<HTMLElement>(els.closeup?.container ?? null),
-  };
   if (!labels || !env) return null;
 
   return (
     <>
       {els.hero && (
-        <View track={refs.hero as RefObject<HTMLElement>} index={1}>
+        <Port box={frames.hero.box}>
           <CanRig frame={frames.hero} container={els.hero.container} slotEl={els.hero.slot}
             mirrors={[{ el: els.hero.mirror, variant: 0 }]} fit="full" labels={labels} env={env} intro={intro} onFirstFrame={markReady} />
-        </View>
+        </Port>
       )}
       {els.moments && (
-        <View track={refs.moments as RefObject<HTMLElement>} index={2}>
+        <Port box={frames.moments.box}>
           <CanRig frame={frames.moments} container={els.moments.container} slotEl={els.moments.slot}
             mirrors={els.moments.mirrors} fit="full" labels={labels} env={env} onFirstFrame={markReady} />
-        </View>
+        </Port>
       )}
       {els.closeup && (
-        <View track={refs.closeup as RefObject<HTMLElement>} index={3}>
+        <Port box={frames.closeup.box}>
           <CanRig frame={frames.closeup} container={els.closeup.container} slotEl={els.closeup.slot}
             mirrors={[{ el: els.closeup.slot, variant: 2 }]} fit="cap" labels={labels} env={env} onFirstFrame={markReady} />
-        </View>
+        </Port>
       )}
     </>
   );
@@ -509,18 +552,32 @@ function findEls(): Els {
   return els;
 }
 
+/**
+ * Graphics memory. The layer covers the viewport, so its cost grows with the
+ * screen: at 2x on a large monitor, with 4x multisampling, it needed ~250MB
+ * and the GPU dropped the context mid-scroll. So the pixel ratio is capped
+ * (1.5 desktop, 1.25 phones; the can is soft-edged and reads the same) and
+ * multisampling is only used while it stays within a fixed budget.
+ */
+function renderBudget() {
+  const dpr = Math.min(devicePixelRatio || 1, SMALL ? 1.25 : 1.5);
+  const samples = innerWidth * innerHeight * dpr * dpr * 4;
+  return { dpr, antialias: samples <= 12e6 };
+}
+
 export default function CanStage() {
   const [els, setEls] = useState<Els | null>(null);
-  const [dpr, setDpr] = useState(1);
+  const budget = useMemo(renderBudget, []);
+  const [dpr, setDpr] = useState(budget.dpr);
   const [active, setActive] = useState(true);
-  // the materialise intro only plays if we are in time for it: if the poster
-  // has long since finished its own entrance, the 3D simply takes over
-  const intro = useMemo(() => typeof performance !== 'undefined' && performance.now() < 2600 && scrollY < innerHeight * 0.3, []);
+  // The materialise plays when there is an entrance to play it in: behind the
+  // intro curtain, or if the 3D is in time for the poster's own entrance.
+  const intro = useMemo(() => document.documentElement.classList.contains('intro-on')
+    || (performance.now() < 2600 && scrollY < innerHeight * 0.3), []);
 
   useEffect(() => {
     // wait a frame so Motion has pinned the moments before we measure
     const id = requestAnimationFrame(() => setEls(findEls()));
-    setDpr(Math.min(devicePixelRatio || 1, SMALL ? 1.25 : 2));
     return () => { cancelAnimationFrame(id); delete document.documentElement.dataset.can3d; };
   }, []);
 
@@ -538,13 +595,28 @@ export default function CanStage() {
   }, [els]);
 
   if (!els) return null;
+  // The layer stays allocated for the life of the page. It used to be hidden
+  // between chapters, and bringing a full-screen buffer back mid-scroll is
+  // exactly when the GPU ran out. Idle, it simply stops drawing.
   return (
-    <div className="can-stage" aria-hidden style={{ visibility: active ? 'visible' : 'hidden' }}>
+    <div className="can-stage" aria-hidden>
       <Canvas
         frameloop="demand"
         dpr={dpr}
-        gl={{ antialias: !SMALL || dpr < 1.5, alpha: true, powerPreference: 'high-performance' }}
-        onCreated={({ gl }) => {
+        gl={{ antialias: budget.antialias, alpha: true, powerPreference: 'high-performance' }}
+        onCreated={({ gl, invalidate }) => {
+          // Safety net: if the GPU ever drops the context, the poster renders
+          // come straight back (they sit underneath), and when the context is
+          // restored the 3D takes over again.
+          const c = gl.domElement;
+          c.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            delete document.documentElement.dataset.can3d;
+          });
+          c.addEventListener('webglcontextrestored', () => {
+            want(2000); invalidate();
+            setTimeout(() => { document.documentElement.dataset.can3d = 'ready'; }, 400);
+          });
           gl.toneMapping = THREE.NeutralToneMapping;
           gl.toneMappingExposure = 1.12;
           gl.setClearColor(0x000000, 0);
@@ -556,8 +628,9 @@ export default function CanStage() {
       >
         <PerformanceMonitor onDecline={() => setDpr(1)} />
         <Driver active={active} />
-        <ClearLayer />
-        <Views els={els} intro={intro} />
+        <Compositor>
+          <Views els={els} intro={intro} />
+        </Compositor>
       </Canvas>
     </div>
   );

@@ -206,6 +206,44 @@ main:focus-visible, section[tabindex='-1']:focus-visible { outline: none; }
 /* SplitText line masks: room for italic overhang and descenders */
 .split-line-mask { padding: 0.06em 0.08em 0.12em 0; margin: -0.06em -0.08em -0.12em 0; }
 
+/* ── the intro (components/site/Intro.tsx) ────────────────────────────── */
+.intro {
+  position: fixed; inset: 0; z-index: 90;
+  display: none; align-items: center; justify-content: center;
+  background: var(--stage);
+}
+html.intro-on .intro, html.intro-out .intro { display: flex; }
+html.intro-on, html.intro-on body { overflow: hidden; }
+.intro-glow {
+  position: absolute; inset: 0; opacity: 0;
+  background:
+    radial-gradient(26% 34% at 50% 52%, rgba(120, 191, 208, 0.16), transparent 70%),
+    radial-gradient(40% 50% at 50% 60%, rgba(63, 127, 163, 0.1), transparent 75%);
+  animation: introGlow 2.6s var(--ease) 0.4s forwards;
+}
+@keyframes introGlow { to { opacity: 1; } }
+.intro-inner { position: relative; }
+/* the supplied wordmark, drawn out of the dark by a travelling edge of light */
+.intro-mark {
+  display: block;
+  width: min(46vw, 340px);
+  aspect-ratio: 900 / 220;
+  -webkit-mask: url('/img/invi-wordmark.png') center / contain no-repeat;
+  mask: url('/img/invi-wordmark.png') center / contain no-repeat;
+  background: linear-gradient(100deg,
+    #f4f1ec 0%, #f4f1ec 40%, #ffffff 46%,
+    rgba(244, 241, 236, 0.14) 54%, rgba(244, 241, 236, 0.14) 100%);
+  background-size: 320% 100%;
+  background-position: 100% 0;
+  animation: introSweep 1.5s cubic-bezier(0.65, 0, 0.35, 1) 0.2s forwards;
+}
+@keyframes introSweep { to { background-position: 0% 0; } }
+/* the curtain lifts; the wordmark rises away with it */
+html.intro-out .intro { animation: introCurtain 1.15s cubic-bezier(0.76, 0, 0.24, 1) forwards; }
+html.intro-out .intro-inner { animation: introAway 0.9s cubic-bezier(0.65, 0, 0.35, 1) forwards; }
+@keyframes introCurtain { to { clip-path: inset(0 0 100% 0); } }
+@keyframes introAway { to { transform: translateY(-6vh); opacity: 0; } }
+
 /* ── the live can ──────────────────────────────────────────────────────── */
 .can-stage { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
 /* once the 3D can is drawing, the poster renders step aside for it */

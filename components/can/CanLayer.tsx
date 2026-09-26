@@ -21,7 +21,15 @@ function hasWebGL() {
 export default function CanLayer() {
   const [go, setGo] = useState(false);
   useEffect(() => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !hasWebGL()) return;
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || !hasWebGL()) {
+      // a flag, not just an event: the intro may start listening after this
+      document.documentElement.dataset.canSkip = '1';
+      dispatchEvent(new Event('invi:can-skip'));
+      return;
+    }
+    // Behind the intro curtain nobody is scrolling yet, and preparing the can
+    // is exactly what the intro is for: start straight away.
+    if (document.documentElement.classList.contains('intro-on')) { setGo(true); return; }
     const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number; cancelIdleCallback?: (id: number) => void };
     // The one-off start-up (parsing three.js, first upload to the GPU) is the
     // only heavy moment, so it waits for the page to be idle and for the

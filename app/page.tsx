@@ -7,6 +7,7 @@ import JoinSection from '@/components/join/JoinSection';
 import Roadmap from '@/components/join/Roadmap';
 import Note from '@/components/home/Note';
 import CanLayer from '@/components/can/CanLayer';
+import Intro from '@/components/site/Intro';
 
 /**
  * One continuous story: the can, the three moments, what it does, what we
@@ -25,6 +26,7 @@ export default function Home() {
       <Roadmap />
       <Note />
       <CanLayer />
+      <Intro />
     </>
   );
 }

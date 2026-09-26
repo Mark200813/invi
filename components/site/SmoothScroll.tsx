@@ -22,6 +22,12 @@ export default function SmoothScroll() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
     (window as LenisWindow).__lenis = lenis;
+    // nothing moves under the intro curtain
+    const release = () => lenis.start();
+    if (document.documentElement.classList.contains('intro-on')) {
+      lenis.stop();
+      addEventListener('invi:intro-done', release, { once: true });
+    }
 
     // Same-page links (#join, /#product...) glide through Lenis. Left to the
     // router, its native jump and the smooth scroll fight and land short.
@@ -45,6 +51,7 @@ export default function SmoothScroll() {
     };
     document.addEventListener('click', onClick, true);
     return () => {
+      removeEventListener('invi:intro-done', release);
       document.removeEventListener('click', onClick, true);
       gsap.ticker.remove(tick);
       lenis.destroy();
