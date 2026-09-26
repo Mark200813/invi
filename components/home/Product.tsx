@@ -54,8 +54,8 @@ export default function Product() {
         </div>
         {/* Close-up of the cap and shoulder, rendered from the can model.
             Phase 3 replaces it with the camera moving in on the live can. */}
-        <figure className={s.airDetail} data-parallax="10">
-          <Image src="/cans/closeup-after-dark.webp" alt="Close-up of the INVI can’s cap and shoulder" width={1500} height={1200}
+        <figure className={s.airDetail} data-can-slot="closeup">
+          <Image data-can-poster src="/cans/closeup-after-dark.webp" alt="Close-up of the INVI can’s cap and shoulder" width={1500} height={1200}
             sizes="(max-width: 899px) 100vw, 50vw" />
         </figure>
       </div>

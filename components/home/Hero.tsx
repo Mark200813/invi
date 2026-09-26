@@ -26,9 +26,9 @@ export default function Hero() {
           <span className={s.line}><span className={s.lineIn} style={{ ['--i' as string]: lines.length }}><em>{hero.titleAccent}</em></span></span>
         </h1>
 
-        <div className={s.can}>
+        <div className={s.can} data-can-slot="hero">
           <div className={s.canInner} data-hero-can>
-            <Image className={s.canImg} src="/cans/can-origin-front.webp" alt="The INVI can in its ORIGIN colourway" width={1100} height={1600}
+            <Image data-can-poster className={s.canImg} src="/cans/can-origin-front.webp" alt="The INVI can in its ORIGIN colourway" width={1100} height={1600}
               loading="eager" fetchPriority="high" sizes="(max-width: 899px) 64vw, 46vw" />
           </div>
         </div>

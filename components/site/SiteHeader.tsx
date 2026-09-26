@@ -29,6 +29,13 @@ export default function SiteHeader() {
   }, []);
 
   useEffect(() => { setOpen(false); }, [pathname]);
+  // in-page links are handled before React sees the click (SmoothScroll),
+  // so the menu hears about them here
+  useEffect(() => {
+    const close = () => setOpen(false);
+    addEventListener('invi:anchor', close);
+    return () => removeEventListener('invi:anchor', close);
+  }, []);
 
   useEffect(() => {
     if (!open) return;

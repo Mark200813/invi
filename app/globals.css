@@ -77,6 +77,9 @@ ul, ol { padding: 0; list-style: none; }
   border-radius: 1px;
 }
 
+/* sections that take focus from an in-page link: no ring around a whole chapter */
+main:focus-visible, section[tabindex='-1']:focus-visible { outline: none; }
+
 .skip {
   position: fixed; left: var(--pad); top: 10px; z-index: 100;
   padding: 12px 18px; background: var(--on-stage); color: var(--stage);
@@ -202,6 +205,12 @@ ul, ol { padding: 0; list-style: none; }
 [data-parallax] { overflow: hidden; }
 /* SplitText line masks: room for italic overhang and descenders */
 .split-line-mask { padding: 0.06em 0.08em 0.12em 0; margin: -0.06em -0.08em -0.12em 0; }
+
+/* ── the live can ──────────────────────────────────────────────────────── */
+.can-stage { position: fixed; inset: 0; z-index: 40; pointer-events: none; }
+/* once the 3D can is drawing, the poster renders step aside for it */
+[data-can-poster] { transition: opacity 0.6s var(--ease); }
+html[data-can3d] [data-can-poster] { opacity: 0; }
 
 /* ── the wordmark (supplied raster used as a mask) ───────────────────────── */
 .wordmark {

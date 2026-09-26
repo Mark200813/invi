@@ -41,10 +41,25 @@ export default function Motion() {
       },
     );
 
-    const refresh = () => ScrollTrigger.refresh();
+    // Arriving on /#section from another page: the router jumps before the
+    // moments pin and lengthen the page, so settle on the anchor again after.
+    const hash = location.hash ? document.getElementById(decodeURIComponent(location.hash.slice(1))) : null;
+    let userMoved = false;
+    const moved = () => { userMoved = true; };
+    const intents = ['wheel', 'touchstart', 'keydown', 'pointerdown'] as const;
+    intents.forEach((ev) => addEventListener(ev, moved, { passive: true, once: true }));
+    const toHash = () => {
+      if (!hash || userMoved) return;
+      const y = hash.getBoundingClientRect().top + scrollY;
+      const l = getLenis();
+      if (l) l.scrollTo(y, { immediate: true, force: true }); else scrollTo(0, y);
+    };
+    requestAnimationFrame(toHash);
+    const refresh = () => { ScrollTrigger.refresh(); toHash(); };
     document.fonts?.ready.then(refresh);
     addEventListener('load', refresh);
     return () => {
+      intents.forEach((ev) => removeEventListener(ev, moved));
       removeEventListener('load', refresh);
       mm.revert();
     };

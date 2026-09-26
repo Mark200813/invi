@@ -33,7 +33,7 @@ npm run build
 
 1. **Foundation** (this build): type system, all content, join + vote + waitlist working in demo mode.
 2. **Motion** (done): masked line reveals, parallax, pinned three-moments scene, count-ups, marquee. All in `components/site/Motion.tsx`.
-3. **3D**: the live can (from `INVI Can Studio`), scroll-driven rotation, cursor physics, loader.
+3. **3D** (done): the live can from the INVI Can Studio model (`lib/can/invi-can.js`, `components/can/*`). It mirrors the poster renders, which stay as first paint and fallback.
 4. **Polish**: performance, accessibility audit, fallbacks.
 
 Brand references: `docs/PRODUCT.md`, `docs/BRAND-V12.md` (visual-direction rules there are superseded by the rebuild brief).

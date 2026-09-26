@@ -36,7 +36,7 @@
   position: relative; z-index: 1;
   width: min(64vw, 420px);
   align-self: center;
-  margin: -6vw 0 -12vw;
+  margin: -4vw 0 1.5rem;
   pointer-events: none;
 }
 .canInner { height: 100%; will-change: transform; }
@@ -67,10 +67,10 @@
 @media (min-width: 900px) {
   .hero { display: flex; padding-bottom: 2.25rem; }
   .grid { min-height: calc(100svh - var(--nav-h) - 4rem); }
-  .title { font-size: clamp(4.5rem, 10.4vw, 11.5rem); margin-top: 1.4rem; max-width: 12ch; }
+  .title { font-size: clamp(4.25rem, min(9.2vw, 15svh), 8.3rem); margin-top: 1.4rem; max-width: 12ch; }
   .can {
     position: absolute; top: calc(-1 * var(--nav-h)); bottom: -2.25rem;
-    left: 63%; width: auto; margin: 0; transform: translateX(-50%);
+    left: 71%; width: auto; margin: 0; transform: translateX(-50%);
     height: calc(100% + var(--nav-h) + 2.25rem);
     display: flex; align-items: flex-end;
   }
@@ -82,7 +82,7 @@
     max-width: 30rem;
   }
   .foot {
-    position: absolute; right: 0; bottom: 0; margin: 0; max-width: 30ch; text-align: right;
+    position: absolute; right: 0; top: 0; margin: 0; max-width: 26ch; text-align: right;
     padding-right: var(--pad);
   }
 }

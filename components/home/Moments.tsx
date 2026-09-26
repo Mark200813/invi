@@ -21,9 +21,9 @@ export default function Moments() {
       </div>
 
       <div className={s.track} data-track data-motion-skip>
-        <div className={s.pin}>
+        <div className={s.pin} data-pin>
           {moments.items.map((m, i) => (
-            <article key={m.key} className={s.act} aria-labelledby={`moment-${m.key}`} data-act
+            <article key={m.key} className={s.act} aria-labelledby={`moment-${m.key}`} data-act={m.key}
               style={{ ['--c1' as string]: m.colours[0], ['--c2' as string]: m.colours[1], ['--c3' as string]: m.colours[2] }}>
               <div className={s.field} aria-hidden data-field />
               <div className={`wrap ${s.stage}`}>
@@ -37,9 +37,9 @@ export default function Moments() {
                   <p className={`label ${s.desc}`}>{m.desc}</p>
                 </div>
 
-                <div className={s.can}>
+                <div className={s.can} data-can-slot="moment">
                   <div className={s.canInner} data-can>
-                    <Image src={m.can} alt={`The INVI can in its ${m.name.toUpperCase()} colourway`} width={1100} height={1600}
+                    <Image data-can-poster src={m.can} alt={`The INVI can in its ${m.name.toUpperCase()} colourway`} width={1100} height={1600}
                       sizes="(max-width: 899px) 60vw, 36vw" />
                   </div>
                 </div>
