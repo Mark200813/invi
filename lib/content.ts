@@ -14,9 +14,9 @@ export const CONTACT_EMAIL = 'hello@weareinvi.com'; // [viv]
 export const meta = {
   title: 'INVI · Where scent, skin and mood meet.', // [site]
   description:
-    'INVI brings scent, skin and mood together for teenage boys aged 13 to 18. Join the crew and hear when applications open for the first INVI Build Programme.', // [viv]
+    'INVI brings scent, skin and mood together for teenage boys, from 13 up. Join the Crew and hear when applications open for the first INVI Build Programme.', // [viv]
   ogTitle: 'Where scent, skin and mood meet.', // [viv]
-  ogDescription: 'Join the INVI crew and help build what comes next.', // [viv]
+  ogDescription: 'Join the INVI Crew and help build what comes next.', // [viv]
 };
 
 export const proofLine = ['Built with boys.', 'Backed by science.', 'Inspired by culture.']; // [site][viv]
@@ -44,7 +44,7 @@ export const hero = {
   lede: 'INVI brings scent that lasts, skin actives and mood technology together for real life. School. Sport. Going out. Whatever comes next.', // [viv]
   primary: 'Join the Crew', // [viv]
   secondary: 'Scroll through the day', // [site]
-  footnoteLead: 'Founding crew now open.', // [viv]
+  footnoteLead: 'Founding Crew now open.', // [viv]
   footnote:
     'Join now for product testing, selected samples, limited merch and first access to new opportunities.', // [viv]
 };
@@ -79,7 +79,7 @@ export const moments = {
     {
       key: 'after-dark' as ScentKey,
       name: 'After Dark',
-      kicker: 'After dark',
+      kicker: 'After sundown', // [mark] was 'After dark', which repeated the name
       line: 'When it counts and nobody needs it explained. The version of you that only comes out once the day’s done.',
       desc: 'Moments that need no explanation.',
       colours: ['#49304A', '#84549A', '#D66BA0'],
@@ -162,7 +162,7 @@ export const building = {
 };
 
 export const crew = {
-  eyebrow: 'The founding crew', // [viv]
+  eyebrow: 'The Founding Crew', // [viv]
   title: ['Be there', 'from day one.'],
   sub: 'New people. New skills. First dibs on what’s next.',
   photoAlt: 'Four friends on a sea wall at dusk, laughing together',
@@ -191,7 +191,7 @@ export const crew = {
 
 export const build = {
   eyebrow: 'INVI Build. Founding cohort 01', // [viv]
-  title: ['The first crew.', 'Real mentors.', 'A real launch.'],
+  title: ['The first Crew.', 'Real mentors.', 'A real launch.'],
   body: 'Not work experience. Not a focus group. Work alongside the INVI team, brilliant entrepreneurs, creators and industry experts. Make decisions, test ideas, create content and see how a real brand gets built.',
   live: {
     title: 'Real skills. Real opportunities.', // [viv /join-the-crew]
@@ -206,7 +206,7 @@ export const build = {
   ],
   safeguardLead: 'Worth knowing first.',
   safeguard: 'The programme is filmed, and under 18s need a parent or guardian’s consent to take part.',
-  closed: 'Join the crew to hear when applications open. For boys aged 13 to 18.', // [viv]
+  closed: 'Join the Crew to hear when applications open. For boys from 13 up.', // [viv], age as a guide [mark]
   closedTag: 'Applications not open yet',
 };
 
@@ -270,12 +270,12 @@ export const join = {
   gift: 'Join now for your exclusive launch gift', // [viv]
   title: 'Your place in what’s next.',
   body: 'Join now for product testing, selected samples, limited merch, experiences and opportunities.',
-  community: 'The INVI community is open to ages 13 and over. For members under 18, parent or guardian permission is required before participation in activities beyond receiving email updates, including filming, product testing, events and selected INVI Build activities.',
-  already: 'Already in the crew? You’re counted.',
+  community: 'INVI is made for teenage boys, from 13 up. For members under 18, parent or guardian permission is required before participation in activities beyond receiving email updates, including filming, product testing, events and selected INVI Build activities.',
+  already: 'Already in the Crew? You’re counted.',
   fields: {
     name: { label: 'First name', placeholder: 'What do people call you?' },
     email: { label: 'Email address', placeholder: 'you@example.com' },
-    age: { label: 'Age range', options: ['13 to 15', '16 to 17', '18+'] as const, note: 'The INVI community is open to ages 13 and over.' },
+    age: { label: 'Age range', options: ['13 to 15', '16 to 17', '18+'] as const, note: 'INVI is made for teenage boys, from 13 up.' },
     guardian: {
       label: 'Parent or guardian',
       nameLabel: 'Their name',
@@ -290,7 +290,7 @@ export const join = {
       help: 'Only needed if you want a WhatsApp Community invite. Include your country code.',
       whatsapp: 'Send me an invite to the INVI WhatsApp Community. I understand my number is visible to community admins and may be visible to people in groups I join. If I’m under 16, a parent or guardian must approve before I’m added.',
     },
-    consent: 'I agree to join the crew and first drop list. If I’m under 16, I have permission from my parent or guardian.',
+    consent: 'I agree to join the Crew and first drop list. If I’m under 16, I have permission from my parent or guardian.',
     marketing: 'Send me occasional news, opportunities and launch updates.',
   },
   submit: 'I’m in',
@@ -314,14 +314,14 @@ export const join = {
     mobile: 'That number doesn’t look right. Include your country code.',
     whatsapp: 'Add your mobile number to get a WhatsApp invite.',
     guardianSame: 'Use your parent or guardian’s own email, not yours.',
-    consent: 'Tick the box to join the crew.',
+    consent: 'Tick the box to join the Crew.',
   },
   done: {
     tag: 'You’re in', // [site]
     ref: 'Ref',
     vote: 'Cast your vote',
     share: 'Send to a friend', // [site]
-    shareText: 'Join the INVI crew and help build what comes next.', // [viv] og description
+    shareText: 'Join the INVI Crew and help build what comes next.', // [viv] og description
     copied: 'Link copied.', // [site]
     copyFail: 'Copy the link from the address bar.', // [site]
   },
@@ -445,7 +445,7 @@ export const parents: InfoPage = {
 export const safeguarding: InfoPage = {
   eyebrow: 'Our commitment',
   title: ['Safeguarding'],
-  intro: ['The INVI community is open to ages 13 and over.'],
+  intro: ['The INVI community is for ages 13 and up.'],
   sections: [
     { n: '01', title: 'Parent or guardian permission', body: ['When someone under 18 signs up, we ask for a parent or guardian’s name and email address. We contact that adult before the young person takes part in anything beyond receiving email updates, including filming, product testing, events and selected INVI Build activities.'] },
     { n: '02', title: 'Community moderation', body: ['All INVI community activity and content is moderated by the INVI team.'] },
