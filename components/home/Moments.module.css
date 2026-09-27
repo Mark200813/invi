@@ -1,6 +1,16 @@
 .moments { position: relative; }
-.intro { padding-block: clamp(6rem, 16vw, 12rem) clamp(3rem, 8vw, 6rem); }
+.intro { display: grid; gap: 2rem; padding-block: clamp(5rem, 13vw, 10rem) clamp(3.5rem, 8vw, 6rem); }
 .introLine { max-width: 16ch; color: var(--on-stage); }
+.introSide { display: grid; gap: 1.75rem; align-content: end; }
+.introLede { max-width: 34ch; color: var(--on-stage-2); }
+/* three segments, one per colourway, joined by soft blends */
+.spectrum { display: flex; height: 2px; max-width: 26rem; transform-origin: left; }
+.spectrum i { flex: 1; background: var(--c); }
+.spectrum i:first-child { background: linear-gradient(90deg, transparent, var(--c)); }
+.spectrum i:last-child { background: linear-gradient(90deg, var(--c), transparent); }
+@media (min-width: 900px) {
+  .intro { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); column-gap: 4rem; align-items: end; }
+}
 
 .track { position: relative; }
 .pin { position: relative; }

@@ -14,11 +14,14 @@ export default function Product() {
         <p className={`lede ${s.introBody}`}>{product.body}</p>
       </div>
 
-      {/* The line-up: all three, the first time they stand together. */}
-      <div className={s.lineup} role="group" aria-label="The three INVI colourways">
+      {/* The line-up: all three, the first time they stand together. They
+          face you; the live 3D cans (CanStage) turn gently as you scroll by
+          and settle facing front when the line-up is centred. The stills
+          stay underneath as the fallback. */}
+      <div className={s.lineup} role="group" aria-label="The three INVI colourways" data-can-slot="lineup">
         {moments.items.map((m, i) => (
-          <figure key={m.key} className={s.lineupCan} data-speed={[0.25, 0.55, 0.35][i]}>
-            <Image src={m.canAngle} alt={`INVI ${m.name.toUpperCase()}`} width={1100} height={1600}
+          <figure key={m.key} className={s.lineupCan} data-speed={[0.25, 0.55, 0.35][i]} data-lineup-can={m.key}>
+            <Image data-lineup-poster src={m.can} alt={`INVI ${m.name.toUpperCase()}`} width={1100} height={1600}
               sizes="(max-width: 899px) 44vw, 30vw" />
             <figcaption className="label">{m.name}</figcaption>
           </figure>

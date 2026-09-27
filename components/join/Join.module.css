@@ -16,7 +16,7 @@
   border: 1px solid var(--line);
   min-height: 26rem;
 }
-:global(.ground-bone) .panel { background: rgba(255, 255, 255, 0.35); }
+:global(.ground-raise) .panel { background: rgba(244, 241, 236, 0.025); }
 .progress { display: grid; gap: 0.9rem; }
 .stepCount { color: inherit; }
 .of { color: var(--text-3); }
@@ -70,7 +70,7 @@ select.input option { color: #0c0c0d; }
   transition: border-color 0.3s, background-color 0.3s;
 }
 .option:hover { border-color: var(--text-2); }
-.optionOn { border-color: currentColor; background: rgba(12, 12, 13, 0.04); }
+.optionOn { border-color: currentColor; background: color-mix(in srgb, currentColor 6%, transparent); }
 .optionText { font-size: clamp(1.5rem, 4vw, 2.2rem); }
 .radio { width: 20px; height: 20px; border-radius: 50%; border: 1px solid currentColor; display: grid; place-items: center; flex: none; }
 .optionOn .radio::after { content: ''; width: 10px; height: 10px; border-radius: 50%; background: currentColor; }

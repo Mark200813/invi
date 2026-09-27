@@ -18,6 +18,13 @@ export default function Moments() {
     <section id="moments" className={`ground-stage ${s.moments}`} aria-label="The three moments" data-moments>
       <div className={`wrap ${s.intro}`}>
         <p className={`display t-md ${s.introLine}`}>{moments.intro}</p>
+        <div className={s.introSide}>
+          <p className={`lede ${s.introLede}`}>{moments.lede}</p>
+          {/* the day in three colours: it draws itself in as you arrive */}
+          <span className={s.spectrum} aria-hidden data-spectrum>
+            {moments.items.map((m) => <i key={m.key} style={{ ['--c' as string]: m.colours[1] }} />)}
+          </span>
+        </div>
       </div>
 
       <div className={s.track} data-track data-motion-skip>

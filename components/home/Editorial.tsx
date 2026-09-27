@@ -1,14 +1,14 @@
 import Image from 'next/image';
-import { belief, proof, building, proofLine } from '@/lib/content';
+import { belief, proof, building } from '@/lib/content';
 import { Rich } from '@/lib/rich';
 import Marquee from '@/components/site/Marquee';
 import s from './Editorial.module.css';
 
 /** Belief, proof and how we're building it: the part of the page that is
- *  words first. Bone ground, one idea per screen. */
+ *  words first. A raised dark chapter, one idea per screen. */
 export default function Editorial() {
   return (
-    <div className={`ground-bone ${s.editorial}`} data-clip>
+    <div className={`ground-raise ${s.editorial}`} data-clip>
       <section id="about" className={`wrap ${s.belief}`} aria-labelledby="belief-title">
         <div className={s.beliefCopy}>
           <p className={`label ${s.eyebrow}`}>{belief.eyebrow}</p>
@@ -33,8 +33,9 @@ export default function Editorial() {
       </section>
 
       <section className={s.shorthand} aria-label={belief.shorthand.join(' ')}>
-        <Marquee label={[...belief.shorthand, ...proofLine].join(' ')}
-          items={[...belief.shorthand.map((t, i) => ({ text: t, serif: i === 0 })), ...proofLine.map((t) => ({ text: t }))]} />
+        {/* the shorthand only: the proof line lives in the footer [dedupe] */}
+        <Marquee label={belief.shorthand.join(' ')}
+          items={belief.shorthand.map((t, i) => ({ text: t, serif: i === 0 }))} />
       </section>
 
       <section className={`wrap ${s.proof}`} aria-labelledby="proof-title">

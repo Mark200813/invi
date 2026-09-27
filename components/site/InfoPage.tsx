@@ -7,7 +7,7 @@ import s from './InfoPage.module.css';
 /** The calm pages parents read: For Parents, Safeguarding, Privacy, Terms. */
 export default function InfoPage({ page, photo }: { page: Info; photo?: { src: string; w: number; h: number; alt: string } }) {
   return (
-    <div className={`ground-bone ${s.page}`}>
+    <div className={`ground-stage ${s.page}`}>
       <header className={`wrap ${s.head} ${photo ? s.withPhoto : ''}`}>
         <div className={s.headText}>
         <p className={`label ${s.eyebrow}`}>{page.eyebrow}</p>

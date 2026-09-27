@@ -105,6 +105,17 @@ main:focus-visible, section[tabindex='-1']:focus-visible { outline: none; }
   --err: #a3261b;          /* 6.4:1 on bone */
 }
 .ground-bone ::selection { background: var(--ink); color: var(--bone); }
+/* A raised chapter: the same dark, lifted a step, with light falling on its
+   top edge. The site stays dark end to end; these panels give the long
+   reading chapters their own room, and open out of the dark as they arrive
+   (clips() in Motion.tsx), like a page being turned to. */
+.ground-raise {
+  background:
+    radial-gradient(120% 50% at 50% 0%, rgba(244, 241, 236, 0.05), transparent 62%),
+    var(--stage-raise);
+  color: var(--on-stage);
+  box-shadow: inset 0 1px 0 rgba(244, 241, 236, 0.1);
+}
 .ground-stage, :root {
   --line: var(--stage-line);
   --text-2: var(--on-stage-2);
@@ -256,6 +267,8 @@ html.intro-out .intro-inner { animation: introAway 0.9s cubic-bezier(0.65, 0, 0.
 /* once the 3D can is drawing, the poster renders step aside for it */
 [data-can-poster] { transition: opacity 0.6s var(--ease); }
 html[data-can3d] [data-can-poster] { opacity: 0; }
+[data-lineup-poster] { transition: opacity 0.6s var(--ease); }
+html[data-can3d-lineup] [data-lineup-poster] { opacity: 0; }
 
 /* ── the wordmark (supplied raster used as a mask) ───────────────────────── */
 .wordmark {

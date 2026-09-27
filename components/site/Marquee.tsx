@@ -38,9 +38,11 @@ export default function Marquee({ items, label }: { items: { text: string; serif
     return () => { gsap.ticker.remove(tick); io.disconnect(); ro.disconnect(); delete box.dataset.moving; el.style.transform = ''; };
   }, []);
 
+  // a short line repeats inside each run, so one run is always wider than the screen
+  const line = items.length < 6 ? [...items, ...items, ...items] : items;
   const run = (key: string) => (
     <span className={s.run} key={key}>
-      {items.map((it, i) => (
+      {line.map((it, i) => (
         <span key={i} className={`${s.item} ${it.serif ? s.serif : ''}`} data-text={it.text}>
           <span className={s.sep} aria-hidden />
         </span>

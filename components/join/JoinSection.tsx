@@ -5,13 +5,12 @@ import s from './Join.module.css';
 
 export default function JoinSection() {
   return (
-    <section id="join" className={`ground-bone ${s.join}`} aria-labelledby="join-title" data-clip>
+    <section id="join" className={`ground-raise ${s.join}`} aria-labelledby="join-title" data-clip>
       <div className={`wrap ${s.joinGrid}`}>
         <div className={s.joinIntro}>
           <p className={`label ${s.gift}`}>{join.gift} <span aria-hidden>↘</span></p>
           <p className={`label ${s.eyebrow}`}>{join.eyebrow}</p>
           <h2 id="join-title" className="display t-xl">{join.title}</h2>
-          <p className="lede">{join.body}</p>
           <p className="small">{join.community}</p>
           <noscript>
             <p className="small">{join.noscript} <a className="link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>

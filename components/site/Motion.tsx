@@ -285,6 +285,13 @@ function reveals() {
 
 /* ── depth: photographs move a little slower than the page ─────────────── */
 function parallax() {
+  // the moments' colour line draws itself in as it arrives
+  $$('[data-spectrum]').forEach((el) => {
+    gsap.fromTo(el, { scaleX: 0 }, {
+      scaleX: 1, ease: 'none',
+      scrollTrigger: { trigger: el, start: 'top 92%', end: 'top 55%', scrub: true },
+    });
+  });
   $$('[data-parallax]').forEach((fig) => {
     const img = $('img, video', fig);
     if (!img) return;

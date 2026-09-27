@@ -323,6 +323,149 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
   );
 }
 
+/* ── the line-up: all three cans together ──────────────────────────────
+ * They face you. As the line-up passes through the screen each can turns a
+ * little, a beat apart from its neighbour, and all three settle facing front
+ * while the line-up is centred: motion that follows the scroll, so a still
+ * page costs nothing. Each one tracks its still's box and parallax drift.
+ */
+type LineupProps = {
+  box: () => Box;
+  slots: { x: number; y: number; w: number; h: number }[];
+  figs: HTMLElement[];
+  variants: number[];
+  container: HTMLElement;
+  labels: THREE.Texture[];
+  env: THREE.Texture;
+};
+
+const LINEUP_LIGHT = MODES.reveal;
+
+function LineupRig({ box, slots, figs, variants, container, labels, env }: LineupProps) {
+  const scene = useThree((s) => s.scene);
+  const gl = useThree((s) => s.gl);
+  const camera = useThree((s) => s.camera);
+  const compiled = useRef(false);
+  const cans = useMemo(() => variants.map(() => buildCan(THREE, { segments: SMALL ? 64 : 96 })), [variants]);
+  const outers = useRef<(THREE.Group | null)[]>([]);
+  const turns = useRef<(THREE.Group | null)[]>([]);
+  const grounds = useRef<(THREE.Group | null)[]>([]);
+  const st = useRef({ lean: { x: 0, z: 0, vx: 0, vz: 0 }, target: { x: 0, z: 0 }, shown: false });
+  const R = LINEUP_LIGHT;
+
+  useEffect(() => {
+    scene.environment = env;
+    scene.environmentIntensity = R.env;
+    cans.forEach((can, i) => {
+      can.materials.veil.visible = false;
+      can.materials.body.map = labels[variants[i]];
+      can.materials.body.color.setScalar(R.label);
+      can.materials.body.needsUpdate = true;
+      const sh = can.shadow;
+      sh.rotation.set(0, 0, 0);
+      sh.scale.set(1, SHADOW_SQUASH, 1);
+      sh.position.set(CAN.radius * 0.34, 0, 0);
+      (sh.material as THREE.MeshBasicMaterial).opacity = R.shadow * 0.85;
+    });
+    // build the programs in the background before the first frame shows them
+    let alive = true;
+    outers.current.forEach((g) => { if (g) g.visible = true; });
+    gl.compileAsync(scene, camera).catch(() => {}).finally(() => { if (alive) { compiled.current = true; want(1500); } });
+    outers.current.forEach((g) => { if (g) g.visible = false; });
+    return () => { alive = false; scene.environment = null; };
+  }, [scene, env, cans, gl, camera, labels, variants, R]);
+  useEffect(() => () => cans.forEach((c) => c.dispose()), [cans]);
+
+  // the three lean toward the cursor together, a touch less than the solo can
+  useEffect(() => {
+    const s = st.current;
+    const move = (e: PointerEvent) => {
+      if (e.pointerType !== 'mouse') return;
+      const b = container.getBoundingClientRect();
+      if (e.clientY < b.top || e.clientY > b.bottom) return;
+      s.target.z = -clamp((e.clientX - (b.left + b.width / 2)) / (b.width * 0.9), -1, 1) * 0.1;
+      s.target.x = clamp((e.clientY - (b.top + b.height / 2)) / b.height, -1, 1) * 0.07;
+      want(300);
+    };
+    const leave = () => { s.target.x = 0; s.target.z = 0; want(1200); };
+    addEventListener('pointermove', move, { passive: true });
+    container.addEventListener('pointerleave', leave);
+    return () => { removeEventListener('pointermove', move); container.removeEventListener('pointerleave', leave); };
+  }, [container]);
+
+  useFrame((state, delta) => {
+    const s = st.current;
+    const hide = () => {
+      outers.current.forEach((g) => { if (g) g.visible = false; });
+      grounds.current.forEach((g) => { if (g) g.visible = false; });
+    };
+    if (!compiled.current) { hide(); return; }
+    const b = box(), vh = innerHeight;
+    if (b.h < 1 || b.top > vh + 40 || b.top + b.h < -40) { hide(); return; }
+    const dt = Math.min(0.05, delta);
+    const u = VIS_H / b.h;
+    // where the line-up sits: 0 when centred on screen, ±1 a screen away
+    const p = (b.top + b.h / 2 - vh / 2) / vh;
+
+    const L = s.lean, k = 70, c = 2 * Math.sqrt(k) * 0.8;
+    L.vx += ((s.target.x - L.x) * k - L.vx * c) * dt; L.x += L.vx * dt;
+    L.vz += ((s.target.z - L.z) * k - L.vz * c) * dt; L.z += L.vz * dt;
+
+    cans.forEach((_, i) => {
+      const g = outers.current[i], tg = turns.current[i], gr = grounds.current[i], sl = slots[i];
+      if (!g || !tg || !gr || !sl || sl.h < 1) return;
+      const drift = Number(gsap.getProperty(figs[i], 'y')) || 0;
+      const canPx = sl.h * POSTER_FILL;
+      const cx = sl.x + sl.w / 2 - b.w / 2;
+      const cy = sl.y + drift + sl.h / 2 - b.h / 2;
+      const scale = (canPx * u) / CAN.height;
+      g.position.set(cx * u, -cy * u, 0);
+      g.scale.setScalar(scale);
+      g.rotation.set(L.x, 0, L.z);
+      gr.position.set(cx * u, -cy * u - (CAN.height / 2) * scale, 0);
+      gr.scale.setScalar(scale);
+      // front means facing the camera, not the page: the outer cans turn in
+      // by the angle they are seen from
+      const faceCam = Math.atan2(-cx * u, DIST);
+      // a flat middle (front-facing while comfortably in view), then a
+      // growing turn; each can a beat behind the one before
+      const q = clamp(p + (i - 1) * 0.12, -1.3, 1.3);
+      const turn = -Math.sign(q) * Math.pow(Math.abs(q), 1.6) * 1.35;
+      tg.rotation.y = faceCam + turn;
+      tg.position.y = Math.sin(state.clock.elapsedTime * 0.62 + i * 1.7) * 0.0022 - CAN.height / 2;
+      g.visible = true; gr.visible = true;
+    });
+
+    if (Math.abs(L.vx) + Math.abs(L.vz) > 0.002 || Math.abs(s.target.x - L.x) + Math.abs(s.target.z - L.z) > 0.002) want(120);
+    // hand over from the stills only once the cans have actually drawn
+    if (!s.shown) { s.shown = true; requestAnimationFrame(() => { document.documentElement.dataset.can3dLineup = 'ready'; }); }
+  });
+
+  return (
+    <>
+      {cans.map((can, i) => (
+        <group key={i}>
+          <group ref={(el) => { outers.current[i] = el; }} visible={false}>
+            <group ref={(el) => { turns.current[i] = el; }}>
+              <primitive object={can.group} />
+            </group>
+          </group>
+          <group ref={(el) => { grounds.current[i] = el; }} visible={false}>
+            <primitive object={can.shadow} />
+          </group>
+        </group>
+      ))}
+      {/* one neutral studio for all three: each can's own label carries its colour */}
+      <directionalLight position={[-0.3, 0.34, 0.62]} intensity={R.key} color="#fbf6ef" />
+      <directionalLight position={[0.58, 0.02, 0.46]} intensity={R.fill} color="#a9adb4" />
+      <directionalLight position={[0.42, 0.22, -0.78]} intensity={R.rim} color="#f2f2f2" />
+      <directionalLight position={[-0.42, 0.14, -0.74]} intensity={R.rim * 0.4} color="#f2f2f2" />
+      <hemisphereLight groundColor={0x000000} intensity={R.ambient} color="#8c8f94" />
+    </>
+  );
+}
+
+
 /* ── the compositor ────────────────────────────────────────────────────
  * Draws each chapter's scene into the part of that chapter that is actually
  * on screen. The viewport and scissor are always clipped to the drawing
@@ -451,6 +594,7 @@ type Els = {
   hero?: { container: HTMLElement; slot: HTMLElement; mirror: HTMLElement };
   moments?: { container: HTMLElement; slot: HTMLElement; mirrors: Mirror[]; track: HTMLElement };
   closeup?: { container: HTMLElement; slot: HTMLElement };
+  lineup?: { container: HTMLElement; figs: HTMLElement[]; variants: number[] };
 };
 
 const markReady = () => { document.documentElement.dataset.can3d = 'ready'; };
@@ -463,6 +607,7 @@ function useFrames(els: Els) {
       hero: { docTop: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
       moments: { trackTop: 0, trackH: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
       closeup: { docTop: 0, left: 0, w: 0, h: 0, slot: { x: 0, y: 0, w: 0, h: 0 } },
+      lineup: { docTop: 0, left: 0, w: 0, h: 0, slots: [] as { x: number; y: number; w: number; h: number }[] },
     };
     const rel = (s: DOMRect, c: DOMRect) => ({ x: s.left - c.left, y: s.top - c.top, w: s.width, h: s.height });
     const measure = () => {
@@ -482,6 +627,17 @@ function useFrames(els: Els) {
         Object.assign(g.closeup, { docTop: c.top + y, left: c.left, w: c.width, h: c.height });
         Object.assign(g.closeup.slot, { x: 0, y: 0, w: c.width, h: c.height });
       }
+      if (els.lineup) {
+        const c = els.lineup.container.getBoundingClientRect();
+        Object.assign(g.lineup, { docTop: c.top + y, left: c.left, w: c.width, h: c.height });
+        // each still's box without its parallax drift (the rig adds the live drift)
+        els.lineup.figs.forEach((f, i) => {
+          const img = f.querySelector('img') ?? f;
+          const drift = Number(gsap.getProperty(f, 'y')) || 0;
+          const b = img.getBoundingClientRect();
+          g.lineup.slots[i] = { x: b.left - c.left, y: b.top - c.top - drift, w: b.width, h: b.height };
+        });
+      }
       want(300);
     };
     measure();
@@ -494,6 +650,7 @@ function useFrames(els: Els) {
     };
     const momentsBox = (): Box => ({ top: pinTop(), left: g.moments.left, w: g.moments.w, h: g.moments.h });
     const closeBox = (): Box => ({ top: g.closeup.docTop - scrollY, left: g.closeup.left, w: g.closeup.w, h: g.closeup.h });
+    const lineBox = (): Box => ({ top: g.lineup.docTop - scrollY, left: g.lineup.left, w: g.lineup.w, h: g.lineup.h });
 
     const frames = {
       hero: { box: heroBox, slot: g.hero.slot, spin: () => -0.18 + clamp(-heroBox().top / innerHeight, -1, 2) * 1.5 } as Frame,
@@ -509,7 +666,7 @@ function useFrames(els: Els) {
         spin: () => { const b = closeBox(); return -0.4 + clamp((innerHeight - b.top) / (innerHeight + b.h), 0, 1) * 1.4; },
       } as Frame,
     };
-    return { frames, measure };
+    return { frames, measure, lineup: { box: lineBox, slots: g.lineup.slots } };
   }, [els]);
 }
 
@@ -517,7 +674,7 @@ function Views({ els, intro }: { els: Els; intro: boolean }) {
   const gl = useThree((s) => s.gl);
   const labels = useLabels();
   const [env, setEnv] = useState<THREE.Texture | null>(null);
-  const { frames, measure } = useFrames(els);
+  const { frames, measure, lineup } = useFrames(els);
   useEffect(() => {
     let alive = true, made: THREE.Texture | null = null;
     buildEnvAsync(gl).then((e) => { made = e; if (alive) setEnv(e); else e.dispose(); });
@@ -552,6 +709,12 @@ function Views({ els, intro }: { els: Els; intro: boolean }) {
             mirrors={els.moments.mirrors} fit="full" labels={labels} env={env} onFirstFrame={markReady} />
         </Port>
       )}
+      {els.lineup && (
+        <Port box={lineup.box}>
+          <LineupRig box={lineup.box} slots={lineup.slots} figs={els.lineup.figs} variants={els.lineup.variants}
+            container={els.lineup.container} labels={labels} env={env} />
+        </Port>
+      )}
       {els.closeup && (
         <Port box={frames.closeup.box}>
           <CanRig frame={frames.closeup} container={els.closeup.container} slotEl={els.closeup.slot}
@@ -573,6 +736,11 @@ function findEls(): Els {
     const slot = q('[data-can-slot="moment"]', acts[0]);
     const mirrors = acts.map((a) => ({ el: q('[data-can]', a)!, variant: VARIANT[a.dataset.act || 'origin'] ?? 0 })).filter((m) => m.el);
     if (slot) els.moments = { container: pin, slot, mirrors, track };
+  }
+  const line = q('[data-can-slot="lineup"]');
+  if (line) {
+    const figs = [...line.querySelectorAll<HTMLElement>('[data-lineup-can]')];
+    if (figs.length) els.lineup = { container: line, figs, variants: figs.map((f) => VARIANT[f.dataset.lineupCan || 'origin'] ?? 0) };
   }
   const close = q('[data-can-slot="closeup"]');
   if (close) els.closeup = { container: close, slot: close };
@@ -605,13 +773,13 @@ export default function CanStage() {
   useEffect(() => {
     // wait a frame so Motion has pinned the moments before we measure
     const id = requestAnimationFrame(() => setEls(findEls()));
-    return () => { cancelAnimationFrame(id); delete document.documentElement.dataset.can3d; };
+    return () => { cancelAnimationFrame(id); delete document.documentElement.dataset.can3d; delete document.documentElement.dataset.can3dLineup; };
   }, []);
 
   // Only draw while a chapter with a can is on screen.
   useEffect(() => {
     if (!els) return;
-    const targets = [els.hero?.container, els.moments?.track, els.closeup?.container].filter(Boolean) as HTMLElement[];
+    const targets = [els.hero?.container, els.moments?.track, els.closeup?.container, els.lineup?.container].filter(Boolean) as HTMLElement[];
     const seen = new Set<Element>();
     const io = new IntersectionObserver((es) => {
       es.forEach((e) => (e.isIntersecting ? seen.add(e.target) : seen.delete(e.target)));
@@ -639,10 +807,11 @@ export default function CanStage() {
           c.addEventListener('webglcontextlost', (e) => {
             e.preventDefault();
             delete document.documentElement.dataset.can3d;
+            delete document.documentElement.dataset.can3dLineup;
           });
           c.addEventListener('webglcontextrestored', () => {
             want(2000); invalidate();
-            setTimeout(() => { document.documentElement.dataset.can3d = 'ready'; }, 400);
+            setTimeout(() => { document.documentElement.dataset.can3d = 'ready'; document.documentElement.dataset.can3dLineup = 'ready'; }, 400);
           });
           gl.toneMapping = THREE.NeutralToneMapping;
           gl.toneMappingExposure = 1.12;

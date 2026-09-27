@@ -40,12 +40,11 @@ export const counter = {
 };
 
 export const hero = {
-  eyebrow: "Body care for what's next", // [viv]
+  // the eyebrow "Body care for what's next" is gone: the opening keeps only
+  // the headline, the can and the Founding Crew call [mark]; it also echoed
+  // the footer's "Body care built with the next generation" [dedupe]
   titleLines: ['Where scent,', 'skin and mood'], // [site][viv]
   titleAccent: 'meet.',
-  lede: 'INVI brings scent that lasts, skin actives and mood technology together for real life. School. Sport. Going out. Whatever comes next.', // [viv]
-  primary: 'Join the Crew', // [viv]
-  secondary: 'Scroll through the day', // [site]
   footnoteLead: 'Founding Crew now open.', // [viv]
   footnote:
     'Join now for product testing, selected samples, limited merch and first access to new opportunities.', // [viv]
@@ -55,6 +54,9 @@ export type ScentKey = 'origin' | 'rise' | 'after-dark';
 
 export const moments = {
   intro: 'Three are coming, one for each part of the day.', // [site]
+  // [viv] the hero lede, moved here from the opening [mark]. "Whatever comes
+  // next." dropped: "next" was said eight times on the page [dedupe]
+  lede: 'INVI brings scent that lasts, skin actives and mood technology together for real life. School. Sport. Going out.',
   items: [
     {
       key: 'origin' as ScentKey,
@@ -83,7 +85,7 @@ export const moments = {
       name: 'After Dark',
       kicker: 'After sundown', // [mark] was 'After dark', which repeated the name
       line: 'When it counts and nobody needs it explained. The version of you that only comes out once the day’s done.',
-      desc: 'Moments that need no explanation.',
+      desc: 'Moments worth staying out for.', // [dedupe] the line already says nobody needs it explained
       colours: ['#49304A', '#84549A', '#D66BA0'],
       can: '/cans/can-after-dark-front.webp',
       canAngle: '/cans/can-after-dark-angle.webp',
@@ -94,19 +96,16 @@ export const moments = {
 
 export const product = {
   eyebrow: 'Engineered to perform', // [viv]
-  title: ['Built for', 'every moment', 'in between.'],
-  body: 'Scent that lasts. Skin-focused actives. Mood technology. Developed with master perfumers in Japan. Manufactured in the UK. Built with you.',
+  title: ['Made for', 'every moment', 'in between.'], // [dedupe] was 'Built for', also the philosophy title
+  body: 'Developed with master perfumers in Japan. Manufactured in the UK. Shaped by the Crew.', // [dedupe] the scent/skin/mood trio is said in the moments intro and the features
   subEyebrow: 'Body spray. Reimagined.', // [viv /products]
   subTitle: ['Smells good.', 'Does more.'],
-  subBody: [
-    'Long-lasting scent, skin-focused actives and mood technology in one seriously smart spray.',
-    'Created with master perfumers in Japan and designed for every version of your day.',
-  ],
+  subBody: ['All of it in one seriously smart spray.'], // [dedupe] the trio and the perfumers were each said three times
   features: [
-    { n: '01', k: 'Scent', t: 'Smells incredible', d: 'Long-lasting fragrance created with master perfumers in Japan. Made to match different moments, moods and plans.' },
-    { n: '02', k: 'Skin', t: 'Built for skin', d: 'Skin-focused actives meet premium scent in one easy everyday spray.' },
+    { n: '01', k: 'Scent', t: 'Made to last', d: 'Long-lasting fragrance, tuned to different moments, moods and plans.' }, // [dedupe] 'Smells incredible' echoed 'Smells good.'
+    { n: '02', k: 'Skin', t: 'Kind to skin', d: 'Skin-focused actives meet premium scent in one easy everyday spray.' }, // [dedupe] was 'Built for skin'
     { n: '03', k: 'Performance', t: 'Fresh, not covered up', d: 'Advanced fragrance technology is designed to help stop odour before it starts, rather than simply masking it.' },
-    { n: '04', k: 'Mood', t: 'Match your moment', d: 'Scent and mood technology designed to help you make more of whatever comes next.' },
+    { n: '04', k: 'Mood', t: 'Match your moment', d: 'Scent and mood technology designed to help you feel ready for anything.' }, // [dedupe] 'whatever comes next'
   ],
   air: {
     eyebrow: 'Air powered technology',
@@ -124,15 +123,15 @@ export const belief = {
   eyebrow: 'Our philosophy', // [viv]
   title: ['Built for the', 'years that', 'shape you.'],
   body: [
-    'INVI is inspired by the Latin word *Invictus*. Unconquered. Meaning to be grounded in who you are.',
-    'Our belief is simple. Body care should meet you where you are. It should respect who you are, not tell you who to be. That’s why we’re building INVI with you, bringing scent, skin and mood together.',
+    'INVI is inspired by the Latin word *Invictus*. Unconquered. Grounded, and true to yourself.', // [dedupe] 'who you are' was said five times
+    'Our belief is simple. Body care should meet you where you are, not tell you who to be. That’s why we’re building INVI with you.', // [dedupe]
   ],
   // [site] the creed
   creed: [
     'Not about becoming someone else.',
     'Not about fitting in.',
     'About the confidence to become *more of who you already are.*',
-    'Built for every moment. Built for *every version of you.*',
+    'Built for *every version of you.*', // [dedupe] 'every moment' is the product title
   ],
   shorthand: ['Scent.', 'Skin.', 'Mood.'], // [site] locked shorthand
   photoAlt: 'A next-generation boy wearing the INVI wordmark', // [viv]
@@ -155,48 +154,50 @@ export const proof = {
 export const building = {
   eyebrow: 'How we’re building it', // [site]
   title: 'We launch culture, before we launch anything else.',
-  comingSoon: ['Built with boys.', 'Coming soon. A new world of body care built around what you need for every moment.'], // [viv]
+  comingSoon: ['Coming soon.', 'A new world of body care, built around what you need.'], // [viv], trimmed [dedupe]
   pillars: [
-    { k: 'Built with boys', t: 'Not marketed to them', d: 'Our founding community of 62 boys already influences everything from development to brand and content.' },
+    { k: 'Co-created', t: 'Not marketed to them', d: 'Our founding community of 62 boys already influences everything from development to brand and content.' }, // [dedupe] 'Built with boys' is in the footer
     { k: 'Credible role models', t: 'Belief, not noise', d: 'We don’t build community through creators alone. We build it through culture, credible role models, and our own community of boys.' },
-    { k: 'A brand that grows', t: 'Here for the duration', d: 'Designed to evolve alongside boys through the years that shape them, rather than showing up once and moving on.' },
+    { k: 'A brand that grows', t: 'Here for the duration', d: 'Designed to grow up alongside boys, rather than showing up once and moving on.' }, // [dedupe] 'the years that shape' is the philosophy title
   ],
 };
 
 export const crew = {
   eyebrow: 'The Founding Crew', // [viv]
   title: ['Be there', 'from day one.'],
-  sub: 'New people. New skills. First dibs on what’s next.',
+  sub: 'New people. New skills. A seat at the table.', // [dedupe]
   photoAlt: 'Four friends on a sea wall at dusk, laughing together',
   closer: {
     eyebrow: 'More than a waitlist', // [viv /join-the-crew]
     title: 'Get closer to the action.',
     body: [
       'Meet and learn from some of the UK’s leading entrepreneurs, creators and industry experts.',
-      'Build practical skills, test products before launch and get access to selected samples, limited INVI merch, events and opportunities.',
-    ],
+    ], // second line dropped [dedupe]: the samples-merch-events list appeared five times
   },
   benefits: [
     { n: '01', t: 'Make your mark', d: 'Your ideas could shape a real product, campaign or piece of content. No pretend briefs. This is the real thing.' },
     { n: '02', t: 'Meet your people', d: 'Connect with other Crew members, swap ideas, make new friends and build something together.' },
-    { n: '03', t: 'Learn from the best', d: 'Meet founders, creators and industry insiders. Pick up new skills and see how a brand really comes to life.' },
-    { n: '04', t: 'Get first dibs', d: 'Test products, receive selected samples and hear about limited merch, events, internships and paid opportunities first.' },
+    { n: '03', t: 'Learn from the best', d: 'Pick up skills you won’t learn in class, from people who’ve done it for real.' }, // [dedupe]
+    { n: '04', t: 'Get first dibs', d: 'Try products before they launch, and hear first about internships, paid roles and events.' }, // [dedupe]
   ],
   founding: {
-    eyebrow: 'The Founding 100',
+    eyebrow: 'First 100 only', // [dedupe] was 'The Founding 100', the same as the title
     title: ['Be one of the', 'Founding 100.'],
-    body: 'The first 100 approved INVI Crew members will receive a numbered Founder Card, unlocking product testing, selected samples, special drops, events and opportunities.',
-    hoodie: 'Complete your first Crew challenge to earn a limited edition INVI hoodie.',
+    // [mark] the first 100 get the card AND the hoodie. Viv's version tied the
+    // hoodie to a Crew challenge: CONFIRM WITH VIV which is right.
+    body: 'The first 100 approved INVI Crew members receive a numbered Founder Card and limited INVI merch: the Founding hoodie.',
+    hoodie: 'Made for them alone, with the INVI marks embossed in 3D.', // [new]
+    hoodieAlt: { front: 'The Founding hoodie, front', back: 'The Founding hoodie, back' },
     cardLabel: 'Founder Card',
   },
 };
 
 export const build = {
-  eyebrow: 'INVI Build. Founding cohort 01', // [viv]
+  eyebrow: 'INVI Build. Cohort 01', // [viv], 'Founding' trimmed [dedupe]
   title: ['The first Crew.', 'Real mentors.', 'A real launch.'],
-  body: 'Not work experience. Not a focus group. Work alongside the INVI team, brilliant entrepreneurs, creators and industry experts. Make decisions, test ideas, create content and see how a real brand gets built.',
+  body: 'Not work experience. Not a focus group. Make decisions, test ideas, create content and see how a real brand gets built, alongside the INVI team and its mentors.', // [dedupe]
   live: {
-    title: 'Real skills. Real opportunities.', // [viv /join-the-crew]
+    title: 'Hands on from the start.', // [dedupe] 'Real' was said five times in this chapter
     body: 'Work on live briefs across scent, product, packaging, content and campaigns.',
   },
   // [site] the programme steps
@@ -256,7 +257,7 @@ export type RoadmapKey = 'hair-reset' | 'body-mist' | 'shaving-skin' | 'body-was
 export const roadmap = {
   eyebrow: 'The product roadmap', // [viv /products]
   title: 'What should we make next?',
-  body: 'INVI is being built with you. Join the Crew, cast your vote and help choose what comes next.',
+  body: 'Join the Crew, cast your vote and help decide which one we make.', // [dedupe]
   items: [
     { key: 'hair-reset' as RoadmapKey, n: '01', t: 'Hair Reset', d: 'A refreshing spray for hair between washes, after sport or whenever it needs a reset.' },
     { key: 'body-mist' as RoadmapKey, n: '02', t: 'Body Mist', d: 'A lighter fragrance layer for your scent wardrobe.' },
@@ -272,20 +273,19 @@ export const roadmap = {
   confirm: 'Confirm',
   yourPick: 'Your pick',
   lockedIn: 'Locked in.',
-  closing: 'Your vote shapes what comes next.', // [viv]
+  closing: 'Your vote helps decide what we make.', // [viv], reworded [dedupe]
 };
 
 export const join = {
-  eyebrow: 'Be there from day one', // [viv]
-  gift: 'Join now for your exclusive launch gift', // [viv]
-  title: 'Your place in what’s next.',
-  body: 'Join now for product testing, selected samples, limited merch, experiences and opportunities.',
+  eyebrow: 'Sign up', // [dedupe] 'Be there from day one' is the Crew title
+  gift: 'Early members get an exclusive launch gift', // [viv], reworded [dedupe]: 'Join now for' opens the hero card
+  title: 'Save your place.', // [dedupe]
   community: 'INVI is made for teenage boys, from 13 up. For members under 18, parent or guardian permission is required before participation in activities beyond receiving email updates, including filming, product testing, events and selected INVI Build activities.',
   already: 'Already in the Crew? You’re counted.',
   fields: {
     name: { label: 'First name', placeholder: 'What do people call you?' },
     email: { label: 'Email address', placeholder: 'you@example.com' },
-    age: { label: 'Age range', options: ['Under 13', '13 to 15', '16 to 17', '18+'] as const, note: 'INVI is made for teenage boys, from 13 up.' }, // Under 13 [mark]
+    age: { label: 'Age range', options: ['Under 13', '13 to 15', '16 to 17', '18+'] as const, note: 'We only ask for what fits your age.' }, // Under 13 [mark]; note [dedupe]
     guardian: {
       label: 'Parent or guardian',
       nameLabel: 'Their name',
@@ -310,7 +310,7 @@ export const join = {
   skip: 'Skip',
   privacy: 'Privacy',
   notes: [
-    'If you’re under 18, we may ask for permission from a parent or guardian before you take part in INVI activities or receive a launch gift.',
+    // the under-18 permission note is already said beside the form [dedupe]
     'Your details stay with us. Phone numbers are only used for requested WhatsApp invites. No spam. No selling your data.',
   ],
   // Error wording: [site] where the field existed before; the rest is the
