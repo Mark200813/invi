@@ -183,10 +183,10 @@ export const crew = {
   founding: {
     eyebrow: 'First 100 only', // [dedupe] was 'The Founding 100', the same as the title
     title: ['Be one of the', 'Founding 100.'],
-    // [mark] the first 100 get the card AND the hoodie. Viv's version tied the
-    // hoodie to a Crew challenge: CONFIRM WITH VIV which is right.
-    body: 'The first 100 approved INVI Crew members receive a numbered Founder Card and limited INVI merch: the Founding hoodie.',
-    hoodie: 'Made for them alone, with the INVI marks embossed in 3D.', // [new]
+    // [mark] both included for now: the hoodie for the first 100 (Mark) AND
+    // unlocked by the first Crew challenge (Viv). Viv to confirm or trim.
+    body: 'The first 100 approved INVI Crew members receive a numbered Founder Card and limited INVI merch, including the Founding hoodie.',
+    hoodie: 'Complete your first Crew challenge to unlock yours, made for no one else, with the INVI marks embossed in 3D.',
     hoodieAlt: { front: 'The Founding hoodie, front', back: 'The Founding hoodie, back' },
     cardLabel: 'Founder Card',
   },
