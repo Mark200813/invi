@@ -93,16 +93,16 @@ export const moments = {
 export const product = {
   eyebrow: 'Engineered to perform', // [viv]
   title: ['Built for', 'every moment', 'in between.'],
-  body: 'Scent that lasts. Skin focused actives. Mood technology. Developed with master perfumers in Japan. Manufactured in the UK. Built with you.',
+  body: 'Scent that lasts. Skin-focused actives. Mood technology. Developed with master perfumers in Japan. Manufactured in the UK. Built with you.',
   subEyebrow: 'Body spray. Reimagined.', // [viv /products]
   subTitle: ['Smells good.', 'Does more.'],
   subBody: [
-    'Long lasting scent, skin focused actives and mood technology in one seriously smart spray.',
+    'Long-lasting scent, skin-focused actives and mood technology in one seriously smart spray.',
     'Created with master perfumers in Japan and designed for every version of your day.',
   ],
   features: [
-    { n: '01', k: 'Scent', t: 'Smells incredible', d: 'Long lasting fragrance created with master perfumers in Japan. Made to match different moments, moods and plans.' },
-    { n: '02', k: 'Skin', t: 'Built for skin', d: 'Skin focused actives meet premium scent in one easy everyday spray.' },
+    { n: '01', k: 'Scent', t: 'Smells incredible', d: 'Long-lasting fragrance created with master perfumers in Japan. Made to match different moments, moods and plans.' },
+    { n: '02', k: 'Skin', t: 'Built for skin', d: 'Skin-focused actives meet premium scent in one easy everyday spray.' },
     { n: '03', k: 'Performance', t: 'Fresh, not covered up', d: 'Advanced fragrance technology is designed to help stop odour before it starts, rather than simply masking it.' },
     { n: '04', k: 'Mood', t: 'Match your moment', d: 'Scent and mood technology designed to help you make more of whatever comes next.' },
   ],
@@ -110,7 +110,7 @@ export const product = {
     eyebrow: 'Air powered technology',
     title: ['A better way', 'to spray.'],
     body: [
-      'Our air powered spray system delivers a fine pressurised mist without traditional aerosol propellants.',
+      'Our air-powered spray system delivers a fine pressurised mist without traditional aerosol propellants.',
       'It is designed to protect the integrity of the fragrance and elevate the spray experience.',
     ],
   },
@@ -133,7 +133,7 @@ export const belief = {
     'Built for every moment. Built for *every version of you.*',
   ],
   shorthand: ['Scent.', 'Skin.', 'Mood.'], // [site] locked shorthand
-  photoAlt: 'A next generation boy wearing the INVI wordmark', // [viv]
+  photoAlt: 'A next-generation boy wearing the INVI wordmark', // [viv]
 };
 
 export const proof = {
@@ -419,7 +419,7 @@ export const parents: InfoPage = {
       title: 'Scent. Skin. Mood. Performance.',
       body: [
         'INVI’s first product is a hybrid body spray designed around scent, skin, mood and performance.',
-        'Our fragrances are developed in Japan using a neuroscience informed approach that explores how scent can influence emotional response. Our formulation also uses advanced fragrance technology designed to help prevent malodour by managing the microbiome associated with its development.',
+        'Our fragrances are developed in Japan using a neuroscience-informed approach that explores how scent can influence emotional response. Our formulation also uses advanced fragrance technology designed to help prevent malodour by managing the microbiome associated with its development.',
       ],
     },
     {
@@ -488,6 +488,6 @@ export const communityTerms: InfoPage = {
     { n: '01', title: 'Respectful participation', body: ['By joining, members agree to participate respectfully.', 'Harassment, discrimination, bullying, threatening behaviour or sharing another member’s personal information without permission is not acceptable.'] },
     { n: '02', title: 'Moderation', body: ['The INVI team may moderate content or remove members who breach these standards or put other community members at risk.'] },
     { n: '03', title: 'Leaving the community', body: ['Members can leave the community at any time. They can also unsubscribe from marketing communications or request deletion of their information.'] },
-    { n: '04', title: 'Pre launch', body: ['INVI is currently in pre launch. Nothing is currently sold through the community website. There is no checkout or payment required to join the community. Any future purchases will be governed by separate product and sales terms.'] },
+    { n: '04', title: 'Pre-launch', body: ['INVI is currently in pre-launch. Nothing is currently sold through the community website. There is no checkout or payment required to join the community. Any future purchases will be governed by separate product and sales terms.'] },
   ],
 };
