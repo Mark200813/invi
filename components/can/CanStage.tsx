@@ -34,6 +34,8 @@ const VIS_H = 2 * DIST * Math.tan(THREE.MathUtils.degToRad(FOV / 2));
 /** In the poster renders the can fills 84% of the frame height, centred. */
 const POSTER_FILL = 0.84;
 const DRAG_K = 0.0085;
+/** the shadow oval's height as a share of its width, matching the old floor patch seen from the usual angle */
+const SHADOW_SQUASH = 0.17;
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const smooth = (x: number, a: number, b: number) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
@@ -105,6 +107,7 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
   const compiled = useRef(false);
   const can = useMemo(() => buildCan(THREE, { segments: SMALL ? 64 : 96 }), []);
   const outer = useRef<THREE.Group>(null);
+  const ground = useRef<THREE.Group>(null);
   const turn = useRef<THREE.Group>(null);
   const key = useRef<THREE.DirectionalLight>(null);
   const fill = useRef<THREE.DirectionalLight>(null);
@@ -138,6 +141,18 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
   // eslint-disable-next-line react-hooks/exhaustive-deps -- first colourway only
   }, [scene, env, can, gl, camera, labels]);
   useEffect(() => () => can.dispose(), [can]);
+
+  // The contact shadow. As a patch on the floor it was seen almost edge-on
+  // (the camera sits level with the can), so it thinned to a hairline, and
+  // tilting with the can turned it into a long diagonal streak. It is now a
+  // soft oval that always faces the camera, level on the ground: it never
+  // collapses, whatever the angle.
+  useEffect(() => {
+    const sh = can.shadow;
+    sh.rotation.set(0, 0, 0);
+    sh.scale.set(1, SHADOW_SQUASH, 1);
+    sh.position.set(CAN.radius * 0.34, 0, 0);
+  }, [can]);
 
   // Pointer: the can leans toward the cursor on a spring; grabbing it spins
   // it, and it keeps its momentum before friction settles it. Touch drags
@@ -200,13 +215,13 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
   }, [container, slotEl]);
 
   useFrame((state, delta) => {
-    const s = st.current, g = outer.current, tg = turn.current;
-    if (!g || !tg) return;
-    if (!compiled.current) { g.visible = false; return; }
+    const s = st.current, g = outer.current, tg = turn.current, gr = ground.current;
+    if (!g || !tg || !gr) return;
+    if (!compiled.current) { g.visible = false; gr.visible = false; return; }
     const cb = frame.box(), sl = frame.slot;
     const vh = innerHeight;
     // off screen: nothing to do (the Compositor will not draw it either)
-    if (cb.h < 1 || sl.h < 1 || cb.top > vh + 40 || cb.top + cb.h < -40) { g.visible = false; return; }
+    if (cb.h < 1 || sl.h < 1 || cb.top > vh + 40 || cb.top + cb.h < -40) { g.visible = false; gr.visible = false; return; }
     const dt = Math.min(0.05, delta);
     const u = VIS_H / cb.h;
 
@@ -236,6 +251,11 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
     const scale = ((canPx * u) / CAN.height) * sc;
     g.position.set(cx * u, -cy * u, 0);
     g.scale.setScalar(scale);
+    // the shadow stays on the ground under the can's resting place: it
+    // follows its size, never its tilt or its lift
+    const cyRest = cyTop - cb.h / 2;
+    gr.position.set(cx * u, -cyRest * u - (CAN.height / 2) * scale, 0);
+    gr.scale.setScalar(scale);
 
     // lean: a spring toward the pointer, slightly under-damped so it settles
     const L = s.lean, k = 90, c = 2 * Math.sqrt(k) * 0.72;
@@ -268,8 +288,13 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
 
     const a = clamp(op, 0, 1);
     g.visible = a > 0.01;
+    gr.visible = g.visible;
     for (const mat of mats) mat.opacity = a;
-    (can.shadow.material as THREE.MeshBasicMaterial).opacity = R.shadow * a * mainK;
+    // tilted by the scroll motion, the can stands on its edge: its shadow
+    // softens while it leans (the small pointer lean leaves it alone)
+    // and as it lifts off the ground, its shadow fades away beneath it
+    const grounded = (1 - 0.55 * smooth(Math.abs(rot), 2, 14)) * (1 - smooth(Math.abs(yP), 1, 16));
+    (can.shadow.material as THREE.MeshBasicMaterial).opacity = R.shadow * a * mainK * grounded;
 
     // keep frames coming while anything is still in motion
     const moving = s.drag || Math.abs(s.vel) > 0.02 || Math.abs(L.vx) + Math.abs(L.vz) > 0.002
@@ -285,7 +310,9 @@ function CanRig({ frame, container, slotEl, mirrors, fit, labels, env, intro, on
         <group ref={turn}>
           <primitive object={can.group} />
         </group>
-        <primitive object={can.shadow} position={[CAN.radius * 0.34, 0.0006 - CAN.height / 2, CAN.radius * 0.1]} />
+      </group>
+      <group ref={ground} visible={false}>
+        <primitive object={can.shadow} />
       </group>
       <directionalLight ref={key} position={[-0.3, 0.34, 0.62]} intensity={0} />
       <directionalLight ref={fill} position={[0.58, 0.02, 0.46]} intensity={0} />
