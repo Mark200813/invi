@@ -31,8 +31,10 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field(
   );
 });
 
-export function Check({ id, checked, onChange, children, error }: {
-  id: string; checked: boolean; onChange: (v: boolean) => void; children: ReactNode; error?: string;
+/** A checkbox. `after` sits outside the label (e.g. a Privacy link), so
+ *  following the link never ticks the box. */
+export function Check({ id, checked, onChange, children, error, after }: {
+  id: string; checked: boolean; onChange: (v: boolean) => void; children: ReactNode; error?: string; after?: ReactNode;
 }) {
   return (
     <div className={`${s.checkRow} ${error ? s.bad : ''}`}>
@@ -44,6 +46,7 @@ export function Check({ id, checked, onChange, children, error }: {
         </span>
         <span className={s.checkText}>{children}</span>
       </label>
+      {after && <p className={s.checkAfter}>{after}</p>}
       <p id={`${id}-err`} className={s.err} aria-live="polite">{error}</p>
     </div>
   );

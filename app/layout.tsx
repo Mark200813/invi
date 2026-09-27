@@ -28,7 +28,13 @@ const serif = localFont({
   preload: true,
 });
 
-const siteUrl = process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000';
+// share cards need an absolute address. Production: the real domain once
+// set, else the project's production address (never a one-off deployment
+// URL). Previews point at themselves, so their cards show their own images.
+const env = process.env;
+const siteUrl = env.VERCEL_ENV === 'production'
+  ? env.NEXT_PUBLIC_SITE_URL || `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : env.VERCEL_URL ? `https://${env.VERCEL_URL}` : env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

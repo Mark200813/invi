@@ -19,7 +19,7 @@ export default function Topics() {
           </button>
         ))}
       </div>
-      <p className="vh" aria-live="polite">{shown.length} topics</p>
+      <p className="vh" aria-live="polite">{shown.length} {shown.length === 1 ? 'topic' : 'topics'}</p>
       <ol className={s.list}>
         {shown.map((x) => (
           <li key={x.t} className={s.topic}>

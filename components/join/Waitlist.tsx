@@ -1,8 +1,10 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
+import Link from 'next/link';
 import { waitlist } from '@/lib/content';
-import { EMAIL_RE, MOBILE_RE, normaliseMobile, submitWaitlist } from '@/lib/submit';
+import { submitWaitlist } from '@/lib/submit';
+import { cleanEmail, cleanName, cleanText, isValidEmail, isValidMobile, isValidName, NAME_MAX, normaliseMobile } from '@/lib/validate';
 import { setCrew, useCrew } from '@/lib/store';
 import { Check, Field } from './ui';
 import s from './Join.module.css';
@@ -17,43 +19,62 @@ export default function Waitlist() {
   const [trap, setTrap] = useState('');
   const [errs, setErrs] = useState<Record<string, string | undefined>>({});
   const [sending, setSending] = useState(false);
+  const busy = useRef(false);
 
   async function submit(ev: FormEvent) {
     ev.preventDefault();
+    if (busy.current) return;
     const bad: Record<string, string> = {};
-    if (!name.trim()) bad.name = waitlist.errors.name;
-    const c = contact.trim();
-    if (!(EMAIL_RE.test(c) || MOBILE_RE.test(normaliseMobile(c)))) bad.contact = waitlist.errors.contact;
+    if (!cleanName(name)) bad.name = waitlist.errors.name;
+    else if (!isValidName(name)) bad.name = waitlist.errors.nameChars;
+    // an @ means an email; anything else is read as a phone number
+    const isEmail = cleanText(contact).includes('@');
+    if (!(isEmail ? isValidEmail(contact) : isValidMobile(contact))) bad.contact = waitlist.errors.contact;
     if (!consent) bad.consent = waitlist.errors.consent;
     setErrs(bad);
     if (Object.keys(bad).length) { document.getElementById(`wl-${Object.keys(bad)[0]}`)?.focus(); return; }
-    if (trap) return; // bots fill every field
+    busy.current = true;
     setSending(true);
-    await submitWaitlist({ firstName: name.trim(), contact: EMAIL_RE.test(c) ? c : normaliseMobile(c), consent });
-    setCrew({ waitlisted: true });
-    setSending(false);
+    try {
+      // bots fill every field: they get the same "you're on the list", and nothing is sent
+      if (!trap) await submitWaitlist({ firstName: cleanName(name), contact: isEmail ? cleanEmail(contact) : normaliseMobile(contact), consent });
+      setCrew({ waitlisted: true });
+      setName(''); setContact(''); setConsent(false);
+    } finally {
+      busy.current = false;
+      setSending(false);
+    }
+  }
+
+  function restart() {
+    setCrew({ waitlisted: false });
+    requestAnimationFrame(() => document.getElementById('wl-name')?.focus({ preventScroll: true }));
   }
 
   return (
-    <section className={s.waitlist} aria-labelledby="wl-title">
+    <section id="waitlist" className={s.waitlist} aria-labelledby="wl-title">
       <div className={s.waitlistCopy}>
         <p className={`label ${s.eyebrow}`}>{waitlist.eyebrow}</p>
         <h2 id="wl-title" className={`display ${s.waitlistTitle}`} data-no-split>{waitlist.title}</h2>
         <p className="body">{waitlist.body}</p>
       </div>
       {crew.waitlisted ? (
-        <p className={`display t-md ${s.waitlistDone}`} role="status" data-no-split>{waitlist.done}</p>
+        <div className={s.waitlistDone}>
+          <p className="display t-md" role="status" data-no-split>{waitlist.done}</p>
+          <button type="button" className={s.back} onClick={restart}>{waitlist.restart}</button>
+        </div>
       ) : (
         <form className={s.waitlistForm} onSubmit={submit} noValidate>
           <div className={s.trap} aria-hidden>
             <label htmlFor="wl-website">Website</label>
             <input id="wl-website" tabIndex={-1} autoComplete="off" value={trap} onChange={(e) => setTrap(e.target.value)} />
           </div>
-          <Field id="wl-name" label={waitlist.name} autoComplete="given-name" value={name}
+          <Field id="wl-name" label={waitlist.name} autoComplete="given-name" maxLength={NAME_MAX} value={name}
             onChange={(e) => { setName(e.target.value); setErrs((o) => ({ ...o, name: undefined })); }} error={errs.name} />
-          <Field id="wl-contact" label={waitlist.contact} autoComplete="email" value={contact}
+          <Field id="wl-contact" label={waitlist.contact} autoComplete="email" spellCheck={false} autoCapitalize="none" maxLength={254} value={contact}
             onChange={(e) => { setContact(e.target.value); setErrs((o) => ({ ...o, contact: undefined })); }} error={errs.contact} />
-          <Check id="wl-consent" checked={consent} onChange={(v) => { setConsent(v); setErrs((o) => ({ ...o, consent: undefined })); }} error={errs.consent}>
+          <Check id="wl-consent" checked={consent} onChange={(v) => { setConsent(v); setErrs((o) => ({ ...o, consent: undefined })); }} error={errs.consent}
+            after={<Link href="/privacy" target="_blank" className="link">{waitlist.privacy}</Link>}>
             {waitlist.consent}
           </Check>
           <div>

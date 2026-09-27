@@ -1,4 +1,4 @@
-import { join } from '@/lib/content';
+import { CONTACT_EMAIL, join } from '@/lib/content';
 import JoinFlow from './JoinFlow';
 import Waitlist from './Waitlist';
 import s from './Join.module.css';
@@ -13,6 +13,9 @@ export default function JoinSection() {
           <h2 id="join-title" className="display t-xl">{join.title}</h2>
           <p className="lede">{join.body}</p>
           <p className="small">{join.community}</p>
+          <noscript>
+            <p className="small">{join.noscript} <a className="link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.</p>
+          </noscript>
         </div>
         <JoinFlow />
       </div>

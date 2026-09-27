@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import type { InfoPage as Info } from '@/lib/content';
-import { joinCta } from '@/lib/content';
+import { CONTACT_EMAIL, joinCta } from '@/lib/content';
 import s from './InfoPage.module.css';
 
 /** The calm pages parents read: For Parents, Safeguarding, Privacy, Terms. */
@@ -15,6 +15,12 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
           {page.title.map((l) => <span key={l} className={s.block}>{l} </span>)}
         </h1>
         {page.intro.map((p) => <p key={p} className={`lede ${s.intro}`}>{p}</p>)}
+        {page.draft && (
+          <aside className={s.draft} aria-label={page.draft.title}>
+            <p className={`label ${s.draftTag}`}>{page.draft.title}</p>
+            {page.draft.body.map((p) => <p key={p} className="small">{p}</p>)}
+          </aside>
+        )}
         </div>
         {photo && (
           <figure className={s.photo} data-parallax="10">
@@ -29,7 +35,9 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
             {sec.n && <p className={`index-n ${s.n}`}>{sec.n}</p>}
             <h2 id={slug(sec.title)} className={`display ${s.secTitle}`}>{sec.title}</h2>
             <div className={s.secBody}>
-              {sec.body.map((p) => <p key={p} className="body">{p}</p>)}
+              {sec.body.map((p) => <p key={p} className="body">{linkify(p)}</p>)}
+              {sec.list && <ul className={s.list}>{sec.list.map((p) => <li key={p} className="body">{linkify(p)}</li>)}</ul>}
+              {sec.after?.map((p) => <p key={p} className="body">{linkify(p)}</p>)}
             </div>
           </section>
         ))}
@@ -60,10 +68,10 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
 
 const slug = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 
-/** Turns the contact address in a line of copy into a mailto link. */
+/** Turns the contact address in a line of copy into a mailto link (the
+ *  exact address, so a full stop after it stays plain text). */
 function linkify(text: string) {
-  const m = text.match(/[\w.+-]+@[\w-]+\.[\w.]+/);
-  if (!m) return text;
-  const [before, after] = [text.slice(0, m.index), text.slice((m.index ?? 0) + m[0].length)];
-  return <>{before}<a className="link" href={`mailto:${m[0]}`}>{m[0]}</a>{after}</>;
+  const at = text.indexOf(CONTACT_EMAIL);
+  if (at < 0) return text;
+  return <>{text.slice(0, at)}<a className="link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{text.slice(at + CONTACT_EMAIL.length)}</>;
 }

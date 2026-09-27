@@ -5,9 +5,14 @@ import type { RoadmapKey } from './content';
 
 /**
  * What this browser remembers about its visitor: whether they joined, their
- * reference, their locked vote. Stored locally, sanitised on read, shared
- * across components through one tiny external store.
+ * first name and reference, their locked vote, and which WhatsApp step they
+ * are on. No email, phone, guardian details or age are ever kept here.
+ *
+ * It is a convenience for the visitor, not a record: anyone can edit it, so
+ * it is sanitised on every read, and the real one-vote-per-member rule has to
+ * live on the server once the database exists.
  */
+export type WhatsAppAccess = 'link' | 'approval' | null;
 export type CrewState = {
   joined: boolean;
   name: string;
@@ -16,39 +21,65 @@ export type CrewState = {
   confirmed: boolean;
   waitlisted: boolean;
   applied: boolean;
+  whatsapp: WhatsAppAccess;
 };
 
 const KEY = 'invi.state.v5';
 const VOTES: RoadmapKey[] = ['hair-reset', 'body-mist', 'shaving-skin', 'body-wash'];
-const EMPTY: CrewState = { joined: false, name: '', ref: null, vote: null, confirmed: false, waitlisted: false, applied: false };
+const EMPTY: CrewState = { joined: false, name: '', ref: null, vote: null, confirmed: false, waitlisted: false, applied: false, whatsapp: null };
 
 let state: CrewState = EMPTY;
 let loaded = false;
 const listeners = new Set<() => void>();
 
+function sanitise(raw: Partial<CrewState> | null): CrewState {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return EMPTY;
+  const joined = raw.joined === true;
+  const vote = typeof raw.vote === 'string' && VOTES.includes(raw.vote) ? raw.vote : null;
+  const ref = Number.isInteger(raw.ref) && (raw.ref as number) >= 1000 && (raw.ref as number) <= 9999 ? (raw.ref as number) : null;
+  return {
+    joined,
+    name: typeof raw.name === 'string' ? raw.name.slice(0, 60) : '',
+    ref: joined ? ref : null,
+    vote: joined ? vote : null,
+    // a locked vote only exists for a member with a vote
+    confirmed: joined && raw.confirmed === true && !!vote,
+    waitlisted: raw.waitlisted === true,
+    applied: raw.applied === true,
+    whatsapp: joined && (raw.whatsapp === 'link' || raw.whatsapp === 'approval') ? raw.whatsapp : null,
+  };
+}
+
+function read() {
+  try { state = sanitise(JSON.parse(localStorage.getItem(KEY) || 'null')); } catch { state = EMPTY; }
+}
+
 function load() {
   if (loaded || typeof window === 'undefined') return;
   loaded = true;
-  try {
-    const raw = JSON.parse(localStorage.getItem(KEY) || '{}') as Partial<CrewState>;
-    state = {
-      joined: raw.joined === true,
-      name: typeof raw.name === 'string' ? raw.name.slice(0, 60) : '',
-      ref: Number.isFinite(raw.ref) && (raw.ref as number) > 0 ? (raw.ref as number) : null,
-      vote: raw.vote && VOTES.includes(raw.vote) ? raw.vote : null,
-      confirmed: raw.confirmed === true && !!raw.vote && VOTES.includes(raw.vote),
-      waitlisted: raw.waitlisted === true,
-      applied: raw.applied === true,
-    };
-  } catch {
-    state = EMPTY;
-  }
+  read();
+  // another tab joined, voted or started again: follow it, so two tabs can
+  // never each cast a vote or overwrite each other
+  addEventListener('storage', (e) => {
+    if (e.key !== KEY && e.key !== null) return;
+    read();
+    listeners.forEach((l) => l());
+  });
 }
 
 export function setCrew(patch: Partial<CrewState>) {
   load();
-  state = { ...state, ...patch };
+  read(); // the latest from any other tab first
+  state = sanitise({ ...state, ...patch });
   try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
+  listeners.forEach((l) => l());
+}
+
+/** "Not you? Start again": forget this device's member entirely. */
+export function clearCrew() {
+  load();
+  state = EMPTY;
+  try { localStorage.removeItem(KEY); } catch {}
   listeners.forEach((l) => l());
 }
 

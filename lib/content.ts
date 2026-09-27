@@ -6,6 +6,8 @@
  *   [viv]   Viv's build, join-invi-community.vivpax.chatgpt.site (newer; wins
  *           where the two disagree on facts, e.g. the contact address)
  *   [mark]  wording Mark asked for directly
+ *   [new]   written for the stress-test fixes (Sept 2026): a draft for Viv to
+ *           approve, in the same voice
  * Anything still missing is written as [COPY NEEDED], never invented.
  */
 
@@ -230,12 +232,20 @@ export const application = {
   sending: 'Sending',
   footNote: 'Read by the team. We come back to everyone either way.',
   doneTag: 'Application received',
+  // [new] ages the programme can't take
+  under13: 'The programme is for 13 and up, so we can’t take an application yet. We’d love to hear from you when you’re 13.',
+  parent: 'Applications come from the young person themselves. Share this page with them, and you can read how it works on our For Parents page.',
   doneMsg: 'Your application is in. We read every one and come back to everybody either way, so keep an eye on your inbox.',
   errors: {
     name: 'We need your name.',
+    nameChars: 'Use letters only, as you’d write your name.', // [new]
     email: 'That email doesn’t look right.',
     age: 'Pick your age.',
+    guardianName: 'We need their name.', // [new]
+    guardianNameChars: 'Use letters only, as you’d write a name.', // [new]
     guardian: 'Under 18s need a parent or guardian’s email.',
+    guardianSame: 'Use your parent or guardian’s own email, not yours.', // [new]
+    whyLong: 'That’s a lot. Keep it under 2,000 characters.', // [new]
     why: 'Give us a couple of lines at least.',
     consent: 'You’ll need to tick this to apply.',
   },
@@ -275,7 +285,7 @@ export const join = {
   fields: {
     name: { label: 'First name', placeholder: 'What do people call you?' },
     email: { label: 'Email address', placeholder: 'you@example.com' },
-    age: { label: 'Age range', options: ['13 to 15', '16 to 17', '18+'] as const, note: 'INVI is made for teenage boys, from 13 up.' },
+    age: { label: 'Age range', options: ['Under 13', '13 to 15', '16 to 17', '18+'] as const, note: 'INVI is made for teenage boys, from 13 up.' }, // Under 13 [mark]
     guardian: {
       label: 'Parent or guardian',
       nameLabel: 'Their name',
@@ -307,15 +317,36 @@ export const join = {
   // plainest statement of the rule, in the same voice.
   errors: {
     name: 'We need something to call you.', // [site]
+    nameChars: 'Use letters only, as you’d write your name.', // [new]
+    otherNameChars: 'Use letters only, as you’d write a name.', // [new]
     email: 'That email doesn’t look right.', // [site]
     age: 'Pick your age range.',
     guardianName: 'We need their name.',
     guardianEmail: 'Under 18s need a parent or guardian’s email.', // [site]
-    mobile: 'That number doesn’t look right. Include your country code.',
+    mobile: 'That number doesn’t look right. Try 07… or +44…', // [new]
     whatsapp: 'Add your mobile number to get a WhatsApp invite.',
     guardianSame: 'Use your parent or guardian’s own email, not yours.',
     consent: 'Tick the box to join the Crew.',
+    missed: 'One answer needs another look.', // [new]
   },
+  // [new] Under 13: nothing else is asked, nothing is stored (UK: 13 is the
+  // age of digital consent, DPA 2018 s9; WhatsApp's UK minimum is also 13).
+  under13: {
+    title: 'Not just yet.',
+    body: 'INVI is made for 13 and up, so we can’t take your details yet. A parent or guardian can join the first drop waitlist for you, and we’ll see you when you’re 13.',
+    cta: 'Go to the waitlist',
+  },
+  // [new] the Crew group chat, offered on the pass once someone has joined
+  whatsapp: {
+    eyebrow: 'The Crew group chat',
+    title: 'Come say hello.',
+    body: 'Where the Crew talks first: drops, votes and what’s happening behind the scenes.',
+    cta: 'Join the group chat',
+    note: 'Opens WhatsApp. Group admins can see your number, and other members may too.',
+    approvalTitle: 'The group chat comes next.',
+    approval: 'For under 16s, a parent or guardian approves first. We’ll be in touch with them, then send your invite.',
+  },
+  restart: 'Not you? Start again', // [new]
   done: {
     tag: 'You’re in', // [site]
     ref: 'Ref',
@@ -325,6 +356,7 @@ export const join = {
     copied: 'Link copied.', // [site]
     copyFail: 'Copy the link from the address bar.', // [site]
   },
+  noscript: 'Joining needs JavaScript switched on. You can also email us at', // [new]
 };
 
 export const waitlist = {
@@ -337,9 +369,12 @@ export const waitlist = {
   submit: 'Join the waitlist',
   submitting: 'Adding you',
   done: 'You’re on the list.',
+  privacy: 'How we use your details', // [new]
+  restart: 'Not you? Start again', // [new]
   errors: {
     name: 'We need something to call you.',
-    contact: 'Add an email address or a mobile number with its country code.',
+    nameChars: 'Use letters only, as you’d write your name.', // [new]
+    contact: 'Add an email address, or a mobile number like 07… or +44…', // [new]
     consent: 'Tick the box so we’re allowed to contact you.', // [site], adapted
   },
 };
@@ -399,9 +434,11 @@ export const letsTalk = {
   ],
 };
 
-export type InfoSection = { n?: string; title: string; body: string[] };
+export type InfoSection = { n?: string; title: string; body: string[]; list?: string[]; after?: string[] };
 export type InfoPage = {
   eyebrow: string;
+  /** a visible "this is a draft" notice at the top of the page */
+  draft?: { title: string; body: string[] };
   title: string[];
   intro: string[];
   sections: InfoSection[];
@@ -461,21 +498,130 @@ export const safeguarding: InfoPage = {
   },
 };
 
+/**
+ * Privacy. Sections 01 to 04 and "Your rights" are Viv's summary [viv];
+ * everything else is a DRAFT policy for this website only [new], to be
+ * checked by Viv and a legal adviser before launch. [TO CONFIRM] marks facts
+ * nobody has confirmed yet: they must all be resolved before it goes live.
+ */
 export const privacy: InfoPage = {
   eyebrow: 'Your information',
   title: ['Privacy notice'],
   intro: ['A clear summary of how INVI handles community information.'],
+  draft: {
+    title: 'Draft for review',
+    body: [
+      'The detailed policy below (sections 05 to 14) is a working draft for this website. It has not yet been approved by INVI or checked by a legal adviser, and anything marked [TO CONFIRM] is still being checked.',
+      'Until it is final, the summary in sections 01 to 04 describes how we handle information.',
+    ],
+  },
   sections: [
     { n: '01', title: 'What we collect', body: ['When someone joins the INVI community, we may collect their first name, email address, age range and information connected with their membership. For members under 18, we may also collect a parent or guardian’s name and email address. Where someone chooses to join a WhatsApp community, apply for an opportunity or take part in another activity, we may process the contact, application and consent information required to provide that service. We also record marketing consent and any referral information used.'] },
     { n: '02', title: 'Why we collect it', body: ['We use this information to run the INVI community, provide updates members and waitlist subscribers have requested, review applications, manage participation in INVI activities and contact a parent or guardian where permission is required.'] },
     { n: '03', title: 'Who we share it with', body: ['We use trusted email, community and data platforms that process information on our instructions. First drop waitlist submissions are stored securely and may be added to INVI’s email or messaging platform so we can send the updates requested. We do not sell personal information or share it with third parties for their own advertising purposes.'] },
     { n: '04', title: 'How long we keep it', body: ['We keep information for as long as it is needed to provide the community or service someone has requested. Members can unsubscribe or request deletion of their information at any time.'] },
+    // ── the draft policy for this website [new] ──────────────────────────
+    {
+      n: '05', title: 'Who we are',
+      body: [
+        'This policy covers the INVI community website and the forms on it: Join the Crew, the first drop waitlist, the product roadmap vote and, when open, INVI Build applications. It does not cover INVI products or any future shop.',
+        `INVI is run by INVI WORLD LTD [TO CONFIRM: company name and number], 41a Marylands Road, London W9 2DU [TO CONFIRM], which is responsible for your information (the “controller”). You can reach us about anything in this policy at ${CONTACT_EMAIL}.`,
+      ],
+    },
+    {
+      n: '06', title: 'What this website collects',
+      body: ['We only ask for what each form needs.'],
+      list: [
+        'Join the Crew: your age range, first name and email address; for under 18s, a parent or guardian’s name and email address; who invited you and a mobile number, if you choose to give them; whether you asked for a WhatsApp invite; and your consent choices, with the date you gave them.',
+        'Under 13: if you tell us you are under 13, the form stops there. Nothing else is asked for and nothing is kept.',
+        'First drop waitlist: your first name, an email address or mobile number, and your consent.',
+        'Roadmap vote: the product you vote for, linked to your Crew membership so each member votes once.',
+        'INVI Build applications (when open): your full name, email address, age, a parent or guardian’s name and email address if you are under 18, your answer, and your consent.',
+        'Emails you send us: your address and whatever you choose to write.',
+      ],
+      after: ['We do not ask for home addresses, school details, photos, location or payment information, and we never use your information to profile you or show you advertising.'],
+    },
+    {
+      n: '07', title: 'Why we use it, and our lawful basis',
+      body: ['UK data protection law asks us to say which lawful basis we rely on. [TO CONFIRM with a legal adviser]'],
+      list: [
+        'Consent: to send you news, opportunities and launch updates, to send a WhatsApp invite, and to review an application. You can withdraw consent at any time, and it does not affect anything done before.',
+        'Legitimate interests: to run the Crew, count one vote per member, keep the community safe and moderated, and contact a parent or guardian where their permission is needed.',
+        'Legal obligations: where the law requires us to keep or share information, for example for safeguarding.',
+      ],
+      after: ['We only send marketing emails or messages to people who have said yes, and every one includes a way to stop them.'],
+    },
+    {
+      n: '08', title: 'Children and young people',
+      body: [
+        'INVI is made for teenage boys from 13 up, and the UK age of digital consent is 13. We do not knowingly collect information from anyone under 13. If we learn that we have, we delete it.',
+        'For members under 18, a parent or guardian’s permission is needed before they take part in anything beyond receiving email updates, including filming, product testing, events and selected INVI Build activities. We contact that adult directly.',
+        'We design the website around the ICO’s Children’s Code: high privacy by default, plain language, no profiling, no location tracking and no selling of data.',
+      ],
+    },
+    {
+      n: '09', title: 'The Crew WhatsApp group',
+      body: [
+        'After joining, members aged 16 and over are offered a link to the INVI Crew group chat on WhatsApp. For under 16s, a parent or guardian approves first, and we send the invite after that.',
+        'WhatsApp is run by WhatsApp Ireland Limited, part of Meta. Once you join the group, WhatsApp’s own terms and privacy policy apply. Group admins can see your phone number, and other members may be able to see it too. You can leave the group at any time.',
+      ],
+    },
+    {
+      n: '10', title: 'Who processes information for us',
+      body: ['We use a small number of trusted providers who process information only on our instructions and under a written contract:'],
+      list: [
+        'Website hosting: Vercel Inc. [TO CONFIRM]',
+        'Where sign-ups are stored: [TO CONFIRM: database provider and region]',
+        'Email updates: [TO CONFIRM: email platform]',
+        'Group chat: WhatsApp (Meta), for members who choose to join.',
+      ],
+      after: [
+        'Some providers may process information outside the UK, for example in the United States. Where they do, we rely on the safeguards UK law requires, such as the UK International Data Transfer Agreement or the UK Extension to the EU-US Data Privacy Framework. [TO CONFIRM]',
+        'We never sell personal information, and never share it with anyone for their own marketing.',
+      ],
+    },
+    {
+      n: '11', title: 'How long we keep it',
+      body: ['We keep information only for as long as it is needed. [TO CONFIRM: proposed periods]'],
+      list: [
+        'Crew membership: while you are a member. When you leave, we delete your details within 30 days.',
+        'Waitlist: until the first drop, then for up to 12 months unless you join the Crew or unsubscribe sooner.',
+        'Applications: for 12 months after the programme decision.',
+        'Parent or guardian details: for as long as the young person they gave permission for is a member and under 18.',
+        'Consent records: for as long as we rely on that consent, so we can show when it was given.',
+      ],
+    },
+    {
+      n: '12', title: 'Cookies and your browser',
+      body: ['This website does not use advertising or analytics cookies, and it does not track you across other sites. It keeps three small items in your own browser so the site works as you would expect:'],
+      list: [
+        'invi.state.v5 (local storage): whether you have joined on this device, your first name, your member reference, your vote, and whether you are on the waitlist or have applied. It never holds your email, phone number, age or a parent’s details.',
+        'invi.intro (session storage): so the opening animation plays once per visit.',
+        'invi.place (session storage): your place on the page, so a reload brings you back to it.',
+      ],
+      after: ['These stay on your device. You can clear them at any time in your browser settings, or with “Not you? Start again” after joining.'],
+    },
+    {
+      n: '13', title: 'Keeping it secure',
+      body: [
+        'Everything you send is encrypted in transit (HTTPS), access is limited to the INVI team members who need it, and our providers are chosen for their security standards. No system is perfectly secure, so if a breach ever puts your information at risk, we will tell you and, where required, the ICO.',
+      ],
+    },
+    {
+      n: '14', title: 'Changes and complaints',
+      body: [
+        'If we change this policy, we will update this page and, if the change matters, tell members by email. Last updated: draft, September 2026.',
+        'If you are unhappy with how we have handled your information, please tell us first so we can put it right. You can also complain to the Information Commissioner’s Office (ICO) at ico.org.uk/make-a-complaint or on 0303 123 1113.',
+      ],
+    },
   ],
   closing: {
     title: 'Your rights',
     body: [
       `Members and parents or guardians can request access, correction or deletion of personal information by contacting ${CONTACT_EMAIL}.`,
       'Marketing emails include an unsubscribe link.',
+      // [new]
+      'You can also ask us to limit how we use your information, object to it, or send you a copy to take elsewhere, and you can withdraw any consent at any time. A parent or guardian can make a request for a child. We reply within one month.',
     ],
   },
 };

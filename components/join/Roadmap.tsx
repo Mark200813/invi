@@ -23,16 +23,19 @@ export default function Roadmap() {
   const confirmBtn = useRef<HTMLButtonElement>(null);
   const closingRef = useRef<HTMLParagraphElement>(null);
   const justLocked = useRef(false);
+  const busy = useRef(false);
   const chosen = crew.confirmed ? crew.vote : pick;
 
   useEffect(() => { if (pick) confirmBtn.current?.focus({ preventScroll: true }); }, [pick]);
+  // "Start again" here or in another tab: an unconfirmed pick goes with it
+  useEffect(() => { if (!crew.joined) setPick(null); }, [crew.joined]);
   // the Confirm button goes away once the vote locks: focus moves to the result
   useEffect(() => {
     if (crew.confirmed && justLocked.current) { justLocked.current = false; closingRef.current?.focus({ preventScroll: true }); }
   }, [crew.confirmed]);
 
   function choose(k: RoadmapKey) {
-    if (crew.confirmed) return;
+    if (crew.confirmed || busy.current) return;
     if (!crew.joined) {
       flash(roadmap.joinFirst);
       scrollToEl(document.getElementById('join'));
@@ -43,13 +46,18 @@ export default function Roadmap() {
   }
 
   async function confirm() {
-    if (!pick || crew.confirmed) return;
+    if (!pick || crew.confirmed || busy.current) return;
+    busy.current = true;
     setLocking(true);
-    await submitVote({ vote: pick, ref: crew.ref });
-    justLocked.current = true;
-    setCrew({ vote: pick, confirmed: true });
-    setLocking(false);
-    flash(`${LABEL[pick]}. ${roadmap.lockedIn}`);
+    try {
+      await submitVote({ vote: pick, ref: crew.ref });
+      justLocked.current = true;
+      setCrew({ vote: pick, confirmed: true });
+      flash(`${LABEL[pick]}. ${roadmap.lockedIn}`);
+    } finally {
+      busy.current = false;
+      setLocking(false);
+    }
   }
 
   return (
@@ -81,8 +89,8 @@ export default function Roadmap() {
               <button type="button"
                 className={`${s.vote} ${mine ? s.voteOn : ''} ${locked ? s.voteOff : ''} ${crew.confirmed && mine ? s.voteLocked : ''}`}
                 aria-pressed={crew.joined ? mine : undefined}
-                aria-disabled={locked || undefined}
-                disabled={locked}
+                aria-disabled={locked || locking || undefined}
+                disabled={locked || locking}
                 onClick={() => choose(r.key)}>
                 <span className="index-n num">{r.n}</span>
                 <span className={`display ${s.voteTitle}`} data-no-split>{r.t}</span>

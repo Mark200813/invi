@@ -17,6 +17,11 @@
 .secTitle { font-size: var(--fs-md); max-width: 20ch; }
 .secBody { display: grid; gap: 1rem; }
 .closing { background: var(--bone-raise); padding-inline: clamp(1.25rem, 3vw, 2.25rem); border-top: 0; margin-top: 1rem; }
+.draft { display: grid; gap: 0.6rem; max-width: 60ch; padding: 1.1rem 1.25rem; border: 1px dashed var(--text-3); }
+.draftTag { color: var(--err); }
+.list { display: grid; gap: 0.75rem; }
+.list li { padding-left: 1.1rem; position: relative; }
+.list li::before { content: ''; position: absolute; left: 0; top: 0.8em; width: 6px; height: 1px; background: currentColor; }
 .foot { display: flex; flex-wrap: wrap; gap: 0.75rem; padding-top: clamp(2.5rem, 6vw, 4rem); border-top: 1px solid var(--line); }
 
 @media (min-width: 900px) {

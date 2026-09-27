@@ -9,7 +9,10 @@ import { DEMO_MODE } from './config';
 async function send(kind: string, payload: Record<string, unknown>) {
   const body = { ...payload, ts: new Date().toISOString() };
   if (DEMO_MODE) {
-    console.log(`[INVI demo] ${kind} →`, body);
+    // which fields would be sent, never their values: this runs on real
+    // visitors' devices, some of them children
+    const shape = Object.fromEntries(Object.entries(body).map(([k, v]) => [k, typeof v === 'string' ? (v ? `(${v.length} chars)` : '') : v]));
+    console.log(`[INVI demo] ${kind} →`, shape);
     await new Promise((r) => setTimeout(r, 620));
     return { ok: true as const };
   }
@@ -40,7 +43,4 @@ export const submitWaitlist = (p: { firstName: string; contact: string; consent:
 export const submitVote = (p: { vote: string; ref: number | null }) => send('vote', p);
 export const submitApplication = (p: Record<string, unknown>) => send('application', p);
 
-export const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-/** A number with its country code: +, then 8 to 15 digits (spaces allowed). */
-export const MOBILE_RE = /^\+\d{8,15}$/;
-export const normaliseMobile = (v: string) => v.replace(/[\s()-]/g, '');
+// input rules live in lib/validate.ts
