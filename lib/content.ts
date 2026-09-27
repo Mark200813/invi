@@ -334,7 +334,7 @@ export const join = {
   under13: {
     title: 'Not just yet.',
     body: 'INVI is made for 13 and up, so we can’t take your details yet. A parent or guardian can join the first drop waitlist for you, and we’ll see you when you’re 13.',
-    cta: 'Go to the waitlist',
+    cta: 'Show a parent the waitlist',
   },
   // [new] the Crew group chat, offered on the pass once someone has joined
   whatsapp: {
@@ -363,6 +363,7 @@ export const waitlist = {
   eyebrow: 'First drop waitlist', // [viv]
   title: 'Not ready for the Crew?',
   body: 'Join the waitlist instead. We’ll let you know when the first INVI drop is ready.',
+  under13: 'Under 13? Ask a parent or guardian to sign up here with their own name and email.', // [new]
   name: 'First name',
   contact: 'Email or mobile number',
   consent: 'Yes, INVI can contact me about the first drop and occasional launch news. If I’m under 16, I have permission from a parent or guardian.',
@@ -581,7 +582,7 @@ export const privacy: InfoPage = {
       ],
     },
     {
-      n: '11', title: 'How long we keep it',
+      n: '11', title: 'Retention periods',
       body: ['We keep information only for as long as it is needed. [TO CONFIRM: proposed periods]'],
       list: [
         'Crew membership: while you are a member. When you leave, we delete your details within 30 days.',

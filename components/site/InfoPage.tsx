@@ -30,10 +30,10 @@ export default function InfoPage({ page, photo }: { page: Info; photo?: { src: s
       </header>
 
       <div className={`wrap ${s.sections}`}>
-        {page.sections.map((sec) => (
-          <section key={sec.title} className={s.section} aria-labelledby={slug(sec.title)}>
+        {page.sections.map((sec, k) => (
+          <section key={sec.title} className={s.section} aria-labelledby={`${slug(sec.title)}-${k}`}>
             {sec.n && <p className={`index-n ${s.n}`}>{sec.n}</p>}
-            <h2 id={slug(sec.title)} className={`display ${s.secTitle}`}>{sec.title}</h2>
+            <h2 id={`${slug(sec.title)}-${k}`} className={`display ${s.secTitle}`}>{sec.title}</h2>
             <div className={s.secBody}>
               {sec.body.map((p) => <p key={p} className="body">{linkify(p)}</p>)}
               {sec.list && <ul className={s.list}>{sec.list.map((p) => <li key={p} className="body">{linkify(p)}</li>)}</ul>}

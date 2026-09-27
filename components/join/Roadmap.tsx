@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { roadmap, type RoadmapKey } from '@/lib/content';
-import { setCrew, useCrew } from '@/lib/store';
+import { readCrew, setCrew, useCrew } from '@/lib/store';
 import { submitVote } from '@/lib/submit';
 import { flash } from '@/components/site/Toast';
 import { scrollToEl } from '@/components/site/SmoothScroll';
@@ -39,7 +39,8 @@ export default function Roadmap() {
     if (!crew.joined) {
       flash(roadmap.joinFirst);
       scrollToEl(document.getElementById('join'));
-      setTimeout(() => document.getElementById('join-name')?.focus({ preventScroll: true }), 900);
+      // the join flow's current question (age first, or wherever they left off)
+      setTimeout(() => document.querySelector<HTMLElement>('#join form input:not([type=hidden]), #join form [role=radio]')?.focus({ preventScroll: true }), 900);
       return;
     }
     setPick(k);
@@ -47,6 +48,9 @@ export default function Roadmap() {
 
   async function confirm() {
     if (!pick || crew.confirmed || busy.current) return;
+    // another tab may have voted a moment ago
+    const latest = readCrew();
+    if (latest.confirmed || !latest.joined) return;
     busy.current = true;
     setLocking(true);
     try {

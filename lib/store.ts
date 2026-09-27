@@ -34,9 +34,10 @@ const listeners = new Set<() => void>();
 
 function sanitise(raw: Partial<CrewState> | null): CrewState {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return EMPTY;
-  const joined = raw.joined === true;
-  const vote = typeof raw.vote === 'string' && VOTES.includes(raw.vote) ? raw.vote : null;
   const ref = Number.isInteger(raw.ref) && (raw.ref as number) >= 1000 && (raw.ref as number) <= 9999 ? (raw.ref as number) : null;
+  // every real join is given a reference: without one, it isn't a membership
+  const joined = raw.joined === true && ref !== null;
+  const vote = typeof raw.vote === 'string' && VOTES.includes(raw.vote) ? raw.vote : null;
   return {
     joined,
     name: typeof raw.name === 'string' ? raw.name.slice(0, 60) : '',
@@ -65,6 +66,13 @@ function load() {
     read();
     listeners.forEach((l) => l());
   });
+}
+
+/** The latest saved state, straight from storage (another tab may have changed it). */
+export function readCrew(): CrewState {
+  load();
+  read();
+  return state;
 }
 
 export function setCrew(patch: Partial<CrewState>) {

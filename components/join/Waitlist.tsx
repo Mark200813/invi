@@ -57,6 +57,7 @@ export default function Waitlist() {
         <p className={`label ${s.eyebrow}`}>{waitlist.eyebrow}</p>
         <h2 id="wl-title" className={`display ${s.waitlistTitle}`} data-no-split>{waitlist.title}</h2>
         <p className="body">{waitlist.body}</p>
+        <p className="small">{waitlist.under13}</p>
       </div>
       {crew.waitlisted ? (
         <div className={s.waitlistDone}>
