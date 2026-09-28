@@ -187,7 +187,10 @@ export const crew = {
     // unlocked by the first Crew challenge (Viv). Viv to confirm or trim.
     body: 'The first 100 approved INVI Crew members receive a numbered Founder Card and limited INVI merch, including the Founding hoodie.',
     hoodie: 'Complete your first Crew challenge to unlock yours, made for no one else, with the INVI marks embossed in 3D.',
-    hoodieAlt: { front: 'The Founding hoodie, front', back: 'The Founding hoodie, back' },
+    // [new] the hoodie photo (front and back side by side)
+    hoodieAlt: 'The Founding hoodie in washed charcoal, front and back: a small embossed INVI on the chest, and a large embossed INVI across the back with contour lines flowing around it',
+    hoodieLabels: ['Front', 'Back'] as [string, string],
+    hoodieHint: 'Move over it to see the embossing up close.',
     cardLabel: 'Founder Card',
   },
 };

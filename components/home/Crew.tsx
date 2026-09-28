@@ -4,6 +4,7 @@ import { crew, build, joinCta } from '@/lib/content';
 import { APPLICATIONS_OPEN } from '@/lib/config';
 import Wordmark from '@/components/site/Wordmark';
 import ApplicationForm from '@/components/join/ApplicationForm';
+import HoodieView from './HoodieView';
 import s from './Crew.module.css';
 
 export default function Crew() {
@@ -51,8 +52,11 @@ export default function Crew() {
               <span>{joinCta}</span><span className="arrow" aria-hidden>↘</span>
             </Link>
           </div>
-          {/* The Founder Card: an object, not a claim. No number is printed
-              on it because none has been issued yet. */}
+          {/* The Founding kit: the hoodie, with the Founder Card laid over
+              its corner. The card is an object, not a claim: no number is
+              printed on it because none has been issued yet. */}
+          <div className={s.kit}>
+          <HoodieView alt={crew.founding.hoodieAlt} labels={crew.founding.hoodieLabels} hint={crew.founding.hoodieHint} />
           <div className={s.cardWrap} data-speed="0.6" aria-hidden><div className={s.card}>
             <div className={s.cardTop}>
               <Wordmark label={false} className={s.cardMark} />
@@ -63,6 +67,7 @@ export default function Crew() {
               <span className={`display ${s.cardDigits}`} data-no-split>— / 100</span>
             </div>
           </div></div>
+          </div>
         </div>
       </section>
 
