@@ -60,13 +60,6 @@
   background: var(--stage-raise);
 }
 .loopLine { max-width: 13ch; }
-.loopBtn {
-  justify-self: start;
-  min-height: 44px; padding: 0 1rem;
-  background: transparent; border: 1px solid var(--line); color: var(--on-stage-2);
-  font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; font-variation-settings: 'wdth' 118;
-}
-.loopBtn:hover { color: var(--on-stage); border-color: var(--on-stage-3); }
 
 @media (min-width: 900px) {
   .intro { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: 1.5rem; }
@@ -77,7 +70,6 @@
   .features { grid-template-columns: 1fr 1fr; column-gap: 2.5rem; }
   .air { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 4rem; align-items: center; }
   .loop { grid-template-columns: minmax(0, 7fr) minmax(0, 5fr); align-items: end; gap: 4rem; }
-  .loopMedia { grid-column: 2; grid-row: 1 / span 2; justify-self: end; }
+  .loopMedia { grid-column: 2; grid-row: 1; justify-self: end; }
   .loopLine { grid-column: 1; grid-row: 1; align-self: end; }
-  .loopBtn { grid-column: 1; grid-row: 2; }
 }

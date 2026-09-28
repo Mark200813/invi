@@ -144,7 +144,7 @@ select.input option { color: #0c0c0d; }
 .roadmapTitle { display: grid; gap: 1.25rem; }
 .roadmapTitle h2 { max-width: 12ch; }
 .roadmapAside { display: grid; gap: 1.25rem; align-content: end; }
-.roadmapPhoto { margin: 0; width: 60%; justify-self: end; }
+.roadmapPhoto { margin: 0; width: 60%; justify-self: center; }
 .roadmapPhoto img { width: 100%; height: auto; }
 .voteArea { position: relative; }
 /* no box of its own: the confirm bar's parent is .voteArea, so it can stick

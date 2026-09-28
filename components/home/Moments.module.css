@@ -98,8 +98,8 @@
 .moments[data-pinned] .photo { display: none; }
 .moments[data-pinned] .word { grid-row: 4; }
 .moments[data-pinned] .can {
-  position: absolute; left: 50%; bottom: 17vw; transform: translateX(-50%);
-  width: auto; height: 50svh; margin: 0;
+  position: absolute; left: 50%; bottom: 15vw; transform: translateX(-50%);
+  width: auto; height: 60svh; margin: 0;
 }
 .moments[data-pinned] .canInner { height: 100%; }
 .moments[data-pinned] .can img { height: 100%; width: auto; max-width: none; }
@@ -140,7 +140,7 @@
 
 /* short phones (and phone landscape): the can and the word give the copy room */
 @media (max-width: 899px) and (max-height: 700px) {
-  .moments[data-pinned] .can { height: 36svh; bottom: 13vw; }
+  .moments[data-pinned] .can { height: 42svh; bottom: 12vw; }
   .moments[data-pinned] .line { font-size: 1rem; }
   .word { font-size: min(20vw, calc(130vw / var(--len, 6)), 24svh); }
 }

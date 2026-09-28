@@ -1,64 +1,49 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import s from './Product.module.css';
 
 /**
- * The beach clip. Nothing is fetched until it is two screens away, it plays
- * only while on screen, and there is always a control to stop it (the loop
- * runs past five seconds, so WCAG 2.2.2 applies). Once stopped by hand it
- * stays stopped. Reduced motion gets the poster.
+ * The beach clip: always playing, no controls [mark]. It is muted and inline,
+ * which is what lets phones autoplay it. Nothing is fetched until it is two
+ * screens away, and it only runs while on screen (off screen it pauses, to
+ * spare the battery, and resumes as it comes back). Reduced motion, a
+ * setting people turn on deliberately, keeps the still poster.
  */
 export default function BeachLoop({ lines, label }: { lines: string[]; label: string }) {
   const video = useRef<HTMLVideoElement>(null);
-  const [playing, setPlaying] = useState(false);
-  const [reduced, setReduced] = useState(false);
-  const userPaused = useRef(false);
 
   useEffect(() => {
     const v = video.current;
-    if (!v) return;
-    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    setReduced(reduce);
-    if (reduce) return;
+    if (!v || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     v.muted = true;
+    const play = () => { v.play().catch(() => {}); };
     const warm = new IntersectionObserver(([e]) => {
       if (!e.isIntersecting) return;
       v.preload = 'auto';
+      v.load();
       warm.disconnect();
     }, { rootMargin: '0px 0px 200% 0px' });
     const view = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !userPaused.current) v.play().catch(() => {});
-      else v.pause();
-    }, { threshold: 0.2 });
+      if (e.isIntersecting) play(); else v.pause();
+    }, { threshold: 0.15 });
+    // iOS may hold autoplay until the page has been touched once
+    const nudge = () => { if (v.paused && v.getBoundingClientRect().top < innerHeight) play(); };
+    addEventListener('touchstart', nudge, { passive: true });
     warm.observe(v); view.observe(v);
-    const on = () => setPlaying(!v.paused);
-    v.addEventListener('play', on); v.addEventListener('pause', on);
-    return () => { warm.disconnect(); view.disconnect(); v.removeEventListener('play', on); v.removeEventListener('pause', on); };
+    return () => { warm.disconnect(); view.disconnect(); removeEventListener('touchstart', nudge); };
   }, []);
-
-  const toggle = () => {
-    const v = video.current;
-    if (!v) return;
-    if (v.paused) { userPaused.current = false; v.play().catch(() => {}); }
-    else { userPaused.current = true; v.pause(); }
-  };
 
   return (
     <figure className={s.loop}>
-      <video ref={video} className={s.loopMedia} muted loop playsInline preload="none"
+      <video ref={video} className={s.loopMedia} muted loop playsInline autoPlay preload="none"
+        disablePictureInPicture disableRemotePlayback
         poster="/img/beach-loop-poster.webp" aria-label={label}>
         <source src="/img/beach-loop.mp4" type="video/mp4" />
       </video>
       <figcaption className={`display t-xl ${s.loopLine}`}>
         {lines.map((l) => <span key={l} className={s.block}>{l} </span>)}
       </figcaption>
-      {!reduced && (
-        <button type="button" className={s.loopBtn} onClick={toggle}
-          aria-label={`${playing ? 'Pause' : 'Play'} the background clip`}>
-          {playing ? 'Pause' : 'Play'}
-        </button>
-      )}
     </figure>
   );
 }

@@ -83,7 +83,7 @@
 .build { padding-block: clamp(4rem, 9vw, 7rem) clamp(6rem, 13vw, 10rem); border-top: 1px solid var(--line); }
 .buildGrid { display: grid; gap: 2.5rem; padding-bottom: clamp(3rem, 7vw, 5rem); }
 .buildHead { display: grid; gap: 1.25rem; }
-.buildPhoto { margin: 0; width: 70%; justify-self: end; }
+.buildPhoto { margin: 0; width: 70%; justify-self: center; }
 .buildPhoto img { width: 100%; height: auto; }
 .buildCopy { display: grid; gap: 2rem; align-content: end; }
 .buildCopy :global(.lede) { max-width: 42ch; }

@@ -27,6 +27,16 @@ import { buildCan, buildStudioEnvironment, COLOURWAYS, MODES, CAN } from '@/lib/
  */
 
 const SMALL = typeof window !== 'undefined' && matchMedia('(max-width: 900px), (pointer: coarse)').matches;
+/**
+ * Touch screens scroll the page on the compositor, ahead of any script. A
+ * layer fixed over the page and redrawn by script therefore always trails
+ * the page by a frame or two, and the cans swim as you scroll. So on touch
+ * screens each chapter carries its own 2D surface inside its own box: the
+ * browser scrolls it with the page, in step, and the one shared 3D renderer
+ * draws each chapter off screen and copies it in. (With a mouse, Lenis moves
+ * the page in script too, so the single fixed layer stays in step.)
+ */
+const SECTION = typeof window !== 'undefined' && matchMedia('(pointer: coarse)').matches;
 const LABELS = ['origin', 'rise', 'after-dark'].map((k) => `/textures/label-${k}${SMALL ? '-1k' : ''}.webp`);
 const VARIANT: Record<string, number> = { origin: 0, rise: 1, 'after-dark': 2 };
 const FOV = 24, DIST = 1;
@@ -474,7 +484,7 @@ function LineupRig({ box, slots, figs, variants, container, labels, env }: Lineu
  * boxes wherever the element sat, off the edges included, and at 2x pixel
  * density that took the GPU process down as a chapter scrolled into view.)
  */
-type Port = { scene: THREE.Scene; camera: THREE.PerspectiveCamera; box: () => Box };
+type Port = { scene: THREE.Scene; camera: THREE.PerspectiveCamera; box: () => Box; out?: CanvasRenderingContext2D | null };
 const Ports = createContext<{ add: (p: Port) => () => void } | null>(null);
 
 function Compositor({ children }: { children: ReactNode }) {
@@ -483,6 +493,7 @@ function Compositor({ children }: { children: ReactNode }) {
     add: (p: Port) => { ports.current.push(p); return () => { ports.current = ports.current.filter((x) => x !== p); }; },
   }), []);
   useFrame(({ gl, size }) => {
+    if (SECTION) { drawSections(gl, ports.current); return; }
     gl.autoClear = false;
     gl.setScissorTest(false);
     gl.clear(true, true, true);
@@ -506,8 +517,41 @@ function Compositor({ children }: { children: ReactNode }) {
   return <Ports.Provider value={api}>{children}</Ports.Provider>;
 }
 
-/** One chapter: its own scene and camera, drawn by the Compositor. */
-function Port({ box, children }: { box: () => Box; children: ReactNode }) {
+/**
+ * Touch screens: render each on-screen chapter at the renderer's bottom-left
+ * and copy it into that chapter's own surface. The copy is a GPU blit, and the
+ * chapter's box always fits: the renderer is sized to the tallest chapter.
+ */
+function drawSections(gl: THREE.WebGLRenderer, ports: Port[]) {
+  const dpr = gl.getPixelRatio();
+  const bufH = gl.domElement.height;
+  const vh = innerHeight;
+  gl.autoClear = false;
+  gl.setScissorTest(true);
+  for (const p of ports) {
+    const out = p.out, b = p.box();
+    if (!out || b.w < 1 || b.h < 1) continue;
+    if (b.top > vh + 80 || b.top + b.h < -80) continue;   // off screen: its surface keeps its last frame, unseen
+    const cw = Math.round(b.w * dpr), ch = Math.round(b.h * dpr);
+    if (ch > bufH) continue;                                // renderer not grown yet (a resize is on its way)
+    const cv = out.canvas;
+    if (cv.width !== cw || cv.height !== ch) { cv.width = cw; cv.height = ch; }
+    gl.setViewport(0, 0, b.w, b.h);
+    gl.setScissor(0, 0, b.w, b.h);
+    gl.clear(true, true, true);
+    p.camera.aspect = b.w / b.h;
+    p.camera.clearViewOffset();
+    p.camera.updateProjectionMatrix();
+    gl.render(p.scene, p.camera);
+    out.clearRect(0, 0, cw, ch);
+    out.drawImage(gl.domElement, 0, bufH - ch, cw, ch, 0, 0, cw, ch);
+  }
+  gl.setScissorTest(false);
+}
+
+/** One chapter: its own scene and camera, drawn by the Compositor. On touch
+ *  screens it also owns a 2D surface inside the chapter (`host`). */
+function Port({ box, host, children }: { box: () => Box; host: HTMLElement; children: ReactNode }) {
   const ctx = useContext(Ports)!;
   const scene = useMemo(() => new THREE.Scene(), []);
   const camera = useMemo(() => {
@@ -515,7 +559,19 @@ function Port({ box, children }: { box: () => Box; children: ReactNode }) {
     c.position.set(0, 0, DIST);
     return c;
   }, []);
-  useEffect(() => ctx.add({ scene, camera, box }), [ctx, scene, camera, box]);
+  useEffect(() => {
+    let cv: HTMLCanvasElement | null = null;
+    let out: CanvasRenderingContext2D | null = null;
+    if (SECTION) {
+      cv = document.createElement('canvas');
+      cv.className = 'can-port';
+      cv.setAttribute('aria-hidden', 'true');
+      host.appendChild(cv);
+      out = cv.getContext('2d');
+    }
+    const remove = ctx.add({ scene, camera, box, out });
+    return () => { remove(); cv?.remove(); };
+  }, [ctx, scene, camera, box, host]);
   return <>{createPortal(children, scene, { camera })}</>;
 }
 
@@ -698,25 +754,25 @@ function Views({ els, intro }: { els: Els; intro: boolean }) {
   return (
     <>
       {els.hero && (
-        <Port box={frames.hero.box}>
+        <Port box={frames.hero.box} host={els.hero.container}>
           <CanRig frame={frames.hero} container={els.hero.container} slotEl={els.hero.slot}
             mirrors={[{ el: els.hero.mirror, variant: 0 }]} fit="full" labels={labels} env={env} intro={intro} onFirstFrame={markReady} />
         </Port>
       )}
       {els.moments && (
-        <Port box={frames.moments.box}>
+        <Port box={frames.moments.box} host={els.moments.container}>
           <CanRig frame={frames.moments} container={els.moments.container} slotEl={els.moments.slot}
             mirrors={els.moments.mirrors} fit="full" labels={labels} env={env} onFirstFrame={markReady} />
         </Port>
       )}
       {els.lineup && (
-        <Port box={lineup.box}>
+        <Port box={lineup.box} host={els.lineup.container}>
           <LineupRig box={lineup.box} slots={lineup.slots} figs={els.lineup.figs} variants={els.lineup.variants}
             container={els.lineup.container} labels={labels} env={env} />
         </Port>
       )}
       {els.closeup && (
-        <Port box={frames.closeup.box}>
+        <Port box={frames.closeup.box} host={els.closeup.container}>
           <CanRig frame={frames.closeup} container={els.closeup.container} slotEl={els.closeup.slot}
             mirrors={[{ el: els.closeup.slot, variant: 2 }]} fit="cap" labels={labels} env={env} onFirstFrame={markReady} />
         </Port>
@@ -751,13 +807,23 @@ function findEls(): Els {
  * Graphics memory. The layer covers the viewport, so its cost grows with the
  * screen: at 2x on a large monitor, with 4x multisampling, it needed ~250MB
  * and the GPU dropped the context mid-scroll. So the pixel ratio is capped
- * (1.5 desktop, 1.25 phones; the can is soft-edged and reads the same) and
- * multisampling is only used while it stays within a fixed budget.
+ * (1.5 desktop) and multisampling is only used while it stays within a fixed
+ * budget. Touch screens render at 2x: phone screens are small but dense, and
+ * at 1.25x the cans read soft next to the page's sharp type. If the phone
+ * can't keep up, the performance monitor steps it back to 1.5x.
  */
+const SECTION_DPR = 2, SECTION_DPR_LOW = 1.5;
 function renderBudget() {
-  const dpr = Math.min(devicePixelRatio || 1, SMALL ? 1.25 : 1.5);
-  const samples = innerWidth * innerHeight * dpr * dpr * 4;
+  const dpr = Math.min(devicePixelRatio || 1, SECTION ? SECTION_DPR : SMALL ? 1.25 : 1.5);
+  const samples = innerWidth * innerHeight * (SECTION ? 1.3 : 1) * dpr * dpr * 4;
   return { dpr, antialias: samples <= 12e6 };
+}
+
+/** Touch screens: the renderer must hold the tallest chapter whole. */
+function stageHeight(els: Els) {
+  const hs = [els.hero?.container, els.moments?.container, els.lineup?.container, els.closeup?.container]
+    .map((c) => c?.getBoundingClientRect().height ?? 0);
+  return Math.ceil(Math.max(innerHeight, ...hs));
 }
 
 export default function CanStage() {
@@ -765,6 +831,7 @@ export default function CanStage() {
   const budget = useMemo(renderBudget, []);
   const [dpr, setDpr] = useState(budget.dpr);
   const [active, setActive] = useState(true);
+  const [stageH, setStageH] = useState(0);
   // The materialise plays when there is an entrance to play it in: behind the
   // intro curtain, or if the 3D is in time for the poster's own entrance.
   const intro = useMemo(() => document.documentElement.classList.contains('intro-on')
@@ -775,6 +842,18 @@ export default function CanStage() {
     const id = requestAnimationFrame(() => setEls(findEls()));
     return () => { cancelAnimationFrame(id); delete document.documentElement.dataset.can3d; delete document.documentElement.dataset.can3dLineup; };
   }, []);
+
+  // Touch screens: keep the (hidden) renderer as tall as the tallest chapter.
+  useEffect(() => {
+    if (!els || !SECTION) return;
+    const fit = () => setStageH(stageHeight(els));
+    fit();
+    const ro = new ResizeObserver(fit);
+    [els.hero?.container, els.moments?.container, els.lineup?.container, els.closeup?.container]
+      .forEach((c) => c && ro.observe(c));
+    addEventListener('resize', fit);
+    return () => { ro.disconnect(); removeEventListener('resize', fit); };
+  }, [els]);
 
   // Only draw while a chapter with a can is on screen.
   useEffect(() => {
@@ -808,6 +887,9 @@ export default function CanStage() {
             e.preventDefault();
             delete document.documentElement.dataset.can3d;
             delete document.documentElement.dataset.can3dLineup;
+            // the chapters' copies would sit over the returning stills
+            document.querySelectorAll<HTMLCanvasElement>('canvas.can-port')
+              .forEach((cv) => cv.getContext('2d')?.clearRect(0, 0, cv.width, cv.height));
           });
           c.addEventListener('webglcontextrestored', () => {
             want(2000); invalidate();
@@ -820,9 +902,12 @@ export default function CanStage() {
           // wait for the GPU driver and undoes the background compile.
           gl.debug.checkShaderErrors = process.env.NODE_ENV !== 'production';
         }}
-        style={{ position: 'fixed', inset: 0, pointerEvents: 'none' }}
+        style={SECTION
+          // off screen and never shown: the chapters show its copies
+          ? { position: 'fixed', left: 0, top: 0, width: '100vw', height: Math.max(stageH, 1), visibility: 'hidden', pointerEvents: 'none' }
+          : { position: 'fixed', inset: 0, pointerEvents: 'none' }}
       >
-        <PerformanceMonitor onDecline={() => setDpr(1)} />
+        <PerformanceMonitor onDecline={() => setDpr(SECTION ? Math.min(budget.dpr, SECTION_DPR_LOW) : 1)} />
         <Driver active={active} />
         <Compositor>
           <Views els={els} intro={intro} />
